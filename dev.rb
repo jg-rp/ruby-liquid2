@@ -2,5 +2,7 @@
 
 require "liquid2"
 
-lexer = Liquid2::Lexer.new("Hello, {# {{ you }}! {% assign x = y %} #}")
-lexer.debug
+tokens = Liquid2.tokenize("{% assign x = true %}{{ 'Hello ${you}!' }}")
+tokens.each do |token|
+  p token
+end

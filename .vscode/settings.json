@@ -1,7 +1,7 @@
 {
   "rubocop.commandPath": "/home/james/.rbenv/shims/rubocop",
   "rubocop.mode": "enableUnconditionally",
-  "cSpell.words": ["charpos", "Cyclomatic", "endraw"],
+  "cSpell.words": ["charpos", "Cyclomatic", "endcomment", "endraw", "lparen"],
   "cSpell.enabledFileTypes": {
     "ruby": true
   }
