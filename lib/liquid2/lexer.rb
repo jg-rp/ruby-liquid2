@@ -33,7 +33,7 @@ module Liquid2
 
     # Make sure shorter symbols appear after longer symbols that share a prefix.
     RE_PUNCTUATION = /\?|\[|\]|\|{1,2}|\.{1,2}|\.|,|:|\(|\)|<[=>]?|>=?|==?|!=?/
-    RE_QUOTES = /"|'/
+
     S_QUOTES = Set["'", '"']
 
     attr_reader :tokens
@@ -105,9 +105,8 @@ module Liquid2
     # @return [Array<Symbol, String> | nil] An array with two items, token kind and
     # substring.
     def accept_expression_token
-      if (value = accept(RE_QUOTES))
-        return [value == "'" ? :token_single_quote : :token_double_quote, value]
-      end
+      return [:token_single_quote, "'"] if accept("'")
+      return [:token_double_quote, '"'] if accept('"')
 
       # Must test for float before int
       if (value = accept(RE_FLOAT))
@@ -303,7 +302,7 @@ module Liquid2
     end
 
     # Scan a string literal surrounded by _quote_.
-    # Assumes the opening quote has been consumed already.
+    # Assumes the opening quote has already been consumed and emitted.
     def scan_string(quote)
       # Characters in the current substring.
       # We're using this to avoid slicing into the StringScanner.
@@ -322,6 +321,7 @@ module Liquid2
           buffer.clear
           buffer << self.next
           buffer << self.next # Two-character escape
+          # TODO: consume more characters for \uXXXX sequences
           emit(:token_string_escape, buffer.join)
           buffer.clear
         end
@@ -329,10 +329,12 @@ module Liquid2
         if @scanner.match?("${")
           emit(:token_string, buffer.join) unless buffer.empty?
           buffer.clear
-
           @scanner.pos += 2
           emit(:token_string_interpol, "${")
+
           # Consume and emit tokens up to `}`
+          # Two unknown tokens in a row means we break out of the loop and
+          # assume we're no longer inside an interpolated expression.
           unknown = false
           loop do
             accept_trivia

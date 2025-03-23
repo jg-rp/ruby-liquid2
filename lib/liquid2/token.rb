@@ -47,4 +47,13 @@ module Liquid2
       full_start + @trivia.length + @text.length
     end
   end
+
+  class MissingToken < Token
+    attr_reader :missing_kind
+
+    def initialize(kind, start, trivia, text, missing_kind)
+      super(kind, start, trivia, text)
+      @missing_kind = missing_kind
+    end
+  end
 end

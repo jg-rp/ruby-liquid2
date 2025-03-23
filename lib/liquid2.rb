@@ -4,6 +4,8 @@ require_relative "liquid2/lexer"
 require_relative "liquid2/version"
 
 module Liquid2
-  class Error < StandardError; end
-  # Your code goes here...
+  def self.to_liquid_string(obj, auto_escape: false)
+    # TODO:
+    obj.to_s
+  end
 end
