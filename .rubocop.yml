@@ -13,7 +13,7 @@ Style/StringLiteralsInInterpolation:
   EnforcedStyle: double_quotes
 
 Layout/LineLength:
-  Max: 88
+  Max: 100
 
 Metrics/MethodLength:
   Max: 50

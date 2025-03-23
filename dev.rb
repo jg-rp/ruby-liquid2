@@ -2,7 +2,9 @@
 
 require "liquid2"
 
-tokens = Liquid2.tokenize("{% assign x = true %}{{ 'Hello ${you}!' }}")
+source = "{{ 'Hello\\n, world' }}"
+
+tokens = Liquid2.tokenize(source)
 tokens.each do |token|
   p token
 end

@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "set"
 require "strscan"
 require_relative "token"
 
@@ -31,7 +32,9 @@ module Liquid2
     /mx
 
     # Make sure shorter symbols appear after longer symbols that share a prefix.
-    RE_SYMBOL = /\?|\[|\]|\|{1,2}|\.{1,2}|\.|,|:|\(|\)"|'|<[=>]?|>=?|==?|!=?/
+    RE_PUNCTUATION = /\?|\[|\]|\|{1,2}|\.{1,2}|\.|,|:|\(|\)|<[=>]?|>=?|==?|!=?/
+    RE_QUOTES = /"|'/
+    S_QUOTES = Set["'", '"']
 
     attr_reader :tokens
 
@@ -65,11 +68,6 @@ module Liquid2
 
     def ignore
       @start = @scanner.charpos
-    end
-
-    def backup
-      # Assumes we're backing-up single byte characters.
-      @scanner.pos -= 1
     end
 
     def peek
@@ -107,16 +105,21 @@ module Liquid2
     # @return [Array<Symbol, String> | nil] An array with two items, token kind and
     # substring.
     def accept_expression_token
-      if (value = accept(RE_SYMBOL))
-        return [:token_symbol, value]
+      if (value = accept(RE_QUOTES))
+        return [value == "'" ? :token_single_quote : :token_double_quote, value]
+      end
+
+      # Must test for float before int
+      if (value = accept(RE_FLOAT))
+        return [:token_float, value]
       end
 
       if (value = accept(RE_INT))
         return [:token_int, value]
       end
 
-      if (value = accept(RE_FLOAT))
-        return [:token_float, value]
+      if (value = accept(RE_PUNCTUATION))
+        return [:token_symbol, value]
       end
 
       if (value = accept(RE_WORD))
@@ -207,7 +210,7 @@ module Liquid2
         end
       end
 
-      if (text = accept(/.+?(?=(\{\{|\{%|\{#+|$))/m))
+      if (text = accept(/.+?(?=(\{\{|\{%|\{#+|\Z))/m))
         emit(:token_other, text)
         return :lex_markup
       end
@@ -224,7 +227,7 @@ module Liquid2
         if (kind, value = accept_expression_token)
           unknown = false
           emit(kind, value)
-          scan_string(value) if ["'", '"'].include?(value)
+          scan_string(value) if S_QUOTES.member?(value)
         else
           accept_whitespace_control
           if accept(/%\}/)
@@ -254,7 +257,7 @@ module Liquid2
     end
 
     def lex_inside_inline_comment
-      if (comment_text = accept(/.+?(?=[+\-~]?%\}|$)/m))
+      if (comment_text = accept(/.+?(?=[+\-~]?%\}|\Z)/m))
         emit(:token_comment, comment_text)
       end
 
@@ -273,7 +276,7 @@ module Liquid2
       if accept(/%\}/)
         emit(:token_tag_end, "%}")
         # TODO: handle unexpected expression in endraw tag
-        if (raw_text = accept(/.+?(?=(\{%[+\-~]?\s*endraw\s*[+\-~]?%\}|$))/m))
+        if (raw_text = accept(/.+?(?=(\{%[+\-~]?\s*endraw\s*[+\-~]?%\}|\Z))/m))
           emit(:token_raw, raw_text)
         end
       end
@@ -291,7 +294,7 @@ module Liquid2
       if accept(/%\}/)
         emit(:token_tag_end, "%}")
         # TODO: handle unexpected expression in endcomment tag
-        if (comment_text = accept(/.+?(?=(\{%[+\-~]?\s*endcomment\s*[+\-~]?%\}|$))/m))
+        if (comment_text = accept(/.+?(?=(\{%[+\-~]?\s*endcomment\s*[+\-~]?%\}|\Z))/m))
           emit(:token_comment, comment_text)
         end
       end
@@ -316,13 +319,14 @@ module Liquid2
         if peek == "\\"
           # An escape sequence
           emit(:token_string, buffer.join) unless buffer.empty?
+          buffer.clear
           buffer << self.next
           buffer << self.next # Two-character escape
-          emit(:token_string_Escape, buffer.join)
+          emit(:token_string_escape, buffer.join)
           buffer.clear
         end
 
-        if @scanner.match?(/\$\{/)
+        if @scanner.match?("${")
           emit(:token_string, buffer.join) unless buffer.empty?
           buffer.clear
 
@@ -335,7 +339,7 @@ module Liquid2
             if (kind, value = accept_expression_token)
               unknown = false
               emit(kind, value)
-              scan_string(value) if ["'", '"'].include?(value)
+              scan_string(value) if S_QUOTES.member?(value)
             elsif accept("}")
               emit(:token_string_interpol_end, "}")
               break
