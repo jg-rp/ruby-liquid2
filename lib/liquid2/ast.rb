@@ -5,10 +5,8 @@ module Liquid2
   class Node
     attr_reader :tokens, :children, :blank
 
-    # @param tokens [Array<Token>]
-    # @param children [Array<Node>]
-    def initialize(tokens, children)
-      @tokens = tokens
+    # @param children [Array<Node | Token>]
+    def initialize(children)
       @children = children
       @blank = true
     end
@@ -21,11 +19,11 @@ module Liquid2
       raise "nodes must implement `render(context, buffer)`."
     end
 
-    def start_position = @tokens.first.start
+    def start = @children.first.start
 
-    def full_start_position = @tokens.first.full_start
+    def full_start = @tokens.first.full_start
 
-    def end_position = @tokens.last.end
+    def end = @tokens.last.end
 
     def text = @tokens.first.text + @tokens.to_enum.drop(1).map(&:full_text)
 
@@ -38,6 +36,8 @@ module Liquid2
 
   # The base class for all expressions.
   class Expression < Node
+    # TODO: raise if trying to render an expression
+    # TODO: or refactor so `render` is only present on X nodes
     def render(_context, _buffer) = 0
 
     # Evaluate this expression.

@@ -4,11 +4,10 @@ require_relative "../ast"
 
 module Liquid2
   class Other < Node
-    # @param tokens [Array<Token>]
-    # @param children [Array<Node>]
+    # @param children [Array<Node | Token>]
     # @param text [String]
-    def initialize(tokens, children, text)
-      super(tokens, children)
+    def initialize(children, text)
+      super(children)
       @text = text
       @blank = text.blank? || text.match?(/\A\s+\Z/)
     end

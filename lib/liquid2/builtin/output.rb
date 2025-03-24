@@ -7,11 +7,11 @@ module Liquid2
   class Output < Node
     attr_reader :expression
 
-    # @param tokens [Array<Token>]
-    # @param children [Array<Node>]
+    # @param children [Array<Node | Token>]
     # @param expression [Expression]
-    def initialize(tokens, children, expression)
-      super(tokens, children)
+    def initialize(children, expression)
+      # Whitespace control is guaranteed to be at children[1] and children[-2]
+      super(children)
       @expression = expression
       @blank = false
     end

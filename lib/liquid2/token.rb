@@ -46,6 +46,10 @@ module Liquid2
     def end
       full_start + @trivia.length + @text.length
     end
+
+    def to_h
+      { kind: self.class }
+    end
   end
 
   class MissingToken < Token
