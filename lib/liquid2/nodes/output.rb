@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "../ast"
+require_relative "../node"
 
 module Liquid2
   # The AST node representing output statements.

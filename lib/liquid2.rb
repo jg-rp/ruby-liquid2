@@ -8,4 +8,9 @@ module Liquid2
     # TODO:
     obj.to_s
   end
+
+  def self.to_liquid_int(obj, default: 0)
+    # TODO:
+    obj.to_i
+  end
 end

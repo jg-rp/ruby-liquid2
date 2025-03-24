@@ -11,14 +11,6 @@ module Liquid2
       @blank = true
     end
 
-    # Render this node to the output buffer.
-    # @param context [RenderContext]
-    # @param buffer [StringIO]
-    # @return [Integer] The number of bytes written to _buffer_.
-    def render(_context, _buffer)
-      raise "nodes must implement `render(context, buffer)`."
-    end
-
     def start = @children.first.start
 
     def full_start = @tokens.first.full_start
@@ -34,12 +26,19 @@ module Liquid2
     def to_h = { kind: self.class, children: @children.map(&:to_h) }
   end
 
+  # Base class for all tags.
+  class Tag < Node
+    # Render this node to the output buffer.
+    # @param context [RenderContext]
+    # @param buffer [StringIO]
+    # @return [Integer] The number of bytes written to _buffer_.
+    def render(_context, _buffer)
+      raise "nodes must implement `render(context, buffer)`."
+    end
+  end
+
   # The base class for all expressions.
   class Expression < Node
-    # TODO: raise if trying to render an expression
-    # TODO: or refactor so `render` is only present on X nodes
-    def render(_context, _buffer) = 0
-
     # Evaluate this expression.
     # @return [untyped] The result of evaluating this expression.
     def evaluate(_context)

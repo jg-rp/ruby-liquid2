@@ -5,6 +5,11 @@ require_relative "builtin/other"
 
 module Liquid2
   class Parser
+    # @param env [Environment]
+    def initialize(env)
+      @env = env
+    end
+
     # Parse Liquid template text into an AST.
     # @param source [String]
     # @return [Array<Node>]
@@ -20,7 +25,6 @@ module Liquid2
         when :token_output_start
           nodes << parse_output(stream)
         when :token_tag_start
-          # TODO: a tag is anything that responds to `parse(stream, parser)` and returns a Node
           nodes << parse_tag(stream)
         when :token_comment_start
           nodes << parse_comment(stream)
@@ -30,16 +34,6 @@ module Liquid2
           raise "unexpected token: #{token.inspect}"
         end
       end
-    end
-
-    # @param stream [TokenStream]
-    # @return [Node]
-    def parse_output(stream)
-      children = [stream.eat(:token_output_start), stream.eat_whitespace_control]
-      expr = parse_filtered_expression(stream)
-      # TODO: skip until terminate output
-      children << expr << stream.eat_whitespace_control << stream.eat(:token_output_end)
-      Output.new(children, expr)
     end
 
     # @param stream [TokenStream]
@@ -54,6 +48,30 @@ module Liquid2
       else
         expr
       end
+    end
+
+    protected
+
+    # @param stream [TokenStream]
+    # @return [Node]
+    def parse_output(stream)
+      children = [stream.eat(:token_output_start), stream.eat_whitespace_control]
+      expr = parse_filtered_expression(stream)
+      # TODO: skip until terminate output
+      children << expr << stream.eat_whitespace_control << stream.eat(:token_output_end)
+      Output.new(children, expr)
+    end
+
+    # @param stream [TokenStream]
+    # @return [Node]
+    def parse_tag(stream)
+      token = stream.peek # Whitespace control or tag name
+      token = stream.peek(2) if token.kind == :token_whitespace_control
+
+      # TODO: handle not a :token_tag_name
+      # TODO: handle unknown tag
+
+      @env.tags[token.text].parse(stream, self)
     end
   end
 end

@@ -25,8 +25,8 @@ module Liquid2
       end
     end
 
-    def peek
-      @tokens[@pos + 1] || @eof
+    def peek(offset = 1)
+      @tokens[@pos + offset] || @eof
     end
 
     # Consume the next token if its kind matches _kind_.
