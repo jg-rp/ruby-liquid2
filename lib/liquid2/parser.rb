@@ -50,7 +50,36 @@ module Liquid2
       end
     end
 
+    def parse_primary(stream, precedence: Precedence::LOWEST)
+    end
+
     protected
+
+    class Precedence
+      LOWEST = 1
+      LOGICAL_RIGHT = 2
+      LOGICAL_OR = 3
+      LOGICAL_AND = 4
+      RELATIONAL = 5
+      MEMBERSHIP = 6
+      PREFIX = 7
+    end
+
+    # TODO: strings and :symbol or dedicated symbols?
+    PRECEDENCES = {
+      "and" => Precedence::LOGICAL_AND,
+      "or" => Precedence::LOGICAL_OR,
+      "not" => Precedence::PREFIX,
+      ")" => Precedence::LOWEST,
+      "contains" => Precedence::MEMBERSHIP,
+      "==" => Precedence::RELATIONAL,
+      "<" => Precedence::RELATIONAL,
+      ">" => Precedence::RELATIONAL,
+      "!=" => Precedence::RELATIONAL,
+      "<>" => Precedence::RELATIONAL,
+      "<=" => Precedence::RELATIONAL,
+      ">=" => Precedence::RELATIONAL
+    }.freeze
 
     # @param stream [TokenStream]
     # @return [Node]
