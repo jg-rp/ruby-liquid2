@@ -28,8 +28,8 @@ module Liquid2
       default
     end
 
-    def push(namespace)
-      @hashes << namespace
+    def push(hash)
+      @hashes << hash
     end
 
     def pop

@@ -32,9 +32,47 @@ module Liquid2
     /mx
 
     # Make sure shorter symbols appear after longer symbols that share a prefix.
-    RE_PUNCTUATION = /\?|\[|\]|\|{1,2}|\.{1,2}|\.|,|:|\(|\)|<[=>]?|>=?|==?|!=?/
+    RE_PUNCTUATION = /\?|\[|\]|\|{1,2}|\.{1,2}|,|:|\(|\)|<[=>]?|>=?|==?|!=?/
 
     S_QUOTES = Set["'", '"']
+
+    # Keywords and symbols that get their own token kind.
+    TOKEN_MAP = {
+      "true" => :token_true,
+      "false" => :token_false,
+      "nil" => :token_nil,
+      "null" => :token_nil,
+      "and" => :token_and,
+      "or" => :token_or,
+      "not" => :token_not,
+      "in" => :token_in,
+      "contains" => :token_contains,
+      "if" => :token_if,
+      "else" => :token_else,
+      "with" => :token_with,
+      "required" => :token_required,
+      "as" => :token_as,
+      "for" => :token_for,
+      "?" => :token_question,
+      "[" => :token_lbracket,
+      "]" => :token_rbracket,
+      "|" => :token_pipe,
+      "||" => :token_double_pipe,
+      "." => :token_dot,
+      ".." => :token_double_dot,
+      "," => :token_comma,
+      ":" => :token_colon,
+      "(" => :token_lparen,
+      ")" => :token_rparen,
+      "=" => :token_assign,
+      "<" => :token_lt,
+      "<=" => :token_le,
+      "<>" => :token_lg,
+      ">" => :token_gt,
+      ">=" => :token_ge,
+      "==" => :token_eq,
+      "!=" => :token_ne
+    }.freeze
 
     attr_reader :tokens
 
@@ -118,11 +156,11 @@ module Liquid2
       end
 
       if (value = accept(RE_PUNCTUATION))
-        return [:token_symbol, value]
+        return [TOKEN_MAP.fetch(value, :token_symbol), value]
       end
 
       if (value = accept(RE_WORD))
-        [:token_word, value]
+        [TOKEN_MAP.fetch(value, :token_word), value]
       end
     end
 

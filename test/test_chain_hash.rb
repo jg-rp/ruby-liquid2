@@ -32,4 +32,18 @@ class TestChainHash < Minitest::Test
 
     assert_equal(42, scope.fetch(:bar, default: 42))
   end
+
+  def test_push_scope
+    scope = Liquid2::ReadOnlyChainHash.new({ foo: 1 }, { foo: 2 })
+    scope.push({ foo: 99 })
+
+    assert_equal(99, scope.fetch(:foo))
+  end
+
+  def test_poo_scope
+    scope = Liquid2::ReadOnlyChainHash.new({ foo: 1 }, { foo: 2 })
+    scope.pop
+
+    assert_equal(1, scope.fetch(:foo))
+  end
 end

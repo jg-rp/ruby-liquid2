@@ -46,9 +46,9 @@ TEST_CASES = [
     want: [
       Token.new(:token_output_start, 0, "", "{{"),
       Token.new(:token_int, 3, " ", "42"),
-      Token.new(:token_symbol, 6, " ", "|"),
+      Token.new(:token_pipe, 6, " ", "|"),
       Token.new(:token_word, 8, " ", "plus"),
-      Token.new(:token_symbol, 12, "", ":"),
+      Token.new(:token_colon, 12, "", ":"),
       Token.new(:token_int, 14, " ", "3"),
       Token.new(:token_output_end, 16, " ", "}}")
     ]
@@ -59,9 +59,9 @@ TEST_CASES = [
     want: [
       Token.new(:token_output_start, 0, "", "{{"),
       Token.new(:token_float, 3, " ", "42.2"),
-      Token.new(:token_symbol, 8, " ", "|"),
+      Token.new(:token_pipe, 8, " ", "|"),
       Token.new(:token_word, 10, " ", "minus"),
-      Token.new(:token_symbol, 15, "", ":"),
+      Token.new(:token_colon, 15, "", ":"),
       Token.new(:token_float, 17, " ", "3.0"),
       Token.new(:token_output_end, 21, " ", "}}")
     ]
@@ -71,14 +71,14 @@ TEST_CASES = [
     source: "{{ (1..5) | join: ', ' }}",
     want: [
       Token.new(:token_output_start, 0, "", "{{"),
-      Token.new(:token_symbol, 3, " ", "("),
+      Token.new(:token_lparen, 3, " ", "("),
       Token.new(:token_int, 4, "", "1"),
-      Token.new(:token_symbol, 5, "", ".."),
+      Token.new(:token_double_dot, 5, "", ".."),
       Token.new(:token_int, 7, "", "5"),
-      Token.new(:token_symbol, 8, "", ")"),
-      Token.new(:token_symbol, 10, " ", "|"),
+      Token.new(:token_rparen, 8, "", ")"),
+      Token.new(:token_pipe, 10, " ", "|"),
       Token.new(:token_word, 12, " ", "join"),
-      Token.new(:token_symbol, 16, "", ":"),
+      Token.new(:token_colon, 16, "", ":"),
       Token.new(:token_single_quote, 18, " ", "'"),
       Token.new(:token_string, 19, "", ", "),
       Token.new(:token_single_quote, 21, "", "'"),

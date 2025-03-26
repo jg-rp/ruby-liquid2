@@ -43,7 +43,7 @@ module Liquid2
       filters = parse_filters(stream)
       expr = FilteredExpression.new([left, *filters], left, filters)
 
-      if stream.current.kind == :token_word && stream.current.value == "if"
+      if stream.current.kind == :token_if
         parse_ternary_expression(stream, expr)
       else
         expr
@@ -65,20 +65,19 @@ module Liquid2
       PREFIX = 7
     end
 
-    # TODO: strings and :symbol or dedicated symbols?
     PRECEDENCES = {
-      "and" => Precedence::LOGICAL_AND,
-      "or" => Precedence::LOGICAL_OR,
-      "not" => Precedence::PREFIX,
-      ")" => Precedence::LOWEST,
-      "contains" => Precedence::MEMBERSHIP,
-      "==" => Precedence::RELATIONAL,
-      "<" => Precedence::RELATIONAL,
-      ">" => Precedence::RELATIONAL,
-      "!=" => Precedence::RELATIONAL,
-      "<>" => Precedence::RELATIONAL,
-      "<=" => Precedence::RELATIONAL,
-      ">=" => Precedence::RELATIONAL
+      token_and: Precedence::LOGICAL_AND,
+      token_or: Precedence::LOGICAL_OR,
+      token_not: Precedence::PREFIX,
+      token_rparen: Precedence::LOWEST,
+      token_contains: Precedence::MEMBERSHIP,
+      token_eq: Precedence::RELATIONAL,
+      token_lt: Precedence::RELATIONAL,
+      token_gt: Precedence::RELATIONAL,
+      token_ne: Precedence::RELATIONAL,
+      token_lg: Precedence::RELATIONAL,
+      token_le: Precedence::RELATIONAL,
+      token_ge: Precedence::RELATIONAL
     }.freeze
 
     # @param stream [TokenStream]
