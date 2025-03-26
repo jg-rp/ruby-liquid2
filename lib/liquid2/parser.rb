@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
+require "set"
 require_relative "token_stream"
-require_relative "builtin/other"
+require_relative "nodes/other"
+require_relative "nodes/expressions/literals"
+require_relative "nodes/expressions/string"
 
 module Liquid2
   class Parser
@@ -50,7 +53,47 @@ module Liquid2
       end
     end
 
+    # Parse a _primary_ expression from tokens in _stream_.
+    # A primary expression is a literal, a path (to a variable), or a logical
+    # expression composed of other primary expressions.
+    # @param stream [TokenStream]
+    # @return [Node]
     def parse_primary(stream, precedence: Precedence::LOWEST)
+      left = case stream.current.kind
+             when :token_true
+               TrueLiteral.new(stream.next)
+             when :token_false
+               FalseLiteral.new(stream.next)
+             when :token_nil
+               NilLiteral.new(stream.next)
+             when :token_int
+               IntegerLiteral.new(stream.next)
+             when :token_float
+               FloatLiteral.new(stream.next)
+             when :token_single_quote, :token_double_quote
+               parse_string_literal(stream)
+             when :token_word, :token_lbracket
+               parse_path(stream)
+             when :token_lparen
+               stream.peek(2).kind == :token_double_dot ? parse_range(stream) : missing(stream)
+             when :token_not
+               parse_prefix_expression(stream)
+             else
+               # TODO: or missing
+               raise "expected primitive expression, found #{token.kind}"
+             end
+
+      loop do
+        token = stream.current
+        break if token.kind == :token_eof || PRECEDENCES.fetch(token.kind,
+                                                               Precedence::LOWEST) < precedence
+
+        return left unless BINARY_OPERATORS.member?(token.kind)
+
+        left = parse_infix_expression(stream, left)
+      end
+
+      left
     end
 
     protected
@@ -80,6 +123,20 @@ module Liquid2
       token_ge: Precedence::RELATIONAL
     }.freeze
 
+    BINARY_OPERATORS = Set[
+      :token_eq,
+      :token_lt,
+      :token_gt,
+      :token_lg,
+      :token_ne,
+      :token_le,
+      :token_ge,
+      :token_contains,
+      :token_in,
+      :token_and,
+      :token_or
+    ]
+
     # @param stream [TokenStream]
     # @return [Node]
     def parse_output(stream)
@@ -100,6 +157,38 @@ module Liquid2
       # TODO: handle unknown tag
 
       @env.tags[token.text].parse(stream, self)
+    end
+
+    # @param stream [TokenStream]
+    # @return [Node]
+    def parse_string_literal(stream)
+      quote_token = stream.next
+      term = quote_token.kind # single or double
+
+      children = [quote_token]
+      segments = []
+
+      loop do
+        case stream.current.kind
+        when term
+          children << stream.next
+          return TemplateString.new(children, segments)
+        when :token_string, :token_string_escape
+          token = stream.next
+          children << token
+          segments << StringSegment.new(token)
+        when :token_string_interpol
+          token = stream.next
+          children << token
+          node = parse_filtered_expression(stream)
+          segments << node
+          children << node << stream.eat(:token_string_interpol_end)
+        else
+          # unclosed string literal
+          children << stream.eat(term)
+          return TemplateString.new(children, segments)
+        end
+      end
     end
   end
 end

@@ -16,6 +16,17 @@ module Liquid2
     def evaluate(_context) = @value
   end
 
+  # A literal part of a template string.
+  class StringSegment < Expression
+    # @param token [Token]
+    def initialize(token)
+      super([token])
+      @value = token.value
+    end
+
+    def evaluate(_context) = @value
+  end
+
   # Quoted string with interpolated expressions.
   class TemplateString < Expression
     # @param children [Array<Token, Expression>]
