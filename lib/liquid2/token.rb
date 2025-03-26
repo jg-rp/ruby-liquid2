@@ -47,8 +47,8 @@ module Liquid2
       full_start + @trivia.length + @text.length
     end
 
-    def to_h
-      { kind: self.class }
+    def dump
+      @kind
     end
   end
 

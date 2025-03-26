@@ -3,7 +3,7 @@
 module Liquid2
   # The base class for all nodes.
   class Node
-    attr_reader :tokens, :children, :blank
+    attr_reader :children, :blank
 
     # @param children [Array<Node | Token>]
     def initialize(children)
@@ -13,17 +13,20 @@ module Liquid2
 
     def start = @children.first.start
 
-    def full_start = @tokens.first.full_start
+    def full_start = @children.first.full_start
 
-    def end = @tokens.last.end
+    def end = @children.last.end
 
-    def text = @tokens.first.text + @tokens.to_enum.drop(1).map(&:full_text)
+    def text = @children.first.text + @children.to_enum.drop(1).map(&:full_text)
 
-    def full_text = @tokens.map(&:full_text).join
+    def full_text = @children.map(&:full_text).join
 
     alias to_s full_text
 
-    def to_h = { kind: self.class, children: @children.map(&:to_h) }
+    def dump = { kind: self.class, children: @children.map(&:dump) }
+  end
+
+  class RootNode < Node
   end
 
   # Base class for all tags.

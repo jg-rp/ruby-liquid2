@@ -48,7 +48,7 @@ module Liquid2
     # @return [Token] The next token or an empty _default whitespace control_ token.
     def eat_whitespace_control
       token = current
-      if token.kind == kind
+      if token.kind == :token_whitespace_control
         @pos += 1
         token
       else

@@ -2,9 +2,12 @@
 
 require "liquid2"
 
-source = "{{ 'Hello\\n, world' }}"
+source = "Hello, {{ you | upcase }}!"
 
-tokens = Liquid2.tokenize(source)
-tokens.each do |token|
-  p token
-end
+env = Liquid2::Environment.new
+parser = Liquid2::Parser.new(env)
+root = parser.parse(source)
+
+pp root.dump
+
+puts root

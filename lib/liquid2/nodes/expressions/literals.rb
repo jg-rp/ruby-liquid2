@@ -31,7 +31,7 @@ module Liquid2
     # @param token [Token]
     def initialize(token)
       super
-      @value = token.value.to_i
+      @value = token.text.to_i
     end
 
     def evaluate(_context) = @value
@@ -42,7 +42,7 @@ module Liquid2
     # @param token [Token]
     def initialize(token)
       super
-      @value = token.value.to_f
+      @value = token.text.to_f
     end
 
     def evaluate(_context) = @value

@@ -32,7 +32,7 @@ module Liquid2
     /mx
 
     # Make sure shorter symbols appear after longer symbols that share a prefix.
-    RE_PUNCTUATION = /\?|\[|\]|\|{1,2}|\.{1,2}|,|:|\(|\)|<[=>]?|>=?|==?|!=?/
+    RE_PUNCTUATION = /\?|\[|\]|\|{1,2}|\.{1,2}|,|:|\(|\)|<[=>]?|>=?|=[=>]?|!=?/
 
     S_QUOTES = Set["'", '"']
 
@@ -71,7 +71,8 @@ module Liquid2
       ">" => :token_gt,
       ">=" => :token_ge,
       "==" => :token_eq,
-      "!=" => :token_ne
+      "!=" => :token_ne,
+      "=>" => :token_arrow
     }.freeze
 
     attr_reader :tokens

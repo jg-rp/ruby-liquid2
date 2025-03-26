@@ -9,7 +9,7 @@ module Liquid2
     def initialize(children, text)
       super(children)
       @text = text
-      @blank = text.blank? || text.match?(/\A\s+\Z/)
+      @blank = text.match?(/\A\s+\Z/)
     end
 
     def render(_context, buffer)
