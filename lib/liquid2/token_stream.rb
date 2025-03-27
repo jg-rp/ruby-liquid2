@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative "node"
 require_relative "token"
 
 module Liquid2
@@ -38,7 +39,7 @@ module Liquid2
         @pos += 1
         token
       else
-        raise "expected #{kind}, found #{token.kind}" if @strict
+        raise "expected #{kind}, found #{token.kind}" if @mode == :strict
 
         MissingToken.new(:token_missing, token.start, "", "", kind)
       end
@@ -54,6 +55,28 @@ module Liquid2
       else
         Token.new(:token_default_whitespace_control, token.start, "", "")
       end
+    end
+
+    # @param kind [Set<Symbol>] a set of token kinds that cause us to stop skipping.
+    # @return [Array<Token> | nil] the skipped tokens or nil if no tokens were skipped.
+    def skip_until(kinds, max: 10)
+      tokens = []
+      loop do
+        token = current
+        if kinds.member?(token.kind) || tokens.length >= max || token.kind == :token_eof
+          return tokens.empty? ? nil : tokens
+        end
+
+        tokens << self.next
+      end
+    end
+
+    # @param reason [String] a string describing the expected token.
+    # @return [Node] a new Missing node.
+    def missing(reason)
+      raise "expected #{reason}, found #{current.kind}" if @mode == :strict
+
+      Missing.new([Token.new(:token_missing, current.start, "", "")])
     end
   end
 end

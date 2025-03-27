@@ -21,7 +21,7 @@ module Liquid2
     # @param token [Token]
     def initialize(token)
       super([token])
-      @value = token.value
+      @value = token.text
     end
 
     def evaluate(_context) = @value

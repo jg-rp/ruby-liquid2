@@ -16,3 +16,5 @@ gem "steep", "~> 1.10"
 gem "rubocop-minitest", "~> 0.37.1"
 
 gem "rubocop-rake", "~> 0.7.1"
+
+gem "minitest-fail-fast", "~> 0.1.0"

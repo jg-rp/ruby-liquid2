@@ -26,8 +26,9 @@ module Liquid2
     def dump = { kind: self.class, children: @children.map(&:dump) }
   end
 
-  class RootNode < Node
-  end
+  class RootNode < Node; end
+  class Skipped < Node; end
+  class Missing < Node; end
 
   # Base class for all tags.
   class Tag < Node

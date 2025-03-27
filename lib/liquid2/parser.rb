@@ -3,11 +3,13 @@
 require "set"
 require_relative "node"
 require_relative "token_stream"
+require_relative "nodes/comment"
 require_relative "nodes/other"
 require_relative "nodes/output"
 require_relative "nodes/expressions/arguments"
 require_relative "nodes/expressions/boolean"
 require_relative "nodes/expressions/filtered"
+require_relative "nodes/expressions/identifier"
 require_relative "nodes/expressions/lambda"
 require_relative "nodes/expressions/literals"
 require_relative "nodes/expressions/logical"
@@ -28,7 +30,7 @@ module Liquid2
     # @return [RootNode]
     def parse(source)
       nodes = []
-      stream = TokenStream.new(Liquid2.tokenize(source))
+      stream = TokenStream.new(Liquid2.tokenize(source), mode: @env.mode)
 
       loop do
         token = stream.current
@@ -42,6 +44,7 @@ module Liquid2
         when :token_comment_start
           nodes << parse_comment(stream)
         when :token_eof
+          nodes << stream.current
           return RootNode.new(nodes)
         else
           raise "unexpected token: #{token.inspect}"
@@ -89,8 +92,7 @@ module Liquid2
              when :token_not
                parse_prefix_expression(stream)
              else
-               # TODO: or missing
-               raise "expected primitive expression, found #{token.kind}"
+               stream.missing("expression")
              end
 
       loop do
@@ -147,6 +149,12 @@ module Liquid2
       :token_or
     ]
 
+    TERMINATE_OUTPUT = Set[
+      :token_whitespace_control,
+      :token_output_end,
+      :token_other
+    ]
+
     TERMINATE_FILTER = Set[
       :token_whitespace_control,
       :token_output_end,
@@ -163,6 +171,13 @@ module Liquid2
       :token_eof,
       :token_other,
       :token_rparen
+    ]
+
+    TERMINATE_LAMBDA_PARAM = Set[
+      :token_rparen,
+      :token_word,
+      :token_comma,
+      :token_arrow
     ]
 
     KEYWORD_ARGUMENT_DELIMITERS = Set[
@@ -187,8 +202,13 @@ module Liquid2
     def parse_output(stream)
       children = [stream.eat(:token_output_start), stream.eat_whitespace_control]
       expr = parse_filtered_expression(stream)
-      # TODO: skip until terminate output
-      children << expr << stream.eat_whitespace_control << stream.eat(:token_output_end)
+      children << expr
+
+      if (skipped = stream.skip_until(TERMINATE_OUTPUT))
+        children << Skipped.new(skipped)
+      end
+
+      children << stream.eat_whitespace_control << stream.eat(:token_output_end)
       Output.new(children, expr)
     end
 
@@ -202,6 +222,15 @@ module Liquid2
       # TODO: handle unknown tag
 
       @env.tags[token.text].parse(stream, self)
+    end
+
+    # @param stream [TokenStream]
+    # @return [Node]
+    def parse_comment(stream)
+      children = [stream.eat(:token_comment_start), stream.eat_whitespace_control]
+      text = stream.eat(:token_comment)
+      children << text << stream.eat_whitespace_control << stream.eat(:token_comment_end)
+      Comment.new(children, text)
     end
 
     # @param stream [TokenStream]
@@ -300,17 +329,25 @@ module Liquid2
       children = [stream.eat(:token_lparen)]
       expr = parse_primary(stream)
 
-      token = stream.next
+      token = stream.current
 
       if token.kind == :token_double_dot
+        stream.next
         stop = parse_primary(stream)
         children << expr << token << stop << stream.eat(:token_rparen)
-        return RangeExpression.new(children, start, stop)
+        return RangeExpression.new(children, expr, stop)
       end
 
+      # An arrow function, but we've already consumed lparen and the first parameter.
       if token.kind == :token_comma
-        # TODO: An arrow function
-        raise "not implemented"
+        return parse_partial_arrow_function(stream, children,
+                                            expr)
+      end
+
+      # An arrow function with a single parameter surrounded by parens.
+      if token.kind == :token_rparen && stream.peek.kind == :token_arrow
+        return parse_partial_arrow_function(stream, children,
+                                            expr)
       end
 
       loop do
@@ -342,7 +379,7 @@ module Liquid2
     def parse_infix_expression(stream, left)
       op_token = stream.next
       precedence = PRECEDENCES.fetch(op_token.kind, Precedence::LOWEST)
-      right = parse_primary(stream, precedence)
+      right = parse_primary(stream, precedence: precedence)
       children = [left, op_token, right]
 
       case op_token.kind
@@ -416,7 +453,7 @@ module Liquid2
           children << arg
           args << arg
         when :token_lparen
-          # A a grouped expression or range
+          # A a grouped expression or range or arrow function
           node = parse_primary(stream)
           arg = PositionalArgument.new([node], node)
           children << arg
@@ -439,6 +476,84 @@ module Liquid2
 
         children << stream.eat(:token_comma)
       end
+    end
+
+    # @param stream [TokenStream]
+    # @return [Node]
+    def parse_arrow_function(stream)
+      children = []
+      params = []
+
+      case stream.current.kind
+      when :token_word
+        # A single parameter without parens
+        token = stream.next
+        param = Identifier.new([token], token)
+        children << param
+        params << param
+      when :token_lparen
+        # One or move parameters separated by commas and surrounded by parentheses.
+        children << stream.next
+        while stream.current.kind != :token_rparen
+          token = stream.eat(:token_word)
+          param = Identifier.new([token], token)
+          children << param
+          params << param
+
+          children << stream.next if stream.current.kind == :token_comma
+
+          unless TERMINATE_LAMBDA_PARAM.member?(stream.current.kind)
+            children << Skipped.new([stream.next])
+          end
+        end
+
+        children << stream.eat(:token_rparen)
+      end
+
+      children << stream.eat(:token_arrow)
+      expr = parse_primary(stream)
+      children << expr
+      Lambda.new(children, params, expr)
+    end
+
+    # @param stream [TokenStream]
+    # @param children [Array<Token | Node>] Child tokens already consumed by the caller.
+    # @param expr [Expression] The first parameter already passed by the caller.
+    # @return [Expression]
+    def parse_partial_arrow_function(stream, children, expr)
+      params = []
+
+      # expr should be a single segment path, we need an Identifier.
+      param = Identifier.from(expr)
+      params << param
+      children << param
+      children << stream.next if stream.current.kind == :token_comma
+
+      while stream.current.kind != :token_rparen
+        token = stream.eat(:token_word)
+        param = Identifier.new([token], token)
+        children << param
+        params << param
+
+        children << stream.next if stream.current.kind == :token_comma
+
+        unless TERMINATE_LAMBDA_PARAM.member?(stream.current.kind)
+          children << Skipped.new([stream.next])
+          break
+        end
+      end
+
+      children << stream.eat(:token_rparen)
+      children << stream.eat(:token_arrow)
+      expr = parse_primary(stream)
+      children << expr
+      Lambda.new(children, params, expr)
+    end
+
+    # @param stream [TokenStream]
+    # @param left [Expression]
+    # @return [Node]
+    def parse_ternary_expression(stream, left)
     end
   end
 end

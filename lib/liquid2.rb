@@ -7,6 +7,8 @@ require_relative "liquid2/version"
 require_relative "liquid2/utils/chain_hash"
 
 module Liquid2
+  DEFAULT_ENVIRONMENT = Environment.new
+
   def self.to_liquid_string(obj, auto_escape: false)
     # TODO:
     obj.to_s

@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
+require "json"
 require "liquid2"
 
-source = "Hello, {{ you | upcase }}!"
+source = "{{ foo | map: (i, j) => i.foo.bar }}"
 
 env = Liquid2::Environment.new
-parser = Liquid2::Parser.new(env)
-root = parser.parse(source)
+template = env.parse(source)
 
-pp root.dump
+puts JSON.pretty_generate(template.dump)
 
-puts root
+puts template
