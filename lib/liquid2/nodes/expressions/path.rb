@@ -6,6 +6,8 @@ module Liquid2
   # A path to some variable data.
   # If the path has just one segment, it is often just called a "variable".
   class Path < Expression
+    attr_reader :segments
+
     # @param segments [Array<PathSegment>]
     def initialize(segments)
       super
@@ -15,6 +17,8 @@ module Liquid2
 
   # Paths are composed of segments..
   class PathSegment < Expression
+    attr_reader :selector
+
     # @param children [Array<Node, Token>]
     # @param selector [Node, Token]
     def initialize(children, selector)

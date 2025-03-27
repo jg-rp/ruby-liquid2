@@ -108,6 +108,10 @@ module Liquid2
       left
     end
 
+    def parse_identifier(stream, trailing_question: true)
+      Identifier.from(parse_primary(stream), trailing_question: trailing_question)
+    end
+
     protected
 
     class Precedence
@@ -218,10 +222,13 @@ module Liquid2
       token = stream.peek # Whitespace control or tag name
       token = stream.peek(2) if token.kind == :token_whitespace_control
 
-      # TODO: handle not a :token_tag_name
-      # TODO: handle unknown tag
+      raise "missing tag name" unless token.kind == :token_tag_name
 
-      @env.tags[token.text].parse(stream, self)
+      if (tag = @env.tags[token.text])
+        tag.parse(stream, self)
+      else
+        raise "unknown tag #{token.text}"
+      end
     end
 
     # @param stream [TokenStream]
@@ -355,7 +362,7 @@ module Liquid2
 
         unless BINARY_OPERATORS.member?(token.kind)
           # TODO: or missing
-          raise "expected an infix expression, found #{token.kind}"
+          raise "expected an infix operator, found #{token.kind}"
         end
 
         expr = parse_infix_expression(stream, expr)
@@ -554,6 +561,31 @@ module Liquid2
     # @param left [Expression]
     # @return [Node]
     def parse_ternary_expression(stream, left)
+      children = [left, stream.eat(:token_if)]
+      condition = BooleanExpression.new(parse_primary(stream))
+      children << condition
+
+      alternative = nil
+      filters = []
+      tail_filters = []
+
+      if stream.current.kind == :token_else
+        children << stream.next
+        alternative = parse_primary(stream)
+        children << alternative
+
+        if stream.current.kind == :token_pipe
+          filters = parse_filters(stream)
+          children.push(*filters)
+        end
+      end
+
+      if stream.current.kind == :token_double_pipe
+        tail_filters = parse_filters(stream)
+        children.push(*tail_filters)
+      end
+
+      TernaryExpression.new(children, left, condition, alternative, filters, tail_filters)
     end
   end
 end

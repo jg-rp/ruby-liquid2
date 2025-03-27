@@ -2,154 +2,6 @@
 
 require "test_helper"
 
-TEST_CASES = [
-  {
-    name: "empty",
-    source: ""
-  },
-  {
-    name: "no markup",
-    source: "Hello, World!"
-  },
-  {
-    name: "just whitespace",
-    source: " \n "
-  },
-  {
-    name: "just output",
-    source: "{{ hello }}"
-  },
-  {
-    name: "hello liquid",
-    source: "Hello, {{ you }}!"
-  },
-  {
-    name: "dotted path",
-    source: "Hello, {{ foo.bar }}!"
-  },
-  {
-    name: "output, empty",
-    source: "Hello, {{  }}!"
-  },
-  {
-    name: "output, not closed",
-    source: "Hello, {{ foo"
-  },
-  {
-    name: "output, not closed, followed by other",
-    source: "Hello, {{ foo <br>"
-  },
-  {
-    name: "output, unexpected, not closed",
-    source: "Hello, {{ !"
-  },
-  {
-    name: "output, closed with tag end",
-    source: "Hello, {{ foo %}"
-  },
-  {
-    name: "output, literal true",
-    source: "Hello, {{ true }}!"
-  },
-  {
-    name: "output, keyword dot path",
-    source: "Hello, {{ true.foo }}!"
-  },
-  {
-    name: "output, literal string",
-    source: "Hello, {{ 'you' }}!"
-  },
-  {
-    name: "output, template string",
-    source: "{{ 'Hello, ${you}!' }}!"
-  },
-  {
-    name: "output, range",
-    source: "Hello {{ (1..3) }}!"
-  },
-  {
-    name: "output, filter",
-    source: "Hello, {{ you | upcase }}!"
-  },
-  {
-    name: "output, two filters",
-    source: "Hello, {{ you | upcase | downcase }}!"
-  },
-  {
-    name: "output, missing filter name",
-    source: "Hello, {{ you | }}!"
-  },
-  {
-    name: "output, missing filter name, unknown token",
-    source: "Hello, {{ you | * }}!"
-  },
-  {
-    name: "output, filter, positional argument",
-    source: "Hello, {{ you | default: 'world' }}!"
-  },
-  {
-    name: "output, filter, positional argument, missing colon",
-    source: "Hello, {{ you | default 'world' }}!"
-  },
-  {
-    name: "output, filter, positional and keyword argument",
-    source: "Hello, {{ you | default: 'world', allow_false: true }}!"
-  },
-  {
-    name:
-      "output, filter, positional and keyword argument, missing comma",
-    source: "Hello, {{ you | default: 'world' allow_false: true }}!"
-  },
-  {
-    name: "output, filter, keyword argument, equals",
-    source: "Hello, {{ you | default: 'world', allow_false = true }}!"
-  },
-  {
-    name: "output, filter, lambda expression",
-    source: "{{ foo | map: i => i.foo.bar }}"
-  },
-  {
-    name: "output, filter, lambda expression with logical and",
-    source: "{{ foo | where: i => i.foo and x.bar }}"
-  },
-  {
-    name: "output, filter, lambda expression, two parameters",
-    source: "{{ foo | map: (i, j) => i.foo.bar }}"
-  },
-  {
-    name: "output, ternary",
-    source: "{{ foo if bar else baz }}"
-  },
-  {
-    name: "output, ternary with logical and",
-    source: "{{ foo if bar and x == 42 else baz }}"
-  },
-  {
-    name: "output, ternary with filters",
-    source: "{{ foo | upcase if bar else baz || split: ',' }}"
-  },
-  {
-    name: "comment",
-    source: "{# some comment #}"
-  },
-  {
-    name: "comment, balanced hashes",
-    source: "{## some #} comment ##}"
-  },
-  {
-    name: "comment, output delimiters",
-    source: "{# some {{ comment }} #}"
-  },
-  {
-    name: "comment, tag delimiters",
-    source: "{# some {% comment %} #}"
-  },
-  {
-    name: "assign",
-    source: "{% assign x = y %}"
-  }
-].freeze
-
 # Generate leaf nodes from an AST starting at _node_.
 def leaves(node)
   Enumerator.new do |yielder|
@@ -167,10 +19,156 @@ def leaves(node)
   end
 end
 
-class TestLexerTokens < Minitest::Spec
+class TestParser < Minitest::Spec
   make_my_diffs_pretty!
-  # TODO:
-  i_suck_and_my_tests_are_order_dependent!
+
+  TEST_CASES = [
+    {
+      name: "empty",
+      source: ""
+    },
+    {
+      name: "no markup",
+      source: "Hello, World!"
+    },
+    {
+      name: "just whitespace",
+      source: " \n "
+    },
+    {
+      name: "just output",
+      source: "{{ hello }}"
+    },
+    {
+      name: "hello liquid",
+      source: "Hello, {{ you }}!"
+    },
+    {
+      name: "dotted path",
+      source: "Hello, {{ foo.bar }}!"
+    },
+    {
+      name: "output, empty",
+      source: "Hello, {{  }}!"
+    },
+    {
+      name: "output, not closed",
+      source: "Hello, {{ foo"
+    },
+    {
+      name: "output, not closed, followed by other",
+      source: "Hello, {{ foo <br>"
+    },
+    {
+      name: "output, unexpected, not closed",
+      source: "Hello, {{ !"
+    },
+    {
+      name: "output, closed with tag end",
+      source: "Hello, {{ foo %}"
+    },
+    {
+      name: "output, literal true",
+      source: "Hello, {{ true }}!"
+    },
+    {
+      name: "output, keyword dot path",
+      source: "Hello, {{ true.foo }}!"
+    },
+    {
+      name: "output, literal string",
+      source: "Hello, {{ 'you' }}!"
+    },
+    {
+      name: "output, template string",
+      source: "{{ 'Hello, ${you}!' }}!"
+    },
+    {
+      name: "output, range",
+      source: "Hello {{ (1..3) }}!"
+    },
+    {
+      name: "output, filter",
+      source: "Hello, {{ you | upcase }}!"
+    },
+    {
+      name: "output, two filters",
+      source: "Hello, {{ you | upcase | downcase }}!"
+    },
+    {
+      name: "output, missing filter name",
+      source: "Hello, {{ you | }}!"
+    },
+    {
+      name: "output, missing filter name, unknown token",
+      source: "Hello, {{ you | * }}!"
+    },
+    {
+      name: "output, filter, positional argument",
+      source: "Hello, {{ you | default: 'world' }}!"
+    },
+    {
+      name: "output, filter, positional argument, missing colon",
+      source: "Hello, {{ you | default 'world' }}!"
+    },
+    {
+      name: "output, filter, positional and keyword argument",
+      source: "Hello, {{ you | default: 'world', allow_false: true }}!"
+    },
+    {
+      name:
+        "output, filter, positional and keyword argument, missing comma",
+      source: "Hello, {{ you | default: 'world' allow_false: true }}!"
+    },
+    {
+      name: "output, filter, keyword argument, equals",
+      source: "Hello, {{ you | default: 'world', allow_false = true }}!"
+    },
+    {
+      name: "output, filter, lambda expression",
+      source: "{{ foo | map: i => i.foo.bar }}"
+    },
+    {
+      name: "output, filter, lambda expression with logical and",
+      source: "{{ foo | where: i => i.foo and x.bar }}"
+    },
+    {
+      name: "output, filter, lambda expression, two parameters",
+      source: "{{ foo | map: (i, j) => i.foo.bar }}"
+    },
+    {
+      name: "output, ternary",
+      source: "{{ foo if bar else baz }}"
+    },
+    {
+      name: "output, ternary with logical and",
+      source: "{{ foo if bar and x == 42 else baz }}"
+    },
+    {
+      name: "output, ternary with filters",
+      source: "{{ foo | upcase if bar else baz || split: ',' }}"
+    },
+    {
+      name: "comment",
+      source: "{# some comment #}"
+    },
+    {
+      name: "comment, balanced hashes",
+      source: "{## some #} comment ##}"
+    },
+    {
+      name: "comment, output delimiters",
+      source: "{# some {{ comment }} #}"
+    },
+    {
+      name: "comment, tag delimiters",
+      source: "{# some {% comment %} #}"
+    },
+    {
+      name: "assign",
+      source: "{% assign x = y %}"
+    }
+  ].freeze
 
   describe "parse template" do
     TEST_CASES.each do |test_case|

@@ -6,7 +6,7 @@ module Liquid2
   class Identifier < Expression
     # Try to cast _expr_ to an Identifier.
     # @param expr [Expression]
-    def self.from(expr)
+    def self.from(expr, trailing_question: true)
       # TODO:
       token = expr.children.first
       new([token], token)
