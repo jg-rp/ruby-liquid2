@@ -15,11 +15,9 @@ module Liquid2
       nil
     end
 
-    def length
-      @hashes.map(&:length).sum
+    def size
+      @hashes.length
     end
-
-    alias size length
 
     def fetch(key, default: :undefined)
       @hashes.reverse_each do |hash|
@@ -31,6 +29,8 @@ module Liquid2
     def push(hash)
       @hashes << hash
     end
+
+    alias << push
 
     def pop
       @hashes.pop

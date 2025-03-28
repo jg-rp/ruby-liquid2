@@ -6,7 +6,7 @@ require_relative "nodes/tags/assign"
 
 module Liquid2
   class Environment
-    attr_reader :mode, :tags
+    attr_reader :mode, :tags, :local_namespace_limit
 
     def initialize
       # A mapping of tag names to objects responding to
@@ -14,6 +14,9 @@ module Liquid2
       @tags = { "assign" => AssignTag }
       @parser = Parser.new(self)
       @mode = :lax
+
+      @local_namespace_limit = nil
+      @context_depth_limit = 30
     end
 
     # @param source [String] template source text.

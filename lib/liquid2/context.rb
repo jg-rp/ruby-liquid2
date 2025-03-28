@@ -23,7 +23,7 @@ module Liquid2
     # @param copy_depth [Integer?]
     # @param parent [RenderContext?]
     # @param loop_carry [Integer?]
-    # @param namespace_carry [Integer?]
+    # @param local_namespace_carry [Integer?]
     def initialize(
       template,
       globals: nil,
@@ -31,7 +31,7 @@ module Liquid2
       copy_depth: 0,
       parent: nil,
       loop_carry: 1,
-      namespace_carry: 0
+      local_namespace_carry: 0
     )
       @env = template.env
       @template = template
@@ -40,7 +40,10 @@ module Liquid2
       @copy_depth = copy_depth
       @parent = parent
       @loop_carry = loop_carry
-      @namespace_carry = namespace_carry
+
+      # The current size of the local namespace. _size_ is a non-specific measure of the
+      # amount of memory used to store template local variables.
+      @assign_score = local_namespace_carry
 
       # A namespace for template local variables (those bound with `assign` or `capture`).
       @locals = {}
@@ -63,6 +66,137 @@ module Liquid2
 
       # A stack of forloop objects used for populating forloop.parentloop.
       @loops = []
+    end
+
+    # Add _key_ to the local scope with value _value_.
+    # @param key [String]
+    # @param value [Object]
+    # @return [nil]
+    def assign(key, value)
+      @locals[key] = val
+      if (limit = @env.local_namespace_limit)
+        # Note that this approach does not account for overwriting keys/values
+        # in the local scope. The assign score is always incremented.
+        @assign_score += assign_score(value)
+        raise "local namespace limit reached" if @assign_score > limit
+      end
+    end
+
+    alias []= assign
+
+    # Resolve _path_ to variable/data in the current scope.
+    # @param path [Array<object>] Path segments.
+    # @param token [Token?] An associated token to use for error context.
+    # @param default [Object?] A default value to return if the path can no be resolved.
+    # @return [Object]
+    def fetch(path, token:, default: :undefined)
+      root = path.first
+      obj = @scope.fetch(root)
+
+      if obj == :undefined
+        if default == :undefined
+          return @env.undefined(root,
+                                hint: "#{root} is undefined",
+                                token: token)
+        end
+
+        return default
+      end
+
+      path.to_enum.drop(1).each do |segment|
+        obj = get_item(obj, segment)
+
+        next unless obj == :undefined
+
+        return default unless default == :undefined
+
+        return @env.undefined(root,
+                              hint: "#{segment} is undefined",
+                              token: token)
+      end
+
+      obj
+    end
+
+    # Resolve variable _name_ in the current scope.
+    # @param name [String]
+    # @param default [Object?]
+    # @return [Object?]
+    def resolve(name, default: :undefined)
+      obj = @scope.fetch(name)
+
+      return obj unless obj == :undefined
+
+      return default unless default == :undefined
+
+      nil
+    end
+
+    alias [] resolve
+
+    # Extend the scope of this context with the given namespace. Expects a block.
+    # @param namespace [Hash<String, Object>]
+    # @param template [Template?] Replace the current template for the duration of the block.
+    def extend(namespace, template: nil)
+      raise "context depth limit reached" if @scope.size > @env.context_depth_limit
+
+      template_ = @template
+      @template = template if template
+      @scope << namespace
+      yield
+    ensure
+      @template = template_
+      @scope.pop
+    end
+
+    def copy(namespace,
+             template: nil,
+             disabled_tags: nil,
+             carry_loop_iterations: false,
+             block_scope: false)
+      raise "context depth limit reached" if @copy_depth > @env.context_depth_limit
+      # TODO:
+    end
+
+    protected
+
+    def assign_score(value)
+      case value
+      in String
+        value.bytesize
+      in Array
+        value.sum(1) { |item| assign_score(item) } + 1
+      in Hash
+        value.sum(1) { |k, v| assign_score(k) + assign_score(v) }
+      else
+        1
+      end
+    end
+
+    # Lookup _key_ in _obj_.
+    # @param obj [Object]
+    # @param key [untyped]
+    # @return [untyped]
+    def get_item(obj, key)
+      if key.respond_to?(:to_liquid)
+        method = key.method(:to_liquid)
+        key = method.arity.zero? ? method.call : method.call(self)
+      end
+
+      return :undefined unless obj.respond_to?(:fetch)
+
+      value = obj.fetch(key, :undefined)
+
+      return value unless value == :undefined
+
+      case key
+      when "size"
+        obj.respond_to?(:size) ? obj.size : :undefined
+      when "first"
+        obj.respond_to?(:first) ? obj.first : :undefined
+      when "last"
+        obj.respond_to?(:last) ? obj.last : :undefined
+      end
     end
   end
 end
