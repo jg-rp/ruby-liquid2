@@ -49,7 +49,7 @@ module Liquid2
       @locals = {}
 
       # A namespace for `increment` and `decrement` counters.
-      @counters = {}
+      @counters = Hash.new(0)
 
       # Namespaces are searched from right to left. When a RenderContext is extended, the
       # temporary namespace is pushed to the end of this queue.
@@ -58,7 +58,7 @@ module Liquid2
       # A namespace supporting stateful tags, such as `cycle` and `increment`.
       # It's OK to use this hash for storing custom tag state.
       @tag_namespace = {
-        cycles: {},
+        cycles: Hash.new(0),
         stop_index: {},
         extends: Hash.new { |hash, key| hash[key] = [] },
         macros: {}
@@ -188,20 +188,45 @@ module Liquid2
           local_namespace_carry: @assign_score)
     end
 
+    # Push a new namespace and forloop for the duration of a block.
+    # @param namespace [Hash<String, Object>]
+    # @param forloop [ForLoop]
     def loop(namespace, forloop)
-      # TODO
+      raise_for_loop_limit(forloop.length)
+      @loops << forloop
+      @scope << namespace
+      yield
+    ensure
+      @scope.pop
+      @loops.pop
     end
 
+    # Return the last ForLoop object if one is available, or an instance of Undefined otherwise.
     def parent_loop(token)
-      # TODO:
+      return @env.undefined("parentloop", token: token) if @loops.empty?
+
+      @loops.last
     end
 
-    def stop_index
-      # TODO:
+    # Get or set the stop index of a for loop.
+    def stop_index(key, index: nil)
+      if index
+        @tag_namespace[:stop_index][key] = index
+      else
+        @tag_namespace[:stop_index].fetch(key, 0)
+      end
     end
 
     def raise_for_loop_limit(length: 1)
-      # TODO:
+      return nill unless @env.loop_iteration_limit
+
+      loop_carry = if carry_loop_iterations
+                     @loops.map(&:length).reduce(length * @loop_carry) { |acc, value| acc * value }
+                   else
+                     1
+                   end
+
+      raise "loop iteration limit reached" if loop_carry > @env.loop_iteration_limit
     end
 
     def get_output_buffer(parent)
@@ -212,16 +237,23 @@ module Liquid2
       # TODO:
     end
 
-    def cycle
-      # TODO:
+    def cycle(key, length)
+      namespace = @tag_namespace[:cycles]
+      index = namespace[key]
+      namespace[key] += 1
+      index % length
     end
 
-    def increment
-      # TODO:
+    def increment(name)
+      val = @counters[name]
+      @counters[name] = val + 1
+      val
     end
 
-    def decrement
-      # TODO:
+    def decrement(name)
+      val = @counters[name] - 1
+      @counters[name] = val
+      val
     end
 
     protected

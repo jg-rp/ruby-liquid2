@@ -17,6 +17,7 @@ module Liquid2
 
       @local_namespace_limit = nil
       @context_depth_limit = 30
+      @loop_iteration_limit = nil
     end
 
     # @param source [String] template source text.

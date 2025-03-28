@@ -5,7 +5,9 @@
     "Cyclomatic",
     "endcomment",
     "endraw",
+    "forloop",
     "lparen",
+    "parentloop",
     "rparen"
   ],
   "cSpell.enabledFileTypes": {
