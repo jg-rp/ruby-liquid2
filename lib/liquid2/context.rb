@@ -65,7 +65,10 @@ module Liquid2
       }
 
       # A stack of forloop objects used for populating forloop.parentloop.
-      @loops = []
+      @loops = [] # : Array[ForLoop]
+
+      # A stack of interrupts used to signal breaking and continuing `for` loops.
+      @interrupts = [] # : Array[Symbol]
     end
 
     # Add _key_ to the local scope with value _value_.
@@ -85,7 +88,7 @@ module Liquid2
     alias []= assign
 
     # Resolve _path_ to variable/data in the current scope.
-    # @param path [Array<object>] Path segments.
+    # @param path [Array<String|Integer>] Path segments.
     # @param token [Token?] An associated token to use for error context.
     # @param default [Object?] A default value to return if the path can no be resolved.
     # @return [Object]
@@ -149,12 +152,75 @@ module Liquid2
       @scope.pop
     end
 
+    # Copy this render context and add _namespace_ to the new scope.
+    # @param namespace [Hash<String, Object>]
+    # @param template [Template?] The template object bound to the new context.
+    # @param disabled_tags [Set<String>] Names of tags to disallow in the new context.
+    # @param carry_loop_iterations [bool] If true, pass the current loop iteration count to the
+    #   new context.
+    # @param block_scope [bool] It true, retain the current scope in the new context. Otherwise
+    #   only global variables will be included in the new context's scope.
     def copy(namespace,
              template: nil,
              disabled_tags: nil,
              carry_loop_iterations: false,
              block_scope: false)
       raise "context depth limit reached" if @copy_depth > @env.context_depth_limit
+
+      loop_carry = if carry_loop_iterations
+                     @loops.map(&:length).reduce(@loop_carry) { |acc, value| acc * value }
+                   else
+                     1
+                   end
+
+      scope = if block_scope
+                ReadOnlyChainHash.new(@scope, namespace)
+              else
+                ReadOnlyChainHash.new(@globals, namespace)
+              end
+
+      new(template || @template,
+          globals: scope,
+          disabled_tags: disabled_tags,
+          copy_depth: @copy_depth + 1,
+          parent: self,
+          loop_carry: loop_carry,
+          local_namespace_carry: @assign_score)
+    end
+
+    def loop(namespace, forloop)
+      # TODO
+    end
+
+    def parent_loop(token)
+      # TODO:
+    end
+
+    def stop_index
+      # TODO:
+    end
+
+    def raise_for_loop_limit(length: 1)
+      # TODO:
+    end
+
+    def get_output_buffer(parent)
+      # TODO:
+    end
+
+    def markup(s)
+      # TODO:
+    end
+
+    def cycle
+      # TODO:
+    end
+
+    def increment
+      # TODO:
+    end
+
+    def decrement
       # TODO:
     end
 
