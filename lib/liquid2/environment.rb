@@ -19,7 +19,7 @@ module Liquid2
     # @param source [String] template source text.
     # @return [Template]
     def parse(source)
-      Template.new(@parser.parse(source))
+      Template.new(self, @parser.parse(source))
     end
   end
 end

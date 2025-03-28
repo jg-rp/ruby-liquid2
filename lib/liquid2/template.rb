@@ -2,10 +2,12 @@
 
 module Liquid2
   class Template
-    attr_reader :ast
+    attr_reader :env, :ast
 
+    # @param env [Environment]
     # @param ast [RootNode]
-    def initialize(ast)
+    def initialize(env, ast)
+      @env = env
       @ast = ast
     end
 
