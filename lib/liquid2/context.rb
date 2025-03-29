@@ -1,12 +1,19 @@
 # frozen_string_literal: true
 
 require_relative "utils/chain_hash"
+require_relative "utils/markup"
+require_relative "utils/string_io"
 
 module Liquid2
   # Hash-like object for resolving built-in dynamic objects.
   class BuiltIn
-    def [](_key)
-      raise "TODO"
+    def fetch(key, default = :undefined)
+      case key
+      when "now", "today"
+        Time.now
+      else
+        default
+      end
     end
   end
 
@@ -53,7 +60,7 @@ module Liquid2
 
       # Namespaces are searched from right to left. When a RenderContext is extended, the
       # temporary namespace is pushed to the end of this queue.
-      @scope = ReadOnlyChainHash.new([@counters, BUILT_IN, @globals, @locals])
+      @scope = ReadOnlyChainHash.new(@counters, BUILT_IN, @globals, @locals)
 
       # A namespace supporting stateful tags, such as `cycle` and `increment`.
       # It's OK to use this hash for storing custom tag state.
@@ -76,7 +83,7 @@ module Liquid2
     # @param value [Object]
     # @return [nil]
     def assign(key, value)
-      @locals[key] = val
+      @locals[key] = value
       if (limit = @env.local_namespace_limit)
         # Note that this approach does not account for overwriting keys/values
         # in the local scope. The assign score is always incremented.
@@ -208,6 +215,10 @@ module Liquid2
       @loops.last
     end
 
+    def filter
+      # TODO: lookup filter
+    end
+
     # Get or set the stop index of a for loop.
     def stop_index(key, index: nil)
       if index
@@ -229,12 +240,16 @@ module Liquid2
       raise "loop iteration limit reached" if loop_carry > @env.loop_iteration_limit
     end
 
-    def get_output_buffer(parent)
-      # TODO:
+    def get_output_buffer(parent_buffer)
+      return StringIO.new unless @env.output_stream_limit
+
+      carry = parent_buffer.is_a?(LimitedStringIO) ? parent_buffer.size : 0
+      LimitedStringIO.new(@env.output_stream_limit - carry)
     end
 
-    def markup(s)
-      # TODO:
+    # Mark _string_ as "safe" if auto escape is enabled.
+    def markup(string)
+      @env.auto_escape ? Markup.new(string) : string
     end
 
     def cycle(key, length)

@@ -3,11 +3,18 @@
 require "json"
 require "liquid2"
 
-source = "{{ foo | map: (i, j) => i.foo.bar }}"
-
 env = Liquid2::Environment.new
-template = env.parse(source)
+t = env.parse("Hello, {{ you }}!")
+ctx = Liquid2::RenderContext.new(t)
+ctx.assign("foo", 42)
 
-puts JSON.pretty_generate(template.dump)
+p ctx.resolve("foo")
 
-puts template
+# puts JSON.pretty_generate(t.ast.dump)
+
+# TODO: document the drop interface
+#   - #to_liquid(context)
+#   - #fetch(key, default = :undefined)  with optional context
+
+# TODO: document the filter interface
+#   - #call(left, *args, context:, **kwargs)

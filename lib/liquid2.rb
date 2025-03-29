@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
 require_relative "liquid2/environment"
+require_relative "liquid2/context"
 require_relative "liquid2/lexer"
 require_relative "liquid2/parser"
 require_relative "liquid2/version"
 require_relative "liquid2/utils/chain_hash"
+require_relative "liquid2/utils/markup"
 
 module Liquid2
   DEFAULT_ENVIRONMENT = Environment.new

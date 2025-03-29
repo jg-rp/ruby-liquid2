@@ -6,9 +6,13 @@
     "endcomment",
     "endraw",
     "forloop",
+    "ljust",
     "lparen",
+    "lstrip",
     "parentloop",
-    "rparen"
+    "rparen",
+    "rpartition",
+    "rstrip"
   ],
   "cSpell.enabledFileTypes": {
     "ruby": true

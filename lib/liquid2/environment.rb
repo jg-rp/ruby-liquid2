@@ -14,10 +14,12 @@ module Liquid2
       @tags = { "assign" => AssignTag }
       @parser = Parser.new(self)
       @mode = :lax
+      @auto_escape = false
 
       @local_namespace_limit = nil
       @context_depth_limit = 30
       @loop_iteration_limit = nil
+      @output_stream_limit = nil
     end
 
     # @param source [String] template source text.
