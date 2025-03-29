@@ -20,4 +20,8 @@ module Liquid2
     # TODO:
     obj.to_i
   end
+
+  class << self
+    alias to_s to_liquid_string
+  end
 end

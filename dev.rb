@@ -4,13 +4,11 @@ require "json"
 require "liquid2"
 
 env = Liquid2::Environment.new
-t = env.parse("Hello, {{ you }}!")
-ctx = Liquid2::RenderContext.new(t)
-ctx.assign("foo", 42)
-
-p ctx.resolve("foo")
+t = env.parse("Hello, {{ 'foo' | upcase }}!")
 
 # puts JSON.pretty_generate(t.ast.dump)
+
+puts t.render
 
 # TODO: document the drop interface
 #   - #to_liquid(context)

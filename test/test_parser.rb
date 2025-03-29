@@ -183,9 +183,6 @@ class TestParser < Minitest::Spec
         # All leaves are tokens, not nodes.
         _(leaf_tokens.all? { |node| node.is_a?(Liquid2::Token) }).must_equal(true)
 
-        # The last token is EOF
-        _(leaf_tokens.last.kind).must_equal(:token_eof)
-
         # Concatenating leaf tokens reconstructs the input text
         _(leaf_tokens.map(&:full_text).join).must_equal(test_case[:source])
       end

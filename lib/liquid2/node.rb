@@ -46,7 +46,7 @@ module Liquid2
     # Evaluate this expression.
     # @return [untyped] The result of evaluating this expression.
     def evaluate(_context)
-      raise "expressions must implement `evaluate(context)`."
+      raise "expressions must implement `evaluate(context)` (#{self.class})."
     end
   end
 end

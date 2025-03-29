@@ -9,6 +9,12 @@ module Liquid2
       @left = left
       @filters = filters
     end
+
+    def evaluate(context)
+      left = @left.evaluate(context)
+      @filters.each { |f| left = f.evaluate(left, context) }
+      left
+    end
   end
 
   class TernaryExpression < Expression
@@ -28,11 +34,17 @@ module Liquid2
     end
   end
 
-  class Filter < Expression
+  class Filter < Node
     def initialize(children, name, args)
       super(children)
-      @name = name
+      @name = name.text
       @args = args
+    end
+
+    def evaluate(left, context)
+      # TODO:
+      func = context.env.filters[@name]
+      func.call(left)
     end
   end
 end

@@ -44,7 +44,6 @@ module Liquid2
         when :token_comment_start
           nodes << parse_comment(stream)
         when :token_eof
-          nodes << stream.current
           return RootNode.new(nodes)
         else
           raise "unexpected token: #{token.inspect}"

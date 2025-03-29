@@ -38,7 +38,7 @@ module Liquid2
     end
 
     def evaluate(context)
-      @segments.map { |expr| Liquid2.to_liquid_string(expr.evaluate(context)) }.join
+      @segments.map { |expr| Liquid2.to_s(expr.evaluate(context)) }.join
     end
   end
 end

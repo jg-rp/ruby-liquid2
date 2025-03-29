@@ -18,5 +18,9 @@ module Liquid2
       super(children)
       @name = name
     end
+
+    def evaluate(_context)
+      @name
+    end
   end
 end

@@ -28,5 +28,10 @@ module Liquid2
       @name = name
       @expression = expression
     end
+
+    def render(context, _buffer)
+      context.assign(@name, @expression.evaluate(context))
+      0
+    end
   end
 end
