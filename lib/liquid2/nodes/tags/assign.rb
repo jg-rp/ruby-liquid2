@@ -25,7 +25,7 @@ module Liquid2
     # @param expression [Expression]
     def initialize(children, name, expression)
       super(children)
-      @name = name
+      @name = name.name
       @expression = expression
     end
 

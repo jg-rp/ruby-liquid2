@@ -10,6 +10,8 @@ module Liquid2
       @expr = expr
     end
 
-    # TODO: evaluate
+    def evaluate(context)
+      Liquid2.truthy?(@expr.evaluate(context))
+    end
   end
 end

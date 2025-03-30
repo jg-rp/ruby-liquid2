@@ -66,9 +66,11 @@ module Liquid2
   end
 
   class Contains < ComparisonExpression
-    left = @left.evaluate(context)
-    right = @right.evaluate(context)
-    Liquid2.contains(left, right)
+    def evaluate(context)
+      left = @left.evaluate(context)
+      right = @right.evaluate(context)
+      Liquid2.contains(left, right)
+    end
   end
 
   # TODO: pass or inject a Token into errors

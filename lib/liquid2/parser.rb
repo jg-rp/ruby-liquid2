@@ -4,6 +4,7 @@ require "set"
 require_relative "node"
 require_relative "token_stream"
 require_relative "nodes/comment"
+require_relative "nodes/lambda"
 require_relative "nodes/other"
 require_relative "nodes/output"
 require_relative "nodes/expressions/arguments"
@@ -11,7 +12,6 @@ require_relative "nodes/expressions/blank"
 require_relative "nodes/expressions/boolean"
 require_relative "nodes/expressions/filtered"
 require_relative "nodes/expressions/identifier"
-require_relative "nodes/expressions/lambda"
 require_relative "nodes/expressions/literals"
 require_relative "nodes/expressions/logical"
 require_relative "nodes/expressions/path"
@@ -50,6 +50,15 @@ module Liquid2
           raise "unexpected token: #{token.inspect}"
         end
       end
+    end
+
+    # Parse Liquid markup until we find a tag token in _end_block_.
+    # @param stream [TokenStream]
+    # @param end_block [responds to include?] An array or set of tag names that will
+    #   indicate the end of the block.
+    # @return [BlockNode]
+    def parse_block(stream, end_block)
+      # TODO:
     end
 
     # @param stream [TokenStream]
@@ -499,7 +508,7 @@ module Liquid2
       when :token_word
         # A single parameter without parens
         token = stream.next
-        param = Identifier.new([token], token)
+        param = Identifier.new(token)
         children << param
         params << param
       when :token_lparen
@@ -507,7 +516,7 @@ module Liquid2
         children << stream.next
         while stream.current.kind != :token_rparen
           token = stream.eat(:token_word)
-          param = Identifier.new([token], token)
+          param = Identifier.new(token)
           children << param
           params << param
 
@@ -542,7 +551,7 @@ module Liquid2
 
       while stream.current.kind != :token_rparen
         token = stream.eat(:token_word)
-        param = Identifier.new([token], token)
+        param = Identifier.new(token)
         children << param
         params << param
 

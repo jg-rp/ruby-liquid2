@@ -21,7 +21,7 @@ module Liquid2
     # @param children [Array<Token | Node>]
     # @param left [FilteredExpression]
     # @param condition [BooleanExpression]
-    # @param alternative [Expression]
+    # @param alternative [Expression | nil]
     # @param filters [Array<Filter>]
     # @param tail_filters [Array<Filter>]
     def initialize(children, left, condition, alternative, filters, tail_filters)
@@ -32,9 +32,26 @@ module Liquid2
       @filters = filters
       @tail_filters = tail_filters
     end
+
+    def evaluate(context)
+      rv = nil
+
+      if @condition.evaluate(context)
+        rv = @left.evaluate(context)
+      elsif @alternative
+        rv = @alternative.evaluate(context)
+        @filters.each { |f| rv = f.evaluate(rv, context) }
+      end
+
+      @tail_filters.each { |f| rv = f.evaluate(rv, context) }
+      rv
+    end
   end
 
   class Filter < Node
+    # @param children [Array<Token | Node>]
+    # @param name [Token]
+    # @param args [Array<PositionalArgument | KeywordArgument>]
     def initialize(children, name, args)
       super(children)
       @name = name.text
@@ -42,9 +59,37 @@ module Liquid2
     end
 
     def evaluate(left, context)
-      # TODO:
-      func = context.env.filters[@name]
-      func.call(left)
+      filter, with_context = context.env.filters[@name]
+
+      raise "unknown filter #{@name.inspect}" unless filter
+
+      positional_args, keyword_args = evaluate_args(context)
+      keyword_args[:context] = context if with_context
+      filter.call(left, *positional_args, **keyword_args)
+
+      # TODO: rescue
+    end
+
+    private
+
+    # @param context [RenderContext]
+    # @return [positional arguments, keyword arguments] An array with two elements.
+    #   The first is an array of evaluates positional arguments. The second is a hash
+    #   of keyword names to evaluated keyword values.
+    def evaluate_args(context)
+      positional_args = []
+      keyword_args = {}
+
+      @args.each do |arg|
+        name, value = arg.evaluate(context)
+        if name
+          keyword_args[name.to_sym] = value
+        else
+          positional_args << value
+        end
+      end
+
+      [positional_args, keyword_args]
     end
   end
 end

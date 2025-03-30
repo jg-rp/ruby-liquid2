@@ -32,5 +32,6 @@ module Liquid2
 
   class << self
     alias to_s to_liquid_string
+    alias to_i to_liquid_int
   end
 end

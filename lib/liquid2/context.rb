@@ -7,6 +7,10 @@ require_relative "utils/string_io"
 module Liquid2
   # Hash-like object for resolving built-in dynamic objects.
   class BuiltIn
+    def key?(key)
+      %w[now today].include?(key)
+    end
+
     def fetch(key, default = :undefined)
       case key
       when "now", "today"
@@ -100,6 +104,7 @@ module Liquid2
     # @param default [Object?] A default value to return if the path can no be resolved.
     # @return [Object]
     def fetch(path, token:, default: :undefined)
+      # TODO: pass Path object to undefined instead of a single token?
       root = path.first
       obj = @scope.fetch(root)
 
@@ -291,9 +296,7 @@ module Liquid2
     # @param key [untyped]
     # @return [untyped]
     def get_item(obj, key)
-      if key.respond_to?(:to_liquid)
-        key = key.to_liquid(self)
-      end
+      key = key.to_liquid(self) if key.respond_to?(:to_liquid)
 
       return :undefined unless obj.respond_to?(:fetch)
 

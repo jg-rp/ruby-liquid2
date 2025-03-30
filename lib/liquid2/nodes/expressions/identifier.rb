@@ -3,24 +3,22 @@
 require_relative "../../node"
 
 module Liquid2
-  class Identifier < Expression
+  class Identifier < Node
+    attr_reader :name
+
     # Try to cast _expr_ to an Identifier.
     # @param expr [Expression]
     def self.from(expr, trailing_question: true)
       # TODO:
       token = expr.children.first
-      new([token], token)
+      new(token)
     end
 
-    # @param children [Array<Token>]
     # @param name [Token]
-    def initialize(children, name)
-      super(children)
-      @name = name
-    end
-
-    def evaluate(_context)
-      @name
+    def initialize(name)
+      super([name])
+      # TODO: make identifier behave like a string?
+      @name = name.text
     end
   end
 end

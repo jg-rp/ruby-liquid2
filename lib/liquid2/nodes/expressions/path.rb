@@ -13,6 +13,10 @@ module Liquid2
       super
       @segments = segments
     end
+
+    def evaluate(context)
+      context.fetch(@segments.map { |segment| segment.evaluate(context) }, token: @children.first)
+    end
   end
 
   # Paths are composed of segments..
@@ -23,13 +27,25 @@ module Liquid2
     # @param selector [Node, Token]
     def initialize(children, selector)
       super(children)
-      @selector = selector
+      @selector = if selector.is_a?(Token)
+                    # Integer or shorthand name
+                    selector.kind == :token_int ? Liquid2.to_i(selector.text) : selector.text
+                  else
+                    # Quoted string or path
+                    selector
+                  end
     end
   end
 
   class BracketedSegment < PathSegment
+    def evaluate(context)
+      @selector.evaluate(context)
+    end
   end
 
   class ShorthandSegment < PathSegment
+    def evaluate(_context)
+      @selector
+    end
   end
 end
