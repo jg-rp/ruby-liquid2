@@ -21,6 +21,15 @@ module Liquid2
     obj.to_i
   end
 
+  # Return `true` if _obj_ is Liquid truthy.
+  # @param context [RenderContext]
+  # @param obj [Object]
+  # @return [bool]
+  def self.truthy?(context, obj)
+    obj = obj.to_liquid(context) if obj.respond_to?(:to_liquid)
+    !!obj
+  end
+
   class << self
     alias to_s to_liquid_string
   end

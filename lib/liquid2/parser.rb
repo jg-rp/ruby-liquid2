@@ -7,6 +7,7 @@ require_relative "nodes/comment"
 require_relative "nodes/other"
 require_relative "nodes/output"
 require_relative "nodes/expressions/arguments"
+require_relative "nodes/expressions/blank"
 require_relative "nodes/expressions/boolean"
 require_relative "nodes/expressions/filtered"
 require_relative "nodes/expressions/identifier"
@@ -82,6 +83,10 @@ module Liquid2
                IntegerLiteral.new(stream.next)
              when :token_float
                FloatLiteral.new(stream.next)
+             when :token_blank
+               Blank.new(stream.next)
+             when :token_empty
+               Empty.new(stream.next)
              when :token_single_quote, :token_double_quote
                parse_string_literal(stream)
              when :token_word, :token_lbracket

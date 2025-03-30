@@ -292,8 +292,7 @@ module Liquid2
     # @return [untyped]
     def get_item(obj, key)
       if key.respond_to?(:to_liquid)
-        method = key.method(:to_liquid)
-        key = method.arity.zero? ? method.call : method.call(self)
+        key = key.to_liquid(self)
       end
 
       return :undefined unless obj.respond_to?(:fetch)

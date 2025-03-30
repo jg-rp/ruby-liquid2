@@ -17,7 +17,10 @@ module Liquid2
       # A mapping of filter names to objects responding to `#call(left, ...)`,
       # along with a flag to indicate if the callable accepts a `context`
       # keyword argument.
-      @filters = { "upcase" => ->(left) { Liquid2.to_s(left).upcase } }
+      @filters = {
+        "upcase" => ->(left) { Liquid2.to_s(left).upcase },
+        "downcase" => ->(left) { Liquid.to_s(left).downcase }
+      }
 
       @parser = Parser.new(self)
       @mode = :lax

@@ -53,6 +53,8 @@ module Liquid2
       "required" => :token_required,
       "as" => :token_as,
       "for" => :token_for,
+      "blank" => :token_blank,
+      "empty" => :token_empty,
       "?" => :token_question,
       "[" => :token_lbracket,
       "]" => :token_rbracket,
