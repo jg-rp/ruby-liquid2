@@ -5,22 +5,21 @@ require "liquid2"
 
 env = Liquid2::Environment.new
 t = env.parse(<<~LIQUID
-  {% if false %}
+  START
+  {% if false -%}
     foo
-  {% elsif true %}
+  {% elsif true -%}
     hi
-  {% else %}
+  {%- else -%}
     bar
   {% endif %}
+  END
 LIQUID
              )
 
 # puts JSON.pretty_generate(t.ast.dump)
 
 puts t.render
-
-# TODO: whitespace control
-# TODO: parse block
 
 # TODO: document the drop interface
 #   - #to_liquid(context)

@@ -4,6 +4,8 @@ require_relative "../node"
 
 module Liquid2
   class Comment < Node
+    attr_reader :wc
+
     # @param children [Array<Node | Token>]
     # @param text [String]
     def initialize(children, text)

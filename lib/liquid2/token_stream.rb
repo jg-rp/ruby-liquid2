@@ -6,11 +6,14 @@ require_relative "token"
 module Liquid2
   # Step through a stream of tokens.
   class TokenStream
+    attr_accessor :trim_carry
+
     def initialize(tokens, mode: :strict)
       @tokens = tokens
       @mode = mode
       @pos = 0
       @eof = Token.new(:token_eof, @tokens.length, "", "")
+      @trim_carry = :whitespace_control_default
     end
 
     def current
@@ -51,8 +54,10 @@ module Liquid2
       token = current
       if token.kind == :token_whitespace_control
         @pos += 1
+        @trim_carry = Node::WC_MAP.fetch(token.text)
         token
       else
+        @trim_carry = :whitespace_control_default
         Token.new(:token_whitespace_control, token.start, "", "")
       end
     end

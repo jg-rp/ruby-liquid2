@@ -10,7 +10,6 @@ module Liquid2
     END_BLOCK = Set["else", "elsif", "endif"].freeze
 
     def self.parse(stream, parser)
-      # TODO: helper method eat_tag_preamble
       children = [stream.eat(:token_tag_start),
                   stream.eat_whitespace_control,
                   stream.eat(:token_tag_name)]

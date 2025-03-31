@@ -5,6 +5,7 @@ require_relative "liquid2/context"
 require_relative "liquid2/lexer"
 require_relative "liquid2/parser"
 require_relative "liquid2/version"
+require_relative "liquid2/undefined"
 require_relative "liquid2/utils/chain_hash"
 require_relative "liquid2/utils/markup"
 
@@ -28,6 +29,11 @@ module Liquid2
   def self.truthy?(context, obj)
     obj = obj.to_liquid(context) if obj.respond_to?(:to_liquid)
     !!obj
+  end
+
+  # Return `true` if _obj_ is undefined.
+  def undefined?(obj)
+    obj.is_a?(Undefined)
   end
 
   class << self

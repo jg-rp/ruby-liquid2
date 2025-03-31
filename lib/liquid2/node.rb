@@ -80,6 +80,8 @@ module Liquid2
 
   # Base class for all tags.
   class Tag < Node
+    attr_reader :wc
+
     def initialize(children)
       super
       @wc = @children.map do |child|

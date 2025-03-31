@@ -5,7 +5,7 @@ require_relative "../node"
 module Liquid2
   # The AST node representing output statements.
   class Output < Node
-    attr_reader :expression
+    attr_reader :expression, :wc
 
     # @param children [Array<Node | Token>]
     # @param expression [Expression]

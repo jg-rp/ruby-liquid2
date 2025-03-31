@@ -32,18 +32,24 @@ module Liquid2
     def parse(source)
       nodes = []
       stream = TokenStream.new(Liquid2.tokenize(source), mode: @env.mode)
+      left_trim = :whitespace_control_default
 
       loop do
         token = stream.current
         case token.kind
         when :token_other
-          nodes << Other.new([stream.next], token.text)
+          text_token = stream.next
+          nodes << Other.new([text_token], @env.trim(token.text, left_trim, peek_wc(stream)))
+          left_trim = :whitespace_control_default
         when :token_output_start
           nodes << parse_output(stream)
+          left_trim = nodes.last.wc.last
         when :token_tag_start
           nodes << parse_tag(stream)
+          left_trim = stream.trim_carry
         when :token_comment_start
           nodes << parse_comment(stream)
+          left_trim = nodes.last.wc.last
         when :token_eof
           return RootNode.new(nodes)
         else
@@ -59,20 +65,26 @@ module Liquid2
     # @return [BlockNode]
     def parse_block(stream, end_block)
       nodes = []
+      left_trim = stream.trim_carry
 
       loop do
         token = stream.current
         case token.kind
         when :token_other
-          nodes << Other.new([stream.next], token.text)
+          text_token = stream.next
+          nodes << Other.new([text_token], @env.trim(token.text, left_trim, peek_wc(stream)))
+          left_trim = :whitespace_control_default
         when :token_output_start
           nodes << parse_output(stream)
+          left_trim = nodes.last.wc.last
         when :token_tag_start
           break if end_block.include? peek_tag_name(stream).text
 
           nodes << parse_tag(stream)
+          left_trim = stream.trim_carry
         when :token_comment_start
           nodes << parse_comment(stream)
+          left_trim = nodes.last.wc.last
         when :token_eof
           break
         else
@@ -245,6 +257,21 @@ module Liquid2
       :token_word,
       :token_lparen
     ]
+
+    WC_TOKENS = Set[
+      :token_output_start,
+      :token_comment_start,
+      :token_tag_tags
+    ]
+
+    def peek_wc(stream)
+      token = stream.peek
+      if token.kind == :token_whitespace_control
+        Node::WC_MAP.fetch(token.text)
+      else
+        :whitespace_control_default
+      end
+    end
 
     # @param stream [TokenStream]
     # @return [Node]

@@ -9,7 +9,8 @@ require_relative "nodes/tags/if"
 module Liquid2
   class Environment
     attr_reader :mode, :tags, :local_namespace_limit, :context_depth_limit, :loop_iteration_limit,
-                :output_stream_limit, :filters, :auto_escape, :suppress_blank_control_flow_blocks
+                :output_stream_limit, :filters, :auto_escape, :suppress_blank_control_flow_blocks,
+                :default_trim
 
     def initialize
       # A mapping of tag names to objects responding to
@@ -34,6 +35,8 @@ module Liquid2
       @output_stream_limit = nil
 
       @suppress_blank_control_flow_blocks = false
+
+      @default_trim = :whitespace_control_plus
 
       setup_tags_and_filters
     end
@@ -73,6 +76,32 @@ module Liquid2
       register_filter("slice", SliceFilter.new)
       register_filter("split", ->(left, sep) { Liquid2.to_s(left).split(Liquid2.to_s(sep)) })
       register_filter("join", ->(left, sep) { left.join(Liquid2.to_s(sep)) })
+    end
+
+    def trim(text, left_trim, right_trim)
+      left_trim = @default_trim if left_trim == :whitespace_control_default
+      right_trim = @default_trim if right_trim == :whitespace_control_default
+
+      if left_trim == right_trim
+        return text.strip if left_trim == :whitespace_control_minus
+        return text.gsub(/\A[\r\n]+|[\r\n]+\Z/, "") if left_trim == :whitespace_control_tilde
+
+        return text
+      end
+
+      if left_trim == :whitespace_control_minus
+        text = text.lstrip
+      elsif left_trim == :whitespace_control_tilde
+        text.gsub(/\A[\r\n]+/, "")
+      end
+
+      if right_trim == :whitespace_control_minus
+        text = text.rstrip
+      elsif right_trim == :whitespace_control_tilde
+        text = text.gsub(/[\r\n]+\Z/, "")
+      end
+
+      text
     end
   end
 end
