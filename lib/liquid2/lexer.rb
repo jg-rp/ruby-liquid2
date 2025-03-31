@@ -240,6 +240,7 @@ module Liquid2
                    :lex_block_comment
                  when "raw"
                    :lex_raw
+                 # TODO: lex_line_statements
                  else
                    :lex_expression
                  end

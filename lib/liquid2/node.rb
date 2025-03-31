@@ -7,6 +7,13 @@ module Liquid2
   class Node
     attr_reader :children, :blank
 
+    WC_MAP = {
+      "" => :whitespace_control_default,
+      "-" => :whitespace_control_minus,
+      "+" => :whitespace_control_plus,
+      "~" => :whitespace_control_tilde
+    }.freeze
+
     # @param children [Array<Node | Token>]
     def initialize(children)
       @children = children
@@ -38,39 +45,33 @@ module Liquid2
   class Skipped < Node; end
   class Missing < Node; end
 
+  # An node representing a block of Liquid markup. Essentially an array of other nodes.
   class Block < Node
-    def initialize(children, nodes)
-      super(children)
-      @nodes = nodes
-      @blank = nodes.all(&:blank)
+    def initialize(children)
+      super
+      @blank = children.all(&:blank)
     end
 
     def render(context, buffer)
       if context.env.suppress_blank_control_flow_blocks && @blank
         buf = NullIO.new
-        @nodes.each { |node| node.render(context, buf) }
+        @children.each { |node| node.render(context, buf) }
         0
       else
-        @nodes.map { |node| node.render(context, buffer) }.sum
+        @children.map { |node| node.render(context, buffer) }.sum
       end
-    end
-  end
-
-  class ConditionalBlockNode
-    def initialize(children, expression, block)
-      super(children)
-      @expression = expression
-      @block = block
-      @blank = block.blank
-    end
-
-    def render(context, buffer)
-      @expression.evaluate(context) ? @block.render(context, buffer) : 0
     end
   end
 
   # Base class for all tags.
   class Tag < Node
+    def initialize(children)
+      super
+      @wc = @children.map do |child|
+        WC_MAP.fetch(child.text) if child.is_a?(Token) && child.kind == :token_whitespace_control
+      end.compact
+    end
+
     # Render this node to the output buffer.
     # @param context [RenderContext]
     # @param buffer [StringIO]

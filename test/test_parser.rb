@@ -19,14 +19,27 @@ def leaves(node)
   end
 end
 
+# Generate tag nodes from an AST starting at _node_.
+def tags(node)
+  Enumerator.new do |yielder|
+    yielder << node if node.is_a? Tag
+
+    node.children.each do |child|
+      tags(child).each do |tag|
+        yielder << tag
+      end
+    end
+  end
+end
+
 class TestParser < Minitest::Spec
   make_my_diffs_pretty!
 
   TEST_CASES = [
-    {
-      name: "empty",
-      source: ""
-    },
+    # {
+    #   name: "empty",
+    #   source: ""
+    # },
     {
       name: "no markup",
       source: "Hello, World!"

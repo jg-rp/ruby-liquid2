@@ -58,7 +58,29 @@ module Liquid2
     #   indicate the end of the block.
     # @return [BlockNode]
     def parse_block(stream, end_block)
-      # TODO:
+      nodes = []
+
+      loop do
+        token = stream.current
+        case token.kind
+        when :token_other
+          nodes << Other.new([stream.next], token.text)
+        when :token_output_start
+          nodes << parse_output(stream)
+        when :token_tag_start
+          break if end_block.include? peek_tag_name(stream).text
+
+          nodes << parse_tag(stream)
+        when :token_comment_start
+          nodes << parse_comment(stream)
+        when :token_eof
+          break
+        else
+          raise "unexpected token: #{token.inspect}"
+        end
+      end
+
+      Block.new(nodes)
     end
 
     # @param stream [TokenStream]
@@ -232,10 +254,7 @@ module Liquid2
     # @param stream [TokenStream]
     # @return [Node]
     def parse_tag(stream)
-      token = stream.peek # Whitespace control or tag name
-      token = stream.peek(2) if token.kind == :token_whitespace_control
-
-      raise "missing tag name" unless token.kind == :token_tag_name
+      token = peek_tag_name(stream)
 
       if (tag = @env.tags[token.text])
         tag.parse(stream, self)
@@ -599,6 +618,14 @@ module Liquid2
       end
 
       TernaryExpression.new(children, left, condition, alternative, filters, tail_filters)
+    end
+
+    def peek_tag_name(stream)
+      token = stream.peek # Whitespace control or tag name
+      token = stream.peek(2) if token.kind == :token_whitespace_control
+      raise "missing tag name" unless token.kind == :token_tag_name
+
+      token
     end
   end
 end

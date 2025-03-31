@@ -9,6 +9,9 @@ module Liquid2
     def initialize(children, text)
       super(children)
       @text = text
+      @wc = @children.map do |child|
+        WC_MAP.fetch(child.text) if child.is_a?(Token) && child.kind == :token_whitespace_control
+      end.compact
     end
 
     def render(_context, _buffer) = 0

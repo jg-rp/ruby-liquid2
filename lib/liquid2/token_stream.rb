@@ -53,7 +53,7 @@ module Liquid2
         @pos += 1
         token
       else
-        Token.new(:token_default_whitespace_control, token.start, "", "")
+        Token.new(:token_whitespace_control, token.start, "", "")
       end
     end
 

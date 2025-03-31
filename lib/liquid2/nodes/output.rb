@@ -10,10 +10,12 @@ module Liquid2
     # @param children [Array<Node | Token>]
     # @param expression [Expression]
     def initialize(children, expression)
-      # Whitespace control is guaranteed to be at children[1] and children[-2]
       super(children)
       @expression = expression
       @blank = false
+      @wc = @children.map do |child|
+        WC_MAP.fetch(child.text) if child.is_a?(Token) && child.kind == :token_whitespace_control
+      end.compact
     end
 
     def render(context, buffer)
