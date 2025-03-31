@@ -11,7 +11,7 @@ module Liquid2
     end
 
     def evaluate(context)
-      Liquid2.truthy?(@expr.evaluate(context))
+      Liquid2.truthy?(context, @expr.evaluate(context))
     end
   end
 end

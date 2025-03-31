@@ -5,9 +5,13 @@ require "liquid2"
 
 env = Liquid2::Environment.new
 t = env.parse(<<~LIQUID
-  {% assign you = 'World' %}
-  {% assign x = 'Hello, ${you}!' %}
-  {{ x }}
+  {% if false %}
+    foo
+  {% elsif true %}
+    hi
+  {% else %}
+    bar
+  {% endif %}
 LIQUID
              )
 

@@ -147,6 +147,16 @@ module Liquid2
       Identifier.from(parse_primary(stream), trailing_question: trailing_question)
     end
 
+    # Return the next tag name token from _stream_ without advancing.
+    # Assumes the current token is :token_tag_start.
+    def peek_tag_name(stream)
+      token = stream.peek # Whitespace control or tag name
+      token = stream.peek(2) if token.kind == :token_whitespace_control
+      raise "missing tag name" unless token.kind == :token_tag_name
+
+      token
+    end
+
     protected
 
     class Precedence
@@ -618,14 +628,6 @@ module Liquid2
       end
 
       TernaryExpression.new(children, left, condition, alternative, filters, tail_filters)
-    end
-
-    def peek_tag_name(stream)
-      token = stream.peek # Whitespace control or tag name
-      token = stream.peek(2) if token.kind == :token_whitespace_control
-      raise "missing tag name" unless token.kind == :token_tag_name
-
-      token
     end
   end
 end

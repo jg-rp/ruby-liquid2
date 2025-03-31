@@ -49,7 +49,7 @@ module Liquid2
   class Block < Node
     def initialize(children)
       super
-      @blank = children.all(&:blank)
+      @blank = children.all?(&:blank)
     end
 
     def render(context, buffer)
@@ -60,6 +60,21 @@ module Liquid2
       else
         @children.map { |node| node.render(context, buffer) }.sum
       end
+    end
+  end
+
+  class ConditionalBlock < Node
+    attr_reader :expression, :block
+
+    def initialize(children, expression, block)
+      super(children)
+      @expression = expression
+      @block = block
+      @blank = block.blank
+    end
+
+    def render(context, buffer)
+      @block.render(context, buffer) if @block.evaluate(context)
     end
   end
 

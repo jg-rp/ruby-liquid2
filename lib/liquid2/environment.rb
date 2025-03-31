@@ -4,16 +4,20 @@ require_relative "parser"
 require_relative "template"
 require_relative "filters/slice"
 require_relative "nodes/tags/assign"
+require_relative "nodes/tags/if"
 
 module Liquid2
   class Environment
     attr_reader :mode, :tags, :local_namespace_limit, :context_depth_limit, :loop_iteration_limit,
-                :output_stream_limit, :filters, :auto_escape
+                :output_stream_limit, :filters, :auto_escape, :suppress_blank_control_flow_blocks
 
     def initialize
       # A mapping of tag names to objects responding to
       # `parse: (TokenStream, Parser) -> Tag`
-      @tags = { "assign" => AssignTag }
+      @tags = {
+        "assign" => AssignTag,
+        "if" => IfTag
+      }
 
       # A mapping of filter names to objects responding to `#call(left, ...)`,
       # along with a flag to indicate if the callable accepts a `context`
