@@ -48,6 +48,21 @@ module Liquid2
       end
     end
 
+    # Consume the next token if its kind is in _kinds_.
+    # @param kinds [Array<Symbol>]
+    # @return [Token] The next token or a `MissingToken`.
+    def eat_one_of(*kinds)
+      token = current
+      if kinds.include? token.kind
+        @pos += 1
+        token
+      else
+        raise "expected #{kinds.first}, found #{token.kind}" if @mode == :strict
+
+        MissingToken.new(:token_missing, token.start, "", "", kinds.first)
+      end
+    end
+
     # Consume the next token if it is whitespace control.
     # @return [Token] The next token or an empty _default whitespace control_ token.
     def eat_whitespace_control

@@ -13,6 +13,7 @@ require_relative "nodes/expressions/boolean"
 require_relative "nodes/expressions/filtered"
 require_relative "nodes/expressions/identifier"
 require_relative "nodes/expressions/literals"
+require_relative "nodes/expressions/loop"
 require_relative "nodes/expressions/logical"
 require_relative "nodes/expressions/path"
 require_relative "nodes/expressions/range"
@@ -96,7 +97,7 @@ module Liquid2
     end
 
     # @param stream [TokenStream]
-    # @return [Node]
+    # @return [FilteredExpression|TernaryExpression]
     def parse_filtered_expression(stream)
       left = parse_primary(stream)
       filters = stream.current.kind == :token_pipe ? parse_filters(stream) : []
@@ -107,6 +108,63 @@ module Liquid2
       else
         expr
       end
+    end
+
+    # @param stream [TokenStream]
+    # @return [LoopExpression]
+    def parse_loop_expression(stream)
+      identifier = parse_identifier(stream)
+      children = [identifier, stream.eat(:token_in)]
+      enum = parse_primary(stream)
+      children << enum
+
+      reversed = false
+      offset = nil
+      limit = nil
+      cols = nil
+
+      if (token = stream.eat(:token_comma))
+        # A comma between the iterable and the first argument is OK.
+        children << token
+      end
+
+      loop do
+        token = stream.current
+        case token.kind
+        when :token_word
+          case token.text
+          when "reversed"
+            children << stream.next
+            reversed = true
+          when "limit"
+            children << stream.next << stream.eat_one_of(:token_colon, :token_assign)
+            limit = parse_primary(stream)
+            children << limit
+          when "cols"
+            children << stream.next << stream.eat_one_of(:token_colon, :token_assign)
+            cols = parse_primary(stream)
+            children << cols
+          when "offset"
+            children << stream.next << stream.eat_one_of(:token_colon, :token_assign)
+            offset_token = stream.peek
+            offset = if offset_token.kind == :token_word && offset_token.text == "continue"
+                       Identifier.new(stream.next)
+                     else
+                       parse_primary(stream)
+                     end
+            children << offset
+          else
+            raise LiquidSyntaxError.new("expected 'reversed', 'offset' or 'limit'", token: token)
+          end
+        when :token_comma
+          children << stream.next
+        else
+          break
+        end
+      end
+
+      LoopExpression.new(children, identifier, enum,
+                         limit: limit, offset: offset, reversed: reversed, cols: cols)
     end
 
     # Parse a _primary_ expression from tokens in _stream_.

@@ -5,8 +5,29 @@ require_relative "../../node"
 module Liquid2
   # The standard _for_ tag.
   class ForTag < Node
+    END_BLOCK = Set["endfor", "else"]
+
     def self.parse(stream, parser)
-      # TODO:
+      children = [stream.eat(:token_tag_start),
+                  stream.eat_whitespace_control,
+                  stream.eat(:token_tag_name)]
+
+      expression = parser.parse_loop_expression(stream)
+      # TODO: skip until ..
+      children << expression << stream.eat_whitespace_control << stream.eat(:token_tag_end)
+      block = parser.parse_block(stream, END_BLOCK)
+      children << block
+
+      if stream.tag?("else")
+        children.push(*stream.eat_empty_tag("else"))
+        default = parser.parse_block(stream, END_BLOCK)
+        children << default
+      else
+        default = nil
+      end
+
+      children.push(*stream.eat_empty_tag("endif"))
+      new(children, expression, block, default)
     end
 
     # @param children [Array<Token|Node>]
@@ -21,7 +42,85 @@ module Liquid2
     end
 
     def render(context, buffer)
-      # TODO:
+      enum, length = @expression.evaluate(context)
+
+      if length.zero?
+        return @default ? @default.render(context, buffer) : 0
+      end
+
+      char_count = 0
+      name = @expression.identifier.name
+
+      forloop = ForLoop.new("#{name}-#{@expressions.enum.text}",
+                            enum,
+                            length,
+                            context.parent_loop(self))
+
+      namespace = {
+        "forloop" => forloop,
+        name => nil
+      }
+
+      context.extend(namespace) do
+        forloop.each do |item|
+          namespace[name] = item
+          # TODO: interrupts
+          char_count += @block.render(context, buffer)
+        end
+      end
+
+      char_count
     end
+  end
+
+  # `for` loop helper variables.
+  class ForLoop
+    attr_reader :name, :length, :parentloop
+
+    KEYS = Set[
+      "name",
+      "length",
+      "index",
+      "index0",
+      "rindex",
+      "rindex0",
+      "first",
+      "last",
+      "parentloop",
+    ]
+
+    def initialize(name, enum, length, parent_loop)
+      @name = name
+      @enum = enum
+      @length = length
+      @parentloop = parent_loop
+      @index = -1
+    end
+
+    def key?(key)
+      KEYS.member?(key)
+    end
+
+    def fetch(key, default = :undefined)
+      if KEYS.member?(key)
+        send(key)
+      else
+        default
+      end
+    end
+
+    def each
+      Enumerator.new do |yielder|
+        @index += 1
+        yielder << @enum.next
+      end
+    end
+
+    def index = @index + 1
+    def index0 = @index
+    def rindex = @length - @index
+    def rindex0 = @length - @index - 1
+    def first = @index.zero?
+    def last = @index == @length - 1
   end
 end
