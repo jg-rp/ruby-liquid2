@@ -16,14 +16,47 @@ module Liquid2
       @cols = cols
     end
 
+    # @return [[Enumerator, Integer]] An enumerator and its length.
     def evaluate(context)
-      # TODO:
+      offset_key = "#{@identifier.name}-#{@enum.text}"
+
+      start = if @offset
+                offset = @offset.evaluate(context)
+                if offset == "continue"
+                  context.stop_index(offset_key)
+                else
+                  Liquid2.to_int(offset)
+                end
+              else
+                0
+              end
+
+      stop = Liquid2.to_i(@limit.evaluate(context)) + start if @limit
+      obj = @enum.evaluate(context)
+
+      if obj.respond_to?(:slice) && !obj.is_a?(String)
+        array = stop ? obj.slice(start...stop) : obj.slice(start..)
+        return [array.to_enum, array.size]
+      end
+
+      # TODO: optionally enable string iteration
+      enum, length = if obj.is_a?(String)
+                       obj.empty? ? [[].to_enum, 0] : [[obj].to_enum, 1]
+                     elsif obj.respond_to?(:each)
+                       [obj.each, obj.size]
+                     else
+                       [[].to_enum, 0]
+                     end
+
+      [lazy_slice(enum, start, stop), length]
     end
 
     protected
 
-    def to_enum(context, obj)
-      # TODO:
+    def lazy_slice(enum, start_index, stop_index = nil)
+      sliced = enum.lazy.drop(start_index)
+      sliced = sliced.take(stop_index - start_index + 1) if stop_index
+      sliced
     end
   end
 end

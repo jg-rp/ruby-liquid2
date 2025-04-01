@@ -154,7 +154,7 @@ module Liquid2
                      end
             children << offset
           else
-            raise LiquidSyntaxError.new("expected 'reversed', 'offset' or 'limit'", token: token)
+            raise LiquidSyntaxError.new("expected 'reversed', 'offset' or 'limit'", node: token)
           end
         when :token_comma
           children << stream.next
@@ -263,7 +263,6 @@ module Liquid2
       :token_le,
       :token_ge,
       :token_contains,
-      :token_in,
       :token_and,
       :token_or
     ]

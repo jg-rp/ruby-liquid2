@@ -3,9 +3,9 @@
 module Liquid2
   # The base class for all Liquid errors.
   class LiquidError < StandardError
-    def initialize(message, token)
+    def initialize(message, node)
       super(message)
-      @token = token
+      @node = node
     end
 
     # TODO: detailed_message

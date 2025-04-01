@@ -3,7 +3,7 @@
 require_relative "../../node"
 
 module Liquid2
-  class Identifier < Node
+  class Identifier < Expression
     attr_reader :name
 
     # Try to cast _expr_ to an Identifier.
@@ -19,6 +19,10 @@ module Liquid2
       super([name])
       # TODO: make identifier behave like a string?
       @name = name.text
+    end
+
+    def evaluate(_context)
+      @name
     end
   end
 end

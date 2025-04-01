@@ -25,6 +25,7 @@ module Liquid2
   # every time `Template#render` is called.
   class RenderContext
     attr_reader :env, :template
+    attr_accessor :interrupts
 
     BUILT_IN = BuiltIn.new
 
@@ -204,7 +205,7 @@ module Liquid2
     # @param namespace [Hash<String, Object>]
     # @param forloop [ForLoop]
     def loop(namespace, forloop)
-      raise_for_loop_limit(forloop.length)
+      raise_for_loop_limit(length: forloop.length)
       @loops << forloop
       @scope << namespace
       yield
@@ -214,8 +215,8 @@ module Liquid2
     end
 
     # Return the last ForLoop object if one is available, or an instance of Undefined otherwise.
-    def parent_loop(token)
-      return @env.undefined("parentloop", token: token) if @loops.empty?
+    def parent_loop(node)
+      return @env.undefined("parentloop", node: node) if @loops.empty?
 
       @loops.last
     end
@@ -234,7 +235,7 @@ module Liquid2
     end
 
     def raise_for_loop_limit(length: 1)
-      return nill unless @env.loop_iteration_limit
+      return nil unless @env.loop_iteration_limit
 
       loop_carry = if carry_loop_iterations
                      @loops.map(&:length).reduce(length * @loop_carry) { |acc, value| acc * value }

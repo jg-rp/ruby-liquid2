@@ -2,9 +2,11 @@
 
 require_relative "parser"
 require_relative "template"
+require_relative "undefined"
 require_relative "filters/slice"
 require_relative "nodes/tags/assign"
 require_relative "nodes/tags/if"
+require_relative "nodes/tags/for"
 
 module Liquid2
   class Environment
@@ -17,7 +19,10 @@ module Liquid2
       # `parse: (TokenStream, Parser) -> Tag`
       @tags = {
         "assign" => AssignTag,
-        "if" => IfTag
+        "if" => IfTag,
+        "for" => ForTag,
+        "break" => BreakTag,
+        "continue" => ContinueTag
       }
 
       # A mapping of filter names to objects responding to `#call(left, ...)`,
@@ -37,6 +42,8 @@ module Liquid2
       @suppress_blank_control_flow_blocks = false
 
       @default_trim = :whitespace_control_plus
+
+      @undefined = Undefined
 
       setup_tags_and_filters
     end
@@ -78,6 +85,10 @@ module Liquid2
       register_filter("join", ->(left, sep) { left.join(Liquid2.to_s(sep)) })
     end
 
+    def undefined(name, node: nil)
+      @undefined.new(name, node: node)
+    end
+
     def trim(text, left_trim, right_trim)
       left_trim = @default_trim if left_trim == :whitespace_control_default
       right_trim = @default_trim if right_trim == :whitespace_control_default
@@ -92,7 +103,7 @@ module Liquid2
       if left_trim == :whitespace_control_minus
         text = text.lstrip
       elsif left_trim == :whitespace_control_tilde
-        text.gsub(/\A[\r\n]+/, "")
+        text = text.gsub(/\A[\r\n]+/, "")
       end
 
       if right_trim == :whitespace_control_minus

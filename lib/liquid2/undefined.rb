@@ -5,9 +5,9 @@ require_relative "errors"
 module Liquid2
   # The default undefined type. Can be iterated over an indexed without error.
   class Undefined
-    def initialize(name, token: nil)
+    def initialize(name, node: nil)
       @name = name
-      @token = token
+      @node = node
       @force_default = false
     end
 
@@ -32,92 +32,92 @@ module Liquid2
 
   # An undefined type that always raises an exception.
   class StrictUndefined < Undefined
-    def initialize(name, token: nil)
-      super(name, token)
+    def initialize(name, node: nil)
+      super(name, node)
       @message = "#{name.inspect} is undefined"
     end
 
     def respond_to_missing? = true
 
     def method_missing(...)
-      raise UndefinedError.new(@message, @token)
+      raise UndefinedError.new(@message, @node)
     end
 
     def [](...)
-      raise UndefinedError.new(@message, @token)
+      raise UndefinedError.new(@message, @node)
     end
 
     def key?(...)
-      raise UndefinedError.new(@message, @token)
+      raise UndefinedError.new(@message, @node)
     end
 
     def include?(...)
-      raise UndefinedError.new(@message, @token)
+      raise UndefinedError.new(@message, @node)
     end
 
     def member?(...)
-      raise UndefinedError.new(@message, @token)
+      raise UndefinedError.new(@message, @node)
     end
 
     def fetch(...)
-      raise UndefinedError.new(@message, @token)
+      raise UndefinedError.new(@message, @node)
     end
 
     def !
-      raise UndefinedError.new(@message, @token)
+      raise UndefinedError.new(@message, @node)
     end
 
     def ==(_other)
-      raise UndefinedError.new(@message, @token)
+      raise UndefinedError.new(@message, @node)
     end
 
     def !=(_other)
-      raise UndefinedError.new(@message, @token)
+      raise UndefinedError.new(@message, @node)
     end
 
     alias eql? ==
 
     def size
-      raise UndefinedError.new(@message, @token)
+      raise UndefinedError.new(@message, @node)
     end
 
     def length
-      raise UndefinedError.new(@message, @token)
+      raise UndefinedError.new(@message, @node)
     end
 
     def to_s
-      raise UndefinedError.new(@message, @token)
+      raise UndefinedError.new(@message, @node)
     end
 
     def to_i
-      raise UndefinedError.new(@message, @token)
+      raise UndefinedError.new(@message, @node)
     end
 
     def to_f
-      raise UndefinedError.new(@message, @token)
+      raise UndefinedError.new(@message, @node)
     end
 
     def each(...)
-      raise UndefinedError.new(@message, @token)
+      raise UndefinedError.new(@message, @node)
     end
 
     def each_with_index(...)
-      raise UndefinedError.new(@message, @token)
+      raise UndefinedError.new(@message, @node)
     end
 
     def to_liquid(_context)
-      raise UndefinedError.new(@message, @token)
+      raise UndefinedError.new(@message, @node)
     end
 
     def poke
-      raise UndefinedError.new(@message, @token)
+      raise UndefinedError.new(@message, @node)
     end
   end
 
   # A strict undefined type that plays nicely with the _default_ filter.
   class StrictDefaultUndefined < StrictUndefined
-    def initialize(name, token: nil)
-      super(name, token)
+    def initialize(name, node: nil)
+      super(name, node)
       @force_default = true
     end
   end

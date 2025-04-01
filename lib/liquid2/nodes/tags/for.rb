@@ -26,7 +26,7 @@ module Liquid2
         default = nil
       end
 
-      children.push(*stream.eat_empty_tag("endif"))
+      children.push(*stream.eat_empty_tag("endfor"))
       new(children, expression, block, default)
     end
 
@@ -39,6 +39,7 @@ module Liquid2
       @expression = expression
       @block = block
       @default = default
+      @blank = block.blank && (!default || default.blank)
     end
 
     def render(context, buffer)
@@ -51,7 +52,7 @@ module Liquid2
       char_count = 0
       name = @expression.identifier.name
 
-      forloop = ForLoop.new("#{name}-#{@expressions.enum.text}",
+      forloop = ForLoop.new("#{name}-#{@expression.enum.text}",
                             enum,
                             length,
                             context.parent_loop(self))
@@ -61,15 +62,43 @@ module Liquid2
         name => nil
       }
 
-      context.extend(namespace) do
+      context.loop(namespace, forloop) do
         forloop.each do |item|
+          if (interrupt = context.interrupts.pop)
+            next if interrupt == :continue
+            break if interrupt == :break
+          end
+
           namespace[name] = item
-          # TODO: interrupts
           char_count += @block.render(context, buffer)
         end
       end
 
       char_count
+    end
+  end
+
+  # The standard _break_ tag.
+  class BreakTag < Tag
+    def self.parse(stream, _parser)
+      new(stream.eat_empty_tag("break"))
+    end
+
+    def render(context, _buffer)
+      context.interrupts << :break
+      0
+    end
+  end
+
+  # The standard _continue_ tag.
+  class ContinueTag < Tag
+    def self.parse(stream, _parser)
+      new(stream.eat_empty_tag("continue"))
+    end
+
+    def render(context, _buffer)
+      context.interrupts << :continue
+      0
     end
   end
 
@@ -110,9 +139,9 @@ module Liquid2
     end
 
     def each
-      Enumerator.new do |yielder|
+      @enum.each do |item|
         @index += 1
-        yielder << @enum.next
+        yield item
       end
     end
 

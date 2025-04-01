@@ -3,6 +3,7 @@
 require_relative "utils/string_io"
 
 module Liquid2
+  # A compiled template bound to a Liquid environment and ready to be rendered.
   class Template
     attr_reader :env, :ast
 
@@ -30,8 +31,12 @@ module Liquid2
       # TODO: don't extend if namespace is nil
       context.extend(namespace || {}) do
         @ast.children.each do |node|
+          if (interrupt = context.interrupts.pop)
+            raise LiquidSyntaxError.new("unexpected #{interrupt}", node) if !partial && block_scope
+
+            context.interrupts << interrupt
+          end
           bytes += node.render(context, buffer)
-          # TODO: handle interrupts
         end
       end
 
