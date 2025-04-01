@@ -8,9 +8,10 @@ module Liquid2
   class StringLiteral < Literal
     # @param children [Array<Token, Expression>]
     def initialize(children)
-      super(children.first)
+      token = children.first #: Token
+      super(token)
       @children = children
-      @value = children[1].value
+      @value = children[1].text
     end
 
     def evaluate(_context) = @value
@@ -32,7 +33,7 @@ module Liquid2
     # @param children [Array<Token, Expression>]
     # @param segments [Array<Expression>]
     def initialize(children, segments)
-      super(children.first)
+      super(children)
       @children = children
       @segments = segments
     end

@@ -80,14 +80,14 @@ module Liquid2
     left, right = right, left if right.is_a?(Empty) || right.is_a?(Blank)
     left == right
   rescue ::ArgumentError => e
-    raise Liquid2::ArgumentError, e.message
+    raise Liquid2::LiquidArgumentError, e.message
   end
 
   # Return `true` if _left_ is considered less than _right_.
   def self.lt(left, right)
     left < right
   rescue ::ArgumentError => e
-    raise Liquid2::ArgumentError, e.message
+    raise Liquid2::LiquidArgumentError, e.message
   end
 
   def self.contains(left, right)
@@ -96,6 +96,6 @@ module Liquid2
     right = Liquid2.to_s(right) if left.is_a?(String)
     left.include?(right)
   rescue ::ArgumentError => e
-    raise Liquid2::ArgumentError, e.message
+    raise Liquid2::LiquidArgumentError, e.message
   end
 end

@@ -18,8 +18,8 @@ module Liquid2
     # @param enum [Enumerable<Object>]
     # @return [Enumerable<Object>]
     def map(context, enum)
-      scope = {}
-      rv = []
+      scope = {} #: Hash[String, untyped]
+      rv = [] #: Array[untyped]
 
       if @params.length == 1
         param = @params.first.name
@@ -30,7 +30,8 @@ module Liquid2
           end
         end
       else
-        name_param, index_param = @params[...2].map(&:name)
+        name_param = @params.first.name
+        index_param = @params[1].name
         context.extend(scope) do
           enum.each_with_index do |item, index|
             scope[index_param] = index

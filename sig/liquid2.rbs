@@ -1,4 +1,1506 @@
 module Liquid2
   VERSION: String
   # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+  
+  DEFAULT_ENVIRONMENT: Environment
+
+  def self.to_liquid_string: (untyped obj, ?auto_escape: bool) -> String
+
+  def self.to_liquid_int: (untyped obj, ?default: ::Integer) -> Integer
+
+  # Return `true` if _obj_ is Liquid truthy.
+  # @param context [RenderContext]
+  # @param obj [Object]
+  # @return [bool]
+  def self.truthy?: (RenderContext context, untyped obj) -> bool
+
+  # Return `true` if _obj_ is undefined.
+  def undefined?: (untyped obj) -> bool
+
+  alias self.to_s self.to_liquid_string
+
+  alias self.to_i self.to_liquid_int
+
+  interface _Tag
+    def parse: (TokenStream, Parser) -> Tag
+  end
+
+  interface _Filter
+    def call: (untyped left, *untyped, **untyped) -> untyped
+    def parameters: () -> Array[[Symbol, Symbol]]
+  end
+
+  class Environment
+    # A mapping of tag names to objects responding to `#parse`
+    @tags: Hash[String, _Tag]
+
+    # A mapping of filter names to objects responding to `#call(left, ...)`,
+    # along with a flag to indicate if the callable accepts a `context`
+    # keyword argument.
+    @filters: Hash[String, [_Filter, bool]]
+
+    @parser: Parser
+
+    @mode: :lax | :strict
+
+    @auto_escape: bool
+
+    @local_namespace_limit: Integer?
+
+    @context_depth_limit: Integer
+
+    @loop_iteration_limit: Integer?
+
+    @output_stream_limit: Integer?
+
+    @suppress_blank_control_flow_blocks: bool
+
+    @default_trim: :whitespace_control_plus | :whitespace_control_minus | :whitespace_control_tilde
+
+    @undefined: untyped
+
+    attr_reader mode: :lax | :strict
+
+    attr_reader tags: Hash[String, _Tag]
+
+    attr_reader local_namespace_limit: Integer?
+
+    attr_reader context_depth_limit: Integer
+
+    attr_reader loop_iteration_limit: Integer?
+
+    attr_reader output_stream_limit: Integer?
+
+    attr_reader filters: Hash[String, [_Filter, bool]]
+
+    attr_reader auto_escape: bool
+
+    attr_reader suppress_blank_control_flow_blocks: bool
+
+    attr_reader default_trim: :whitespace_control_plus | :whitespace_control_minus | :whitespace_control_tilde
+
+    def initialize: () -> void
+
+    # @param source [String] template source text.
+    # @return [Template]
+    def parse: (String source) -> Template
+
+    # Add or replace a filter. The same callable can be registered multiple times with
+    # different names.
+    #
+    # If _callable_ accepts a keyword parameter called `context`, the active render
+    # context will be passed to `#call`.
+    #
+    # @param name [String] The name of the filter, as used by template authors.
+    # @param callable [responds to call] An object that responds to `#call(left, ...)`
+    #   and `#parameters`. Like a Proc or Method.
+    def register_filter: (String name, _Filter callable) -> void
+
+    # Remove a filter from the filter register.
+    # @param name [String] The name of the filter.
+    # @return [callable | nil] The callable implementing the removed filter, or nil
+    #    if _name_ did not exist in the filter register.
+    def delete_filter: (String name) -> ([_Filter, bool] | nil)
+
+    def setup_tags_and_filters: () -> void
+
+    def undefined: (String name, ?node: Node?) -> Undefined
+
+    def trim: (String text, Symbol left_trim, Symbol right_trim) -> String
+  end
+
+  class Parser
+    @env: Environment
+
+    # @param env [Environment]
+    def initialize: (Environment env) -> void
+
+    # Parse Liquid template text into an AST.
+    # @param source [String]
+    # @return [RootNode]
+    def parse: (String source) -> RootNode
+
+    # Parse Liquid markup until we find a tag token in _end_block_.
+    # @param stream [TokenStream]
+    # @param end_block [responds to include?] An array or set of tag names that will
+    #   indicate the end of the block.
+    # @return [BlockNode]
+    def parse_block: (TokenStream stream, Set[String] end_block) -> Block
+
+    # @param stream [TokenStream]
+    # @return [FilteredExpression|TernaryExpression]
+    def parse_filtered_expression: (TokenStream stream) -> (FilteredExpression | TernaryExpression)
+
+    # @param stream [TokenStream]
+    # @return [LoopExpression]
+    def parse_loop_expression: (TokenStream stream) -> LoopExpression
+
+    # Parse a _primary_ expression from tokens in _stream_.
+    # A primary expression is a literal, a path (to a variable), or a logical
+    # expression composed of other primary expressions.
+    # @param stream [TokenStream]
+    # @return [Expression]
+    def parse_primary: (TokenStream stream, ?precedence: Symbol) -> Expression
+
+    def parse_identifier: (TokenStream stream, ?trailing_question: bool) -> Identifier
+
+    # Return the next tag name token from _stream_ without advancing.
+    # Assumes the current token is :token_tag_start.
+    def peek_tag_name: (TokenStream stream) -> Token
+
+    class Precedence
+      LOWEST: 1
+
+      LOGICAL_RIGHT: 2
+
+      LOGICAL_OR: 3
+
+      LOGICAL_AND: 4
+
+      RELATIONAL: 5
+
+      MEMBERSHIP: 6
+
+      PREFIX: 7
+    end
+
+    PRECEDENCES: { token_and: Integer, token_or: Integer, token_not: Integer, token_rparen: Integer, token_contains: Integer, token_eq: Integer, token_lt: Integer, token_gt: Integer, token_ne: Integer, token_lg: Integer, token_le: Integer, token_ge: Integer }
+
+    BINARY_OPERATORS: Set[Symbol]
+
+    TERMINATE_OUTPUT: Set[Symbol]
+
+    TERMINATE_FILTER: Set[Symbol]
+
+    TERMINATE_GROUPED_EXPRESSION: Set[Symbol]
+
+    TERMINATE_LAMBDA_PARAM: Set[Symbol]
+
+    KEYWORD_ARGUMENT_DELIMITERS: Set[Symbol]
+
+    PRIMITIVE_TOKENS: Set[Symbol]
+
+    WC_TOKENS: Set[Symbol]
+
+    def peek_wc: (TokenStream stream) -> Symbol
+
+    # @param stream [TokenStream]
+    # @return [Node]
+    def parse_output: (TokenStream stream) -> Node
+
+    # @param stream [TokenStream]
+    # @return [Node]
+    def parse_tag: (TokenStream stream) -> Tag
+
+    # @param stream [TokenStream]
+    # @return [Node]
+    def parse_comment: (TokenStream stream) -> Node
+
+    # @param stream [TokenStream]
+    # @return [Node]
+    def parse_string_literal: (TokenStream stream) -> Node
+
+    # @param stream [TokenStream]
+    # @return [Node]
+    def parse_path: (TokenStream stream) -> Node
+
+    # @param stream [TokenStream]
+    # @return [Node]
+    def parse_bracketed_path_selector: (TokenStream stream) -> Node
+
+    # @param stream [TokenStream]
+    # @return [Node]
+    def parse_shorthand_path_selector: (TokenStream stream) -> Node
+
+    # @param stream [TokenStream]
+    # @return [Node]
+    def parse_range_lambda_or_grouped_expression: (TokenStream stream) -> Node
+
+    # @param stream [TokenStream]
+    # @return [Node]
+    def parse_prefix_expression: (TokenStream stream) -> Node
+
+    # @param stream [TokenStream]
+    # @param left [Expression]
+    # @return [Node]
+    def parse_infix_expression: (TokenStream stream, Expression left) -> Node
+
+    # @param stream [TokenStream]
+    # @return [Array<Filter>]
+    def parse_filters: (TokenStream stream) -> Array[Filter]
+
+    # @param stream [TokenStream]
+    # @return [Filter]
+    def parse_filter: (TokenStream stream) -> Filter
+
+    # @param stream [TokenStream]
+    # @return [Node]
+    def parse_arrow_function: (TokenStream stream) -> Node
+
+    # @param stream [TokenStream]
+    # @param children [Array<Node>] Child tokens already consumed by the caller.
+    # @param expr [Expression] The first parameter already passed by the caller.
+    # @return [Node]
+    def parse_partial_arrow_function: (TokenStream stream, Array[Node] children, Expression expr) -> Node
+
+    # @param stream [TokenStream]
+    # @param left [Expression]
+    # @return [Node]
+    def parse_ternary_expression: (TokenStream stream, Expression left) -> TernaryExpression
+  end
+
+  interface _Buffer
+    def write: (String) -> Integer
+  end
+
+  # A compiled template bound to a Liquid environment and ready to be rendered.
+  class Template
+    @env: Environment
+
+    @ast: RootNode
+
+    attr_reader env: Environment
+
+    attr_reader ast: RootNode
+
+    # @param env [Environment]
+    # @param ast [RootNode]
+    def initialize: (Environment env, RootNode ast) -> void
+
+    def to_s: () -> String
+
+    def dump: () -> untyped
+
+    def render: (?Hash[String, untyped]? globals) -> String
+
+    def render_with_context: (RenderContext context, _Buffer buffer, ?partial: bool, ?block_scope: bool, ?namespace: Hash[String, untyped]?) -> int
+  end
+
+  # The default undefined type. Can be iterated over an indexed without error.
+  class Undefined
+    @name: untyped
+
+    @node: untyped
+
+    @force_default: bool
+
+    def initialize: (String name, ?node: Node?) -> void
+
+    def []: (*untyped) ?{ (?) -> untyped } -> self
+
+    def key?: (*untyped) ?{ (?) -> untyped } -> false
+
+    def include?: (*untyped) ?{ (?) -> untyped } -> false
+
+    def member?: (*untyped) ?{ (?) -> untyped } -> false
+
+    def fetch: (*untyped) ?{ (?) -> untyped } -> self
+
+    def !: () -> true
+
+    def ==: (untyped other) -> untyped
+
+    alias eql? ==
+
+    def size: () -> 0
+
+    def length: () -> 0
+
+    def to_s: () -> ""
+
+    def to_i: () -> 0
+
+    def to_f: () -> ::Float
+
+    def each: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def each_with_index: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def to_liquid: (RenderContext _context) -> nil
+
+    def poke: () -> true
+  end
+
+  # An undefined type that always raises an exception.
+  class StrictUndefined < Undefined
+    @message: String
+
+    def initialize: (String name, ?node: Node?) -> void
+
+    def respond_to_missing?: () -> true
+
+    def method_missing: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def []: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def key?: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def include?: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def member?: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def fetch: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def !: () -> untyped
+
+    def ==: (untyped _other) -> untyped
+
+    def !=: (untyped _other) -> untyped
+
+    alias eql? ==
+
+    def size: () -> untyped
+
+    def length: () -> untyped
+
+    def to_s: () -> untyped
+
+    def to_i: () -> untyped
+
+    def to_f: () -> untyped
+
+    def each: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def each_with_index: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def to_liquid: (RenderContext _context) -> untyped
+
+    def poke: () -> bool
+  end
+
+  # A strict undefined type that plays nicely with the _default_ filter.
+  class StrictDefaultUndefined < StrictUndefined
+    @force_default: bool
+
+    def initialize: (String name, ?node: Node?) -> void
+  end
+
+  # The base class for all nodes in a Liquid syntax tree.
+  class Node
+    @children: Array[Node | Token]
+
+    @blank: bool
+
+    attr_reader children: Array[Node | Token]
+
+    attr_reader blank: bool
+
+    WC_MAP: { "" => :whitespace_control_default, "-" => :whitespace_control_minus, "+" => :whitespace_control_plus, "~" => :whitespace_control_tilde }
+
+    # @param children [Array<Node>]
+    def initialize: (Array[Node | Token] children) -> void
+
+    # The index of the start of this node in template source text.
+    def start: () -> Integer
+
+    # The index of the start of this node in template source text, including leading whitespace.
+    def full_start: () -> Integer
+
+    # The index of the end of this node in template source text.
+    def end: () -> Integer
+
+    # Liquid markup for this node.
+    def text: () -> String
+
+    # Liquid markup for this node, including leading whitespace.
+    def full_text: () -> String
+
+    alias to_s full_text
+
+    # For debugging.
+    def dump: () -> { kind: untyped, children: untyped }
+  end
+
+  class RootNode < Node
+  end
+
+  class Skipped < Node
+  end
+
+  class Missing < Node
+  end
+
+  # An node representing a block of Liquid markup. Essentially an array of other nodes.
+  class Block < Node
+    @blank: bool
+
+    def initialize: (Array[Node] children) -> void
+
+    def render: (RenderContext context, _Buffer buffer) -> Integer
+  end
+
+  class ConditionalBlock < Node
+    @expression: Expression
+
+    @block: Block
+
+    @blank: bool
+
+    attr_reader expression: Expression
+
+    attr_reader block: Block
+
+    def initialize: (Array[Token | Node] children, Expression expression, Block block) -> void
+
+    def render: (RenderContext context, _Buffer buffer) -> Integer
+  end
+
+  # Base class for all tags.
+  class Tag < Node
+    @wc: Array[Symbol]
+
+    attr_reader wc: Array[Symbol]
+
+    def initialize: (Array[Token | Node] children) -> void
+
+    # Render this node to the output buffer.
+    # @param context [RenderContext]
+    # @param buffer [StringIO]
+    # @return [Integer] The number of bytes written to _buffer_.
+    def render: (RenderContext _context, _Buffer _buffer) -> Integer
+  end
+
+  # The base class for all expressions.
+  class Expression < Node
+    # Evaluate this expression.
+    # @return [untyped] The result of evaluating this expression.
+    def evaluate: (RenderContext _context) -> untyped
+  end
+
+  # Hash-like object for resolving built-in dynamic objects.
+  class BuiltIn
+    def key?: (String key) -> bool
+
+    def fetch: (String key, ?::Symbol default) -> untyped
+  end
+
+  # Per render contextual information. A new RenderContext is created automatically
+  # every time `Template#render` is called.
+  class RenderContext
+    @env: Environment
+
+    @template: Template
+
+    @globals: Hash[String, untyped]
+
+    @disabled_tags: Array[String]
+
+    @copy_depth: Integer
+
+    @parent: RenderContext?
+
+    @loop_carry: Integer
+
+    # The current size of the local namespace. _size_ is a non-specific measure of the
+    # amount of memory used to store template local variables.
+    @assign_score: Integer
+
+    # A namespace for template local variables (those bound with `assign` or `capture`).
+    @locals: Hash[String, untyped]
+
+    # A namespace for `increment` and `decrement` counters.
+    @counters: Hash[String, Integer]
+
+    # Namespaces are searched from right to left. When a RenderContext is extended, the
+    # temporary namespace is pushed to the end of this queue.
+    @scope: ReadOnlyChainHash
+
+    # A namespace supporting stateful tags, such as `cycle` and `increment`.
+    # It's OK to use this hash for storing custom tag state.
+    @tag_namespace: Hash[Symbol, untyped]
+
+    # A stack of forloop objects used for populating forloop.parentloop.
+    @loops: Array[ForLoop]
+
+    # A stack of interrupts used to signal breaking and continuing `for` loops.
+    @interrupts: Array[:break | :continue]
+
+    attr_reader env: Environment
+
+    attr_reader template: Template
+
+    attr_accessor interrupts: Array[:break | :continue]
+
+    BUILT_IN: BuiltIn
+
+    # @param template [Template]
+    # @param globals [Hash<String, Object>?]
+    # @param disabled_tags [Array<String>?]
+    # @param copy_depth [Integer?]
+    # @param parent [RenderContext?]
+    # @param loop_carry [Integer?]
+    # @param local_namespace_carry [Integer?]
+    def initialize: (Template template, ?globals: _Namespace?, ?disabled_tags: Set[String]?, ?copy_depth: ::Integer, ?parent: RenderContext?, ?loop_carry: ::Integer, ?local_namespace_carry: ::Integer) -> void
+
+    # Add _key_ to the local scope with value _value_.
+    # @param key [String]
+    # @param value [Object]
+    # @return [nil]
+    def assign: (String key, untyped value) -> untyped
+
+    alias []= assign
+
+    # Resolve _path_ to variable/data in the current scope.
+    # @param path [Array<String|Integer>] Path segments.
+    # @param node [Node?] An associated token to use for error context.
+    # @param default [Object?] A default value to return if the path can no be resolved.
+    # @return [Object]
+    def fetch: (Array[untyped] path, node: Node?, ?default: ::Symbol) -> untyped
+
+    # Resolve variable _name_ in the current scope.
+    # @param name [String]
+    # @param default [Object?]
+    # @return [Object?]
+    def resolve: (String name, ?default: ::Symbol) -> untyped
+
+    alias [] resolve
+
+    # Extend the scope of this context with the given namespace. Expects a block.
+    # @param namespace [Hash<String, Object>]
+    # @param template [Template?] Replace the current template for the duration of the block.
+    def extend: (Hash[String, untyped] namespace, ?template: Template?) { () -> untyped } -> untyped
+
+    # Copy this render context and add _namespace_ to the new scope.
+    # @param namespace [Hash<String, Object>]
+    # @param template [Template?] The template object bound to the new context.
+    # @param disabled_tags [Set<String>] Names of tags to disallow in the new context.
+    # @param carry_loop_iterations [bool] If true, pass the current loop iteration count to the
+    #   new context.
+    # @param block_scope [bool] It true, retain the current scope in the new context. Otherwise
+    #   only global variables will be included in the new context's scope.
+    def copy: (Hash[String, untyped] namespace, ?template: Template?, ?disabled_tags: Set[String]?, ?carry_loop_iterations: bool, ?block_scope: bool) -> RenderContext
+
+    # Push a new namespace and forloop for the duration of a block.
+    # @param namespace [Hash<String, Object>]
+    # @param forloop [ForLoop]
+    def loop: (Hash[String, untyped] namespace, ForLoop forloop) { () -> untyped } -> untyped
+
+    # Return the last ForLoop object if one is available, or an instance of Undefined otherwise.
+    def parent_loop: (Node node) -> (ForLoop | Undefined)
+
+    # Get or set the stop index of a for loop.
+    def stop_index: (String key, ?index: Integer?) -> Integer
+
+    def raise_for_loop_limit: (?length: ::Integer) -> (nil | untyped)
+
+    def get_output_buffer: (untyped parent_buffer) -> untyped
+
+    # Mark _string_ as "safe" if auto escape is enabled.
+    def markup: (String string) -> String
+
+    def cycle: (untyped key, Integer length) -> Integer
+
+    def increment: (String name) -> Integer
+
+    def decrement: (String name) -> Integer
+
+    def assign_score: (untyped value) -> Integer
+
+    # Lookup _key_ in _obj_.
+    # @param obj [Object]
+    # @param key [untyped]
+    # @return [untyped]
+    def get_item: (untyped obj, untyped key) -> untyped
+  end
+
+  # Tokens are produced by the lexer and consumed by the parser. They represent
+  # a substring in template source text along with a token kind.
+  class Token
+    @kind: Symbol
+
+    @start: Integer
+
+    @trivia: String
+
+    @text: String
+
+    attr_reader kind: Symbol
+
+    attr_reader start: Integer
+
+    attr_reader trivia: String
+
+    attr_reader text: String
+
+    def initialize: (Symbol kind, Integer start, String trivia, String text) -> void
+
+    def ==: (untyped other) -> bool
+
+    alias eql? ==
+
+    def hash: () -> untyped
+
+    def full_start: () -> Integer
+
+    def full_text: () -> String
+
+    def width: () -> Integer
+
+    def full_width: () -> Integer
+
+    def end: () -> Integer
+
+    def dump: () -> untyped
+  end
+
+  class MissingToken < Token
+    @missing_kind: Symbol
+
+    attr_reader missing_kind: Symbol
+
+    def initialize: (Symbol kind, Integer start, String trivia, String text, Symbol missing_kind) -> void
+  end
+
+  # Return an array of tokens for the Liquid template _source_.
+  # @param source [String] Liquid template source text.
+  # @return [Array<Token>]
+  def self.tokenize: (untyped source) -> untyped
+
+  # Lexical scanner for Liquid2 templates.
+  class Lexer
+    @scanner: StringScanner
+
+    @start: Integer
+
+    @trivia: String
+
+    @tokens: Array[Token]
+
+    RE_WHITESPACE: ::Regexp
+
+    RE_WHITESPACE_CONTROL: ::Regexp
+
+    RE_WORD: ::Regexp
+
+    RE_INT: ::Regexp
+
+    RE_FLOAT: ::Regexp
+
+    # `{# comment text #}` style comment
+    RE_COMMENT: ::Regexp
+
+    # Make sure shorter symbols appear after longer symbols that share a prefix.
+    RE_PUNCTUATION: ::Regexp
+
+    S_QUOTES: Set[String]
+
+    # Keywords and symbols that get their own token kind.
+    TOKEN_MAP: { "true" => :token_true, "false" => :token_false, "nil" => :token_nil, "null" => :token_nil, "and" => :token_and, "or" => :token_or, "not" => :token_not, "in" => :token_in, "contains" => :token_contains, "if" => :token_if, "else" => :token_else, "with" => :token_with, "required" => :token_required, "as" => :token_as, "for" => :token_for, "blank" => :token_blank, "empty" => :token_empty, "?" => :token_question, "[" => :token_lbracket, "]" => :token_rbracket, "|" => :token_pipe, "||" => :token_double_pipe, "." => :token_dot, ".." => :token_double_dot, "," => :token_comma, ":" => :token_colon, "(" => :token_lparen, ")" => :token_rparen, "=" => :token_assign, "<" => :token_lt, "<=" => :token_le, "<>" => :token_lg, ">" => :token_gt, ">=" => :token_ge, "==" => :token_eq, "!=" => :token_ne, "=>" => :token_arrow }
+
+    attr_reader tokens: Array[Token]
+
+    def initialize: (String source) -> void
+
+    def run: () -> untyped
+
+    def emit: (Symbol kind, String value) -> Token
+
+    def next: () -> String
+
+    def ignore: () -> untyped
+
+    def peek: () -> String
+
+    # Advance the lexer if _pattern_ matches from the buffer position.
+    # @return [String | nil]
+    def accept: (untyped pattern) -> (String | nil)
+
+    # Consume trivia (whitespace).
+    def accept_trivia: () -> untyped
+
+    # Accept and emit whitespace control.
+    def accept_whitespace_control: () -> untyped
+
+    # @return [Array<Symbol, String> | nil] An array with two items, token kind and
+    # substring.
+    def accept_expression_token: () -> ([Symbol, String] | nil)
+
+    # Accept and emit a `{# comment #}` style comment.
+    def accept_comment: () -> untyped
+
+    def lex_markup: () -> (Symbol | nil)
+
+    def lex_expression: () -> (Symbol | nil)
+
+    def lex_inside_inline_comment: () -> (Symbol | nil)
+
+    def lex_raw: () -> (Symbol | nil)
+
+    def lex_block_comment: () -> (Symbol | nil)
+
+    # Scan a string literal surrounded by _quote_.
+    # Assumes the opening quote has already been consumed and emitted.
+    def scan_string: (String quote) -> untyped
+  end
+
+  # Step through a stream of tokens.
+  class TokenStream
+    @tokens: Array[Token]
+
+    @mode: :strict | :lax
+
+    @pos: Integer
+
+    @eof: Token
+
+    @trim_carry: Symbol
+
+    attr_accessor trim_carry: Symbol
+
+    def initialize: (Array[Token] tokens, ?mode: ::Symbol) -> void
+
+    def current: () -> Token
+
+    def next: () -> Token
+
+    def peek: (?::Integer offset) -> Token
+
+    # Consume the next token if its kind matches _kind_.
+    # @param kind [Symbol]
+    # @return [Token] The next token or a `MissingToken`.
+    def eat: (Symbol kind) -> Token
+
+    # Consume the next token if its kind is in _kinds_.
+    # @param kinds [Array<Symbol>]
+    # @return [Token] The next token or a `MissingToken`.
+    def eat_one_of: (*Symbol kinds) -> Token
+
+    # Consume the next token if it is whitespace control.
+    # @return [Token] The next token or an empty _default whitespace control_ token.
+    def eat_whitespace_control: () -> Token
+
+    # Consume and return tokens for an empty tag (one without an expression), named with _name_.
+    # @param name [String]
+    # @return [Array<Token>]
+    def eat_empty_tag: (String name) -> Array[Token]
+
+    # Return `true` if we're at the start of a tag named _name_.
+    # @param name [String]
+    # @return [bool]
+    def tag?: (String name) -> bool
+
+    # @param kind [Set<Symbol>] a set of token kinds that cause us to stop skipping.
+    # @return [Array<Token> | nil] the skipped tokens or nil if no tokens were skipped.
+    def skip_until: (Set[Symbol] kinds, ?max: ::Integer) -> Array[Token]
+
+    # @param reason [String] a string describing the expected token.
+    # @return [Node] a new Missing node.
+    def missing: (String reason) -> Node
+  end
+
+  # The base class for all Liquid errors.
+  class LiquidError < StandardError
+    @node: untyped
+
+    def initialize: (String message, ?Node node) -> void
+  end
+
+  class LiquidSyntaxError < LiquidError
+  end
+
+  class LiquidArgumentError < LiquidError
+  end
+
+  class UndefinedError < LiquidError
+  end
+
+  # The standard _for_ tag.
+  class ForTag < Node
+    @expression: LoopExpression
+
+    @block: Block
+
+    @default: Block?
+
+    @blank: bool
+
+    END_BLOCK: Set[String]
+
+    def self.parse: (TokenStream stream, Parser parser) -> Node
+
+    # @param children [Array<Token|Node>]
+    # @param expression [LoopExpression]
+    # @param block [Block]
+    # @param default [Block?]
+    def initialize: (Array[Node|Token] children, LoopExpression expression, Block block, Block? default) -> void
+
+    def render: (RenderContext context, _Buffer buffer) -> untyped
+  end
+
+  # The standard _break_ tag.
+  class BreakTag < Tag
+    def self.parse: (TokenStream stream, Parser _parser) -> Node
+
+    def render: (RenderContext context, _Buffer _buffer) -> 0
+  end
+
+  # The standard _continue_ tag.
+  class ContinueTag < Tag
+    def self.parse: (TokenStream stream, Parser _parser) -> Node
+
+    def render: (RenderContext context, _Buffer _buffer) -> 0
+  end
+
+  # `for` loop helper variables.
+  class ForLoop
+    @name: String
+
+    @enum: Enumerable[untyped]
+
+    @length: Integer
+
+    @parentloop: ForLoop?
+
+    @index: Integer
+
+    attr_reader name: String
+
+    attr_reader length: Integer
+
+    attr_reader parentloop: ForLoop?
+
+    KEYS: Set[String]
+
+    def initialize: (String name, Enumerable[untyped] enum, Integer length, ForLoop? parent_loop) -> void
+
+    def key?: (String key) -> bool
+
+    def fetch: (String key, ?::Symbol default) -> untyped
+
+    def each: () { (untyped) -> untyped } -> untyped
+
+    def index: () -> Integer
+
+    def index0: () -> Integer
+
+    def rindex: () -> Integer
+
+    def rindex0: () -> Integer
+
+    def first: () -> bool
+
+    def last: () -> bool
+  end
+
+  interface _Namespace
+    def key?: (String) -> bool
+    def fetch: (String, ?::Symbol default) -> untyped
+  end
+
+  # Combine multiple hashes for sequential lookup.
+  class ReadOnlyChainHash
+    @hashes: Array[_Namespace]
+
+    # @param hashes
+    def initialize: (*_Namespace hashes) -> void
+
+    def []: (String key) -> untyped
+
+    def size: () -> Integer
+
+    def key?: (String key) -> bool
+
+    def fetch: (String key, ?::Symbol default) -> untyped
+
+    def push: (_Namespace hash) -> untyped
+
+    alias << push
+
+    def pop: () -> (_Namespace | nil)
+  end
 end
+
+module Liquid2
+  class PositionalArgument < Expression
+    @value: Expression
+
+    # @param children [Array<Token | Node>]
+    # @param value [Expression]
+    def initialize: (Array[Node | Token] children, Expression value) -> void
+
+    def evaluate: (RenderContext context) -> [nil, untyped]
+  end
+
+  class KeywordArgument < Expression
+    @name: String
+
+    @value: Expression
+
+    # @param children [Array<Token | Node>]
+    # @param name [Token]
+    # @param value [Expression]
+    def initialize: (Array[Node | Token] children, Token name, Expression value) -> void
+
+    def evaluate: (RenderContext context) -> [String, untyped]
+  end
+end
+
+module Liquid2
+  # An array literal.
+  class ImplicitArray < Expression
+    @items: Array[Expression]
+
+    # @param children [Array<Token, Node>]
+    # @param items [Array<Expression>]
+    def initialize: (Array[Node | Token] children, Array[Expression] items) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+end
+
+module Liquid2
+  class Blank < Expression
+    # @param token [Token]
+    def initialize: (Token token) -> void
+
+    def evaluate: (RenderContext _context) -> self
+
+    def ==: (untyped other) -> bool
+
+    alias eql? ==
+  end
+
+  class Empty < Expression
+    # @param token [Token]
+    def initialize: (Token token) -> void
+
+    def evaluate: (RenderContext _context) -> self
+
+    def ==: (untyped other) -> bool
+
+    alias eql? ==
+  end
+end
+
+module Liquid2
+  class BooleanExpression < Expression
+    @expr: Expression
+
+    # @param expr [Expression]
+    def initialize: (Expression expr) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+end
+
+module Liquid2
+  class FilteredExpression < Expression
+    @left: Expression
+
+    @filters: Array[Filter]
+
+    def initialize: (Array[Node | Token] children, Expression left, Array[Filter] filters) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class TernaryExpression < Expression
+    @left: FilteredExpression
+
+    @condition: BooleanExpression
+
+    @alternative: Expression?
+
+    @filters: Array[Filter]
+
+    @tail_filters: Array[Filter]
+
+    # @param children [Array<Token | Node>]
+    # @param left [FilteredExpression]
+    # @param condition [BooleanExpression]
+    # @param alternative [Expression | nil]
+    # @param filters [Array<Filter>]
+    # @param tail_filters [Array<Filter>]
+    def initialize: (Array[Node | Token] children, FilteredExpression left, BooleanExpression condition, BooleanExpression? alternative, Array[Filter] filters, Array[Filter] tail_filters) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class Filter < Node
+    @name: String
+
+    @args: Array[PositionalArgument | KeywordArgument]
+
+    # @param children [Array<Token | Node>]
+    # @param name [Token]
+    # @param args [Array<PositionalArgument | KeywordArgument>]
+    def initialize: (Array[Node | Token] children, Token name, Array[PositionalArgument | KeywordArgument] args) -> void
+
+    def evaluate: (untyped left, RenderContext context) -> untyped
+
+    private
+
+    # @param context [RenderContext]
+    # @return [positional arguments, keyword arguments] An array with two elements.
+    #   The first is an array of evaluates positional arguments. The second is a hash
+    #   of keyword names to evaluated keyword values.
+    def evaluate_args: (RenderContext context) -> [Array[PositionalArgument], Hash[Symbol, untyped]]
+  end
+end
+
+module Liquid2
+  class Identifier < Expression
+    # TODO: make identifier behave like a string?
+    @name: String
+
+    attr_reader name: String
+
+    # Try to cast _expr_ to an Identifier.
+    # @param expr [Expression]
+    def self.from: (Expression expr, ?trailing_question: bool) -> Identifier
+
+    def initialize: ((Node|Token) name) -> void
+
+    def evaluate: (RenderContext _context) -> untyped
+  end
+end
+
+module Liquid2
+  # Base class for expression literals.
+  class Literal < Expression
+    # @param token [Token]
+    def initialize: (Token token) -> void
+  end
+
+  # Literal true
+  class TrueLiteral < Literal
+    def evaluate: (RenderContext _context) -> true
+  end
+
+  # Literal false
+  class FalseLiteral < Literal
+    def evaluate: (RenderContext _context) -> false
+  end
+
+  # Literal nil
+  class NilLiteral < Literal
+    def evaluate: (RenderContext _context) -> nil
+  end
+
+  # Integer literal
+  class IntegerLiteral < Literal
+    @value: Integer
+
+    # @param token [Token]
+    def initialize: (Token token) -> void
+
+    def evaluate: (RenderContext _context) -> untyped
+  end
+
+  # Float literal
+  class FloatLiteral < Literal
+    @value: Float
+
+    # @param token [Token]
+    def initialize: (Token token) -> void
+
+    def evaluate: (RenderContext _context) -> untyped
+  end
+end
+
+module Liquid2
+  class LogicalNot < Expression
+    @expr: Expression
+
+    # @param children [Array<Token, Node>]
+    # @param expr [Expression]
+    def initialize: (Array[Node | Token] children, Expression expr) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class LogicalAnd < Expression
+    @left: Expression
+
+    @right: Expression
+
+    # @param children [Array<Token, Node>]
+    # @param left [Expression]
+    # @param right [Expression]
+    def initialize: (Array[Node | Token] children, Expression left, Expression right) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class LogicalOr < Expression
+    @left: Expression
+
+    @right: Expression
+
+    # @param children [Array<Token, Node>]
+    # @param left [Expression]
+    # @param right [Expression]
+    def initialize: (Array[Node | Token] children, Expression left, Expression right) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  # A logical expression with explicit parentheses.
+  class GroupedExpression < Expression
+    @expr: Expression
+
+    # @param children [Array<Token, Node>]
+    # @param expr [Expression]
+    def initialize: (Array[Node | Token] children, Expression expr) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+end
+
+module Liquid2
+  class LoopExpression < Expression
+    @identifier: Identifier
+
+    @enum: Expression
+
+    @limit: Expression?
+
+    @offset: Expression?
+
+    @reversed: Expression?
+
+    @cols: Expression?
+
+    attr_reader identifier: Identifier
+
+    attr_reader enum: Expression
+
+    attr_reader limit: Expression?
+
+    attr_reader offset: Expression?
+
+    attr_reader reversed: Expression?
+
+    attr_reader cols: Expression?
+
+    def initialize: (Array[Node | Token] children, Identifier identifier, Expression enum, ?limit: Expression?, ?offset: Expression?, ?reversed: bool, ?cols: Expression?) -> void
+
+    # @return [[Enumerator, Integer]] An enumerator and its length.
+    def evaluate: (RenderContext context) -> [Enumerable[untyped], Integer]
+
+    def lazy_slice: (Enumerator[untyped] enum, Integer start_index, ?Integer? stop_index) -> Enumerable[untyped]
+  end
+end
+
+module Liquid2
+  # A path to some variable data.
+  # If the path has just one segment, it is often just called a "variable".
+  class Path < Expression
+    @segments: Array[PathSegment]
+
+    attr_reader segments: Array[PathSegment]
+
+    # @param segments [Array<PathSegment>]
+    def initialize: (Array[PathSegment] segments) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  # Paths are composed of segments..
+  class PathSegment < Expression
+    @selector: (Node | Integer | String)
+
+    attr_reader selector: (Node | Integer | String)
+
+    # @param children [Array<Node, Token>]
+    # @param selector [Node | Token]
+    def initialize: (Array[Node | Token] children, (Node | Token) selector) -> void
+  end
+
+  class BracketedSegment < PathSegment
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class ShorthandSegment < PathSegment
+    def evaluate: (RenderContext _context) -> untyped
+  end
+end
+
+module Liquid2
+  # A range expression.
+  class RangeExpression < Expression
+    @start: untyped
+
+    @stop: untyped
+
+    # @param children [Array<Token, Node>]
+    # @param start [Expression]
+    # @param stop [Expression]
+    def initialize: (Array[Node | Token] children, untyped start, untyped stop) -> void
+
+    def evaluate: (RenderContext context) -> ::Range[untyped]
+  end
+end
+
+module Liquid2
+  # Base for comparison expressions.
+  class ComparisonExpression < Expression
+    @left: untyped
+
+    @right: untyped
+
+    # @param children [Array<Token, Node>]
+    # @param left [Expression]
+    # @param right [Expression]
+    def initialize: (Array[Node | Token] children, untyped left, untyped right) -> void
+
+    def inner_evaluate: (RenderContext context) -> [untyped, untyped]
+  end
+
+  class Eq < ComparisonExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class Ne < ComparisonExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class Le < ComparisonExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class Ge < ComparisonExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class Lt < ComparisonExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class Gt < ComparisonExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class Contains < ComparisonExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  # Test _left_ and _right_ for Liquid equality.
+  def self.eq: (untyped left, untyped right) -> untyped
+
+  # Return `true` if _left_ is considered less than _right_.
+  def self.lt: (untyped left, untyped right) -> untyped
+
+  def self.contains: (untyped left, untyped right) -> untyped
+end
+
+module Liquid2
+  # Quoted string literal.
+  class StringLiteral < Literal
+    @children: untyped
+
+    @value: untyped
+
+    # @param children [Array<Token, Expression>]
+    def initialize: (Array[Node | Token] children) -> void
+
+    def evaluate: (RenderContext _context) -> untyped
+  end
+
+  # A literal part of a template string.
+  class StringSegment < Expression
+    @value: untyped
+
+    # @param token [Token]
+    def initialize: (untyped token) -> void
+
+    def evaluate: (RenderContext _context) -> untyped
+  end
+
+  # Quoted string with interpolated expressions.
+  class TemplateString < Expression
+    @children: untyped
+
+    @segments: untyped
+
+    # @param children [Array<Token, Expression>]
+    # @param segments [Array<Expression>]
+    def initialize: (Array[Node | Token] children, untyped segments) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  # The standard _assign_ tag.
+  class AssignTag < Tag
+    @name: String
+
+    @expression: Expression
+
+    # @param stream [TokenStream]
+    # @param parser [Parser]
+    # @return [AssignTag]
+    def self.parse: (TokenStream stream, Parser parser) -> AssignTag
+
+    # @param children [Array<Token | Node>]
+    # @param name [Identifier]
+    # @param expression [Expression]
+    def initialize: (Array[Token | Node] children, Identifier name, Expression expression) -> void
+
+    def render: (RenderContext context, _Buffer _buffer) -> 0
+  end
+end
+
+module Liquid2
+  # The standard _if_ tag
+  class IfTag < Node
+    @expression: Expression
+
+    @block: Block
+
+    @alternatives: Array[ConditionalBlock]
+
+    @default: Block
+
+    END_TAG: Set[String]
+
+    END_BLOCK: Set[String]
+
+    def self.parse: (TokenStream stream, Parser parser) -> IfTag
+
+    # @return [ConditionalBlock]
+    def self.parse_elsif: (TokenStream stream, Parser parser) -> ConditionalBlock
+
+    # @param children [Array<Token|Node>]
+    # @param expression [Expression]
+    # @param block [Block]
+    # @param alternatives [Array<[ConditionalBlock]>]
+    # @param default [Block?]
+    def initialize: (Array[Token|Node] children, Expression expression, Block block, Array[ConditionalBlock] alternatives, Block? default) -> void
+
+    def render: (RenderContext context, _Buffer buffer) -> Integer
+  end
+end
+
+module Liquid2
+  class Comment < Node
+    @text: String
+
+    @wc: Array[Symbol]
+
+    attr_reader wc: Array[Symbol]
+
+    # @param children [Array<Node | Token>]
+    # @param text [String]
+    def initialize: (Array[Token | Node] children, String text) -> void
+
+    def render: (RenderContext _context, _Buffer _buffer) -> 0
+  end
+end
+
+module Liquid2
+  class Lambda < Node
+    @params: Array[Identifier]
+
+    @expr: Expression
+
+    # @param children [Array<Token>]
+    # @param params [Array<Identifier>]
+    # @param expr [Expression]
+    def initialize: (Array[Token | Node] children, Array[Identifier] params, Expression expr) -> void
+
+    # Apply this lambda function to elements from _enum_.
+    # @param context [RenderContext]
+    # @param enum [Enumerable<Object>]
+    # @return [Enumerable<Object>]
+    def map: (RenderContext context, Enumerable[untyped] enum) -> Enumerable[untyped]
+  end
+end
+
+module Liquid2
+  class Other < Node
+    @text: String
+
+    @blank: bool
+
+    # @param children [Array<Node | Token>]
+    # @param text [String]
+    def initialize: (Array[Node|Token] children, String text) -> void
+
+    def render: (RenderContext _context, _Buffer buffer) -> Integer
+  end
+end
+
+module Liquid2
+  # A string that is safe to be inserted into HTML or XML, either because it is already
+  # escaped or because it was explicitly marked as safe.
+  #
+  # TODO: finish me
+  # TODO: test me
+  #
+  class Markup < String
+    RE_ESCAPE: untyped
+
+    ESCAPE_MAP: { "&" => "&amp;", ">" => "&gt;", "<" => "&lt;", "'" => "&39;", "\"" => "&34;" }
+
+    def self.escape: (untyped object) -> Markup
+
+    def self.soft_to_s: (untyped object) -> String
+
+    def self.try_convert: (untyped object) -> String
+
+    def self.join: (Array[untyped] array, ?String separator) -> String
+
+    def to_html: () -> self
+
+    def inspect: () -> ::String
+
+    def %: (untyped _other) -> untyped
+
+    def *: (untyped other) -> untyped
+
+    def +: (untyped other) -> untyped
+
+    def -: (untyped _other) -> untyped
+
+    def []: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def slice: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def []=: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def split: (?untyped field_sep, ?::Integer limit) -> untyped
+
+    def capitalize: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def downcase: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def each_line: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def gsub: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def gsub!: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def insert: (untyped index, untyped other_string) -> untyped
+
+    def lines: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def prepend: (*untyped other_strings) -> untyped
+
+    def sub: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def sub!: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def strip: () -> untyped
+
+    def lstrip: () -> untyped
+
+    def rstrip: () -> untyped
+
+    def ljust: (untyped size, ?::String pad_string) -> untyped
+
+    def rjust: (untyped size, ?::String pad_string) -> untyped
+
+    def center: (untyped size, ?::String pad_string) -> untyped
+
+    def partition: (untyped string_or_regexp) -> untyped
+
+    def rpartition: (untyped string_or_regexp) -> untyped
+
+    def reverse: () -> untyped
+
+    def unescape: () -> untyped
+
+    def upcase: (*untyped) ?{ (?) -> untyped } -> untyped
+  end
+end
+

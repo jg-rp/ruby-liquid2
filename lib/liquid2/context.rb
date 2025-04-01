@@ -101,19 +101,17 @@ module Liquid2
 
     # Resolve _path_ to variable/data in the current scope.
     # @param path [Array<String|Integer>] Path segments.
-    # @param token [Token?] An associated token to use for error context.
+    # @param node [Node?] An associated token to use for error context.
     # @param default [Object?] A default value to return if the path can no be resolved.
     # @return [Object]
-    def fetch(path, token:, default: :undefined)
+    def fetch(path, node:, default: :undefined)
       # TODO: pass Path object to undefined instead of a single token?
       root = path.first
       obj = @scope.fetch(root)
 
       if obj == :undefined
         if default == :undefined
-          return @env.undefined(root,
-                                hint: "#{root} is undefined",
-                                token: token)
+          return @env.undefined(root, node: node)
         end
 
         return default
@@ -126,9 +124,7 @@ module Liquid2
 
         return default unless default == :undefined
 
-        return @env.undefined(root,
-                              hint: "#{segment} is undefined",
-                              token: token)
+        return @env.undefined(root, node: node)
       end
 
       obj
@@ -192,7 +188,7 @@ module Liquid2
                 ReadOnlyChainHash.new(@globals, namespace)
               end
 
-      new(template || @template,
+      self.class.new(template || @template,
           globals: scope,
           disabled_tags: disabled_tags,
           copy_depth: @copy_depth + 1,
@@ -219,10 +215,6 @@ module Liquid2
       return @env.undefined("parentloop", node: node) if @loops.empty?
 
       @loops.last
-    end
-
-    def filter
-      # TODO: lookup filter
     end
 
     # Get or set the stop index of a for loop.

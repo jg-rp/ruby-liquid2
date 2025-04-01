@@ -64,17 +64,17 @@ module Liquid2
       new(object.to_s.gsub(RE_ESCAPE, ESCAPE_MAP), encoding: "UTF-8")
     end
 
-    def self.soft_to_str(object)
+    def self.soft_to_s(object)
       object.is_a?(String) ? object : object.to_s
     end
 
     def self.try_convert(object)
-      object = object.to_html if object.respond_to?(:to_html)
-      new(super, encoding: "UTF-8")
+      object = object.respond_to?(:to_html) ? object.to_html : object
+      new(super(object), encoding: "UTF-8")
     end
 
     def self.join(array, separator = $OUTPUT_FIELD_SEPARATOR)
-      self.class.new(array.map { |item| self.class.escape(item) }.join(separator))
+      new(array.map { |item| escape(item) }.join(separator))
     end
 
     def to_html
@@ -97,20 +97,16 @@ module Liquid2
       self.class.new(super(self.class.escape(other)))
     end
 
-    def +@(other)
-      self.class.new(super(self.class.escape(other)))
-    end
-
     def -(_other)
       raise "not implemented"
     end
 
     def [](...)
-      self.class.new(super)
+      self.class.new(super) # steep:ignore
     end
 
     def slice(...)
-      self.class.new(super)
+      self.class.new(super) # steep:ignore
     end
 
     def []=(...)
@@ -118,7 +114,7 @@ module Liquid2
     end
 
     def split(field_sep = $FIELD_SEPARATOR, limit = 0)
-      super.map { |string| self.class.new(string) }
+      super(field_sep, limit) { |string| self.class.new(string) }
     end
 
     def capitalize(...)
@@ -130,7 +126,7 @@ module Liquid2
     end
 
     def each_line(...)
-      super.map { |substring| self.class.new(substring) }
+      super { |substring| self.class.new(substring) }
     end
 
     def gsub(...)
@@ -146,7 +142,7 @@ module Liquid2
     end
 
     def lines(...)
-      super.map { |substring| self.class.new(substring) }
+      super { |substring| self.class.new(substring) }
     end
 
     def prepend(*other_strings)

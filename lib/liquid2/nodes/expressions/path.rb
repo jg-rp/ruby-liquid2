@@ -15,7 +15,7 @@ module Liquid2
     end
 
     def evaluate(context)
-      context.fetch(@segments.map { |segment| segment.evaluate(context) }, token: @children.first)
+      context.fetch(@segments.map { |segment| segment.evaluate(context) }, node: self)
     end
   end
 
@@ -39,7 +39,8 @@ module Liquid2
 
   class BracketedSegment < PathSegment
     def evaluate(context)
-      @selector.evaluate(context)
+      # @type ivar @selector: Expression
+      @selector.is_a?(Expression) ? @selector.evaluate(context) : @selector
     end
   end
 

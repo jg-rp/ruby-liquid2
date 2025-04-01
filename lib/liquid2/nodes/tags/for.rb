@@ -8,6 +8,7 @@ module Liquid2
     END_BLOCK = Set["endfor", "else"]
 
     def self.parse(stream, parser)
+      # @type var children: Array[Token | Node]
       children = [stream.eat(:token_tag_start),
                   stream.eat_whitespace_control,
                   stream.eat(:token_tag_name)]
@@ -46,7 +47,7 @@ module Liquid2
       enum, length = @expression.evaluate(context)
 
       if length.zero?
-        return @default ? @default.render(context, buffer) : 0
+        return @default ? (@default || raise).render(context, buffer) : 0
       end
 
       char_count = 0

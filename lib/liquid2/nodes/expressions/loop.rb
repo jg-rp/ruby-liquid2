@@ -21,17 +21,17 @@ module Liquid2
       offset_key = "#{@identifier.name}-#{@enum.text}"
 
       start = if @offset
-                offset = @offset.evaluate(context)
+                offset = (@offset || raise).evaluate(context)
                 if offset == "continue"
                   context.stop_index(offset_key)
                 else
-                  Liquid2.to_int(offset)
+                  Liquid2.to_i(offset)
                 end
               else
                 0
               end
 
-      stop = Liquid2.to_i(@limit.evaluate(context)) + start if @limit
+      stop = Liquid2.to_i((@limit || raise).evaluate(context)) + start if @limit
       obj = @enum.evaluate(context)
 
       if obj.respond_to?(:slice) && !obj.is_a?(String)
@@ -41,13 +41,14 @@ module Liquid2
 
       # TODO: optionally enable string iteration
       enum, length = if obj.is_a?(String)
-                       obj.empty? ? [[].to_enum, 0] : [[obj].to_enum, 1]
+                       obj.empty? ? [Enumerator.new {}, 0] : [[obj].to_enum, 1]
                      elsif obj.respond_to?(:each)
                        [obj.each, obj.size]
                      else
-                       [[].to_enum, 0]
+                       [Enumerator.new {}, 0]
                      end
 
+      # TODO: set stop_index
       [lazy_slice(enum, start, stop), length]
     end
 

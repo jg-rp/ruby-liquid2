@@ -10,7 +10,7 @@ module Liquid2
 
     def [](key)
       @hashes.reverse_each do |hash|
-        return hash[key] if hash.key?(key)
+        return hash.fetch(key) if hash.key?(key) # TODO: this causes two scope traversals
       end
       nil
     end
@@ -19,9 +19,16 @@ module Liquid2
       @hashes.length
     end
 
-    def fetch(key, default: :undefined)
+    def key?(key)
       @hashes.reverse_each do |hash|
-        return hash[key] if hash.key?(key)
+        return true if hash.key?(key)
+      end
+      false
+    end
+
+    def fetch(key, default = :undefined)
+      @hashes.reverse_each do |hash|
+        return hash.fetch(key) if hash.key?(key) # TODO: this causes two scope traversals
       end
       default
     end

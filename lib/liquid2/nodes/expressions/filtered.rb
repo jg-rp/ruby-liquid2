@@ -39,7 +39,7 @@ module Liquid2
       if @condition.evaluate(context)
         rv = @left.evaluate(context)
       elsif @alternative
-        rv = @alternative.evaluate(context)
+        rv = (@alternative || raise).evaluate(context)
         @filters.each { |f| rv = f.evaluate(rv, context) }
       end
 
@@ -77,8 +77,8 @@ module Liquid2
     #   The first is an array of evaluates positional arguments. The second is a hash
     #   of keyword names to evaluated keyword values.
     def evaluate_args(context)
-      positional_args = []
-      keyword_args = {}
+      positional_args = [] # @type var positional_args: Array[untyped]
+      keyword_args = {} # @type var keyword_args: Hash[Symbol, untyped]
 
       @args.each do |arg|
         name, value = arg.evaluate(context)

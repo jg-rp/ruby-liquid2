@@ -12,7 +12,7 @@ module Liquid2
     end
 
     def evaluate(context)
-      !Liquid2.truthy?(@expr.evaluate(context))
+      !Liquid2.truthy?(context, @expr.evaluate(context))
     end
   end
 
@@ -28,7 +28,7 @@ module Liquid2
 
     def evaluate(context)
       left = @left.evaluate(context)
-      Liquid2.truthy?(left) ? @right.evaluate(context) : left
+      Liquid2.truthy?(context, left) ? @right.evaluate(context) : left
     end
   end
 
@@ -44,7 +44,7 @@ module Liquid2
 
     def evaluate(context)
       left = @left.evaluate(context)
-      Liquid2.truthy?(left) ? left : @right.evaluate(context)
+      Liquid2.truthy?(context, left) ? left : @right.evaluate(context)
     end
   end
 

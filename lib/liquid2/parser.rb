@@ -63,7 +63,7 @@ module Liquid2
     # @param stream [TokenStream]
     # @param end_block [responds to include?] An array or set of tag names that will
     #   indicate the end of the block.
-    # @return [BlockNode]
+    # @return [Block]
     def parse_block(stream, end_block)
       nodes = []
       left_trim = stream.trim_carry
