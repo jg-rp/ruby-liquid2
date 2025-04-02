@@ -83,7 +83,7 @@ module Liquid2
           nodes << output_node
           left_trim = output_node.wc.last
         when :token_tag_start
-          break if end_block.include? peek_tag_name(stream).text
+          break if end_block.include?(peek_tag_name(stream).text)
 
           nodes << parse_tag(stream)
           left_trim = stream.trim_carry
@@ -92,6 +92,27 @@ module Liquid2
           nodes << comment_node
           left_trim = comment_node.wc.last
         when :token_eof
+          break
+        else
+          raise "unexpected token: #{token.inspect}"
+        end
+      end
+
+      Block.new(nodes)
+    end
+
+    # Parse lines from a `liquid` tag.
+    # @param stream [TokenStream]
+    # @return [Block]
+    def parse_line_statements(stream)
+      nodes = [] # : Array[Node]
+
+      loop do
+        token = stream.current
+        case token.kind
+        when :token_tag_start
+          nodes << parse_tag(stream)
+        when :token_whitespace_control, :token_tag_end
           break
         else
           raise "unexpected token: #{token.inspect}"
@@ -279,7 +300,8 @@ module Liquid2
     TERMINATE_OUTPUT = Set[
       :token_whitespace_control,
       :token_output_end,
-      :token_other
+      :token_other,
+      :token_line_term
     ]
 
     TERMINATE_FILTER = Set[
@@ -291,7 +313,8 @@ module Liquid2
       :token_if,
       :token_else,
       :token_other,
-      :token_eof
+      :token_eof,
+      :token_line_term
     ]
 
     TERMINATE_GROUPED_EXPRESSION = Set[

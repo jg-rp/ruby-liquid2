@@ -4,16 +4,28 @@ require "json"
 require "liquid2"
 
 env = Liquid2::Environment.new
-t = env.parse(<<~LIQUID
+source = <<~LIQUID
   START
-  {% for x in y -%}
-  {% if forloop.index == 3 %}{% continue %}{% endif ~%}
-    - {{ x }}
-    {# some comment {{ 'foo' }} #}
-  {% endfor ~%}
+  {% liquid
+    assign username = "Brian"
+
+    if username
+      echo "Hello, " | append: username
+    else
+      echo "Hello, user"
+    endif
+
+    for i in (1..3)
+      echo i
+    endfor -%}
   END
 LIQUID
-             )
+
+# Liquid2.tokenize(source).each do |token|
+#   puts "#{token.kind.to_s.ljust(50)} -> #{token.text.inspect}"
+# end
+
+t = env.parse(source)
 
 # puts JSON.pretty_generate(t.ast.dump)
 

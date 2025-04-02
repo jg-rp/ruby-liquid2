@@ -16,7 +16,7 @@ module Liquid2
 
     def evaluate(context)
       start = Liquid2.to_liquid_int(@start.evaluate(context))
-      stop = Liquid2.to_liquid_int(@start.evaluate(context))
+      stop = Liquid2.to_liquid_int(@stop.evaluate(context))
       (start..stop)
     end
   end

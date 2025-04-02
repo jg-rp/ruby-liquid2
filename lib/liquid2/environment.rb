@@ -7,8 +7,14 @@ require_relative "filters/slice"
 require_relative "nodes/tags/assign"
 require_relative "nodes/tags/if"
 require_relative "nodes/tags/for"
+require_relative "nodes/tags/liquid"
+require_relative "nodes/tags/echo"
 
 module Liquid2
+  # Template parsing and rendering configuration.
+  #
+  # A Liquid::Environment is where you might register custom tags and filters,
+  # or store global context data that should be available to all templates.
   class Environment
     attr_reader :mode, :tags, :local_namespace_limit, :context_depth_limit, :loop_iteration_limit,
                 :output_stream_limit, :filters, :auto_escape, :suppress_blank_control_flow_blocks,
@@ -22,7 +28,9 @@ module Liquid2
         "if" => IfTag,
         "for" => ForTag,
         "break" => BreakTag,
-        "continue" => ContinueTag
+        "continue" => ContinueTag,
+        "liquid" => LiquidTag,
+        "echo" => EchoTag
       }
 
       # A mapping of filter names to objects responding to `#call(left, ...)`,
@@ -83,6 +91,7 @@ module Liquid2
       register_filter("slice", SliceFilter.new)
       register_filter("split", ->(left, sep) { Liquid2.to_s(left).split(Liquid2.to_s(sep)) })
       register_filter("join", ->(left, sep) { left.join(Liquid2.to_s(sep)) })
+      register_filter("append", ->(left, other) { Liquid2.to_s(left) + Liquid2.to_s(other) })
     end
 
     def undefined(name, node: nil)

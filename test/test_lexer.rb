@@ -250,18 +250,18 @@ class TestLexer < Minitest::Spec
     {
       name: "liquid, one line",
       source: "{% liquid echo 'Hello, World!' %}",
-      want: ["{%", " liquid", " echo", " '", "Hello, World!", "'", " %}"]
+      want: ["{%", " liquid", "", " echo", " '", "Hello, World!", "'", "", " %}"]
     },
     {
       name: "liquid, leading newline",
       source: "{% liquid\necho 'Hello, World!' %}",
-      want: ["{%", " liquid", "\necho", " '", "Hello, World!", "'", " %}"]
+      want: ["{%", " liquid", "", "\necho", " '", "Hello, World!", "'", "", " %}"]
     },
     {
       name: "liquid, multi-line",
       source: "{% liquid\nif true\necho 'Hello, World!'\nendif %}",
-      want: ["{%", " liquid", "\nif", " true", "\n", "echo", " '", "Hello, World!", "'", "\n",
-             "endif", " %}"]
+      want: ["{%", " liquid", "", "\nif", " true", "\n", "", "echo", " '", "Hello, World!", "'",
+             "\n", "", "endif", "", " %}"]
     }
   ].freeze
 

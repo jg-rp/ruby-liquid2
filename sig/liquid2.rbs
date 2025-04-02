@@ -132,6 +132,8 @@ module Liquid2
     #   indicate the end of the block.
     # @return [BlockNode]
     def parse_block: (TokenStream stream, Set[String] end_block) -> Block
+                   
+    def parse_line_statements: (TokenStream stream) -> Block
 
     # @param stream [TokenStream]
     # @return [FilteredExpression|TernaryExpression]
@@ -170,7 +172,7 @@ module Liquid2
       PREFIX: 7
     end
 
-    PRECEDENCES: { token_and: Integer, token_or: Integer, token_not: Integer, token_rparen: Integer, token_contains: Integer, token_eq: Integer, token_lt: Integer, token_gt: Integer, token_ne: Integer, token_lg: Integer, token_le: Integer, token_ge: Integer }
+    PRECEDENCES: Hash[Symbol, Integer]
 
     BINARY_OPERATORS: Set[Symbol]
 
@@ -703,6 +705,8 @@ module Liquid2
     def run: () -> untyped
 
     def emit: (Symbol kind, String value) -> Token
+            
+    def emit_line_tag_start: (String value) -> Token
 
     def next: () -> String
 
@@ -1563,3 +1567,40 @@ module Liquid2
     def parameters: () -> untyped
   end
 end
+
+module Liquid2
+  # The standard _liquid_ tag.
+  class LiquidTag < Tag
+    @block: Block
+
+    @blank: bool
+
+    # @param stream [TokenStream]
+    # @param parser [Parser]
+    # @return [LiquidTag]
+    def self.parse: (TokenStream stream, Parser parser) -> LiquidTag
+
+    def initialize: (Array[Token | Node] children, Block block) -> void
+
+    def render: (RenderContext context, _Buffer buffer) -> Integer
+  end
+end
+
+module Liquid2
+  # The standard _echo_ tag.
+  class EchoTag < Tag
+    @expression: Expression
+
+    @blank: bool
+
+    # @param stream [TokenStream]
+    # @param parser [Parser]
+    # @return [LiquidTag]
+    def self.parse: (TokenStream stream, Parser parser) -> EchoTag
+
+    def initialize: (Array[Token | Node] children, Expression expression) -> void
+
+    def render: (RenderContext context, _Buffer buffer) -> untyped
+  end
+end
+

@@ -104,6 +104,18 @@ module Liquid2
       token
     end
 
+    # Emit an empty :token_tag_start followed by :token_tag_name with _value_.
+    # We're pretending tags inside `liquid` tags have the usual markup so normal
+    # parsing methods work unchanged.
+    def emit_line_tag_start(value)
+      empty_token = Token.new(:token_tag_start, @start, "", "")
+      token = Token.new(:token_tag_name, @start, @trivia, value)
+      @tokens << empty_token << token
+      @start = @scanner.charpos
+      @trivia = ""
+      token
+    end
+
     def next
       @scanner.get_byte || ""
     end
@@ -276,6 +288,7 @@ module Liquid2
         end
       end
 
+      # TODO: check that newlines arn't breaking up tokens more than necessary
       if (text = accept(/.+?(?=(\{\{|\{%|\{#+|\Z))/m))
         emit(:token_other, text)
         return :lex_markup
@@ -372,7 +385,7 @@ module Liquid2
       accept_trivia # Leading newlines are OK
 
       if (tag_name = accept(/(?:[a-z][a-z_0-9]*|#)/))
-        emit(:token_tag_name, tag_name)
+        emit_line_tag_start(tag_name)
         :lex_inside_line_statement
       elsif accept_whitespace_control
         emit(:token_tag_end, "%}") if accept(/%\}/)
@@ -393,12 +406,16 @@ module Liquid2
           emit(kind, value)
           scan_string(value) if S_QUOTES.member?(value)
         elsif (line_term = accept(/[\r\n]+/))
-          emit(:token_line_term, line_term)
+          emit(:token_tag_end, line_term)
           return :lex_line_statements
         elsif accept_whitespace_control
+          # Insert and extra :token_tag_end before whitespace control.
+          @tokens.insert(-2, Token.new(:token_tag_end, @start, "", ""))
           emit(:token_tag_end, "%}") if accept(/%\}/)
           return :lex_markup
         elsif accept(/%\}/)
+          # There's no newline before tag end markup, emit an extra :token_tag_end.
+          @tokens << Token.new(:token_tag_end, @start, "", "")
           emit(:token_tag_end, "%}")
           return :lex_markup
         else

@@ -3,8 +3,8 @@
 require_relative "../../node"
 
 module Liquid2
-  # The standard _liquid_ tag.
-  class LiquidTag < Tag
+  # The standard _echo_ tag.
+  class EchoTag < Tag
     # @param stream [TokenStream]
     # @param parser [Parser]
     # @return [LiquidTag]
@@ -13,20 +13,20 @@ module Liquid2
       children = [stream.eat(:token_tag_start),
                   stream.eat_whitespace_control,
                   stream.eat(:token_tag_name)]
-
-      block = parser.parse_line_statements(stream)
-      children << stream.eat_whitespace_control << stream.eat(:token_tag_end)
-      new(children, block)
+      expression = parser.parse_filtered_expression(stream)
+      children << expression << stream.eat_whitespace_control << stream.eat(:token_tag_end)
+      new(children, expression)
     end
 
-    def initialize(children, block)
+    def initialize(children, expression)
       super(children)
-      @block = block
-      @blank = block.blank
+      @expression = expression
+      @blank = false
     end
 
     def render(context, buffer)
-      @block.render(context, buffer)
+      buffer.write(Liquid2.to_s(@expression.evaluate(context),
+                                auto_escape: context.env.auto_escape))
     end
   end
 end
