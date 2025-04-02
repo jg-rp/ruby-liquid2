@@ -65,7 +65,7 @@ module Liquid2
 
       positional_args, keyword_args = evaluate_args(context)
       keyword_args[:context] = context if with_context
-      filter.call(left, *positional_args, **keyword_args)
+      filter.call(left, *positional_args, **keyword_args) # steep:ignore
 
       # TODO: rescue
     end

@@ -3,7 +3,7 @@
 module Liquid2
   # The base class for all Liquid errors.
   class LiquidError < StandardError
-    def initialize(message, node=nil)
+    def initialize(message, node = nil)
       super(message)
       @node = node
     end

@@ -25,9 +25,15 @@ module Liquid2
     def parse: (TokenStream, Parser) -> Tag
   end
 
+  # TODO: Revisit this. I can't find a way to define a callable interface with arbitrary
+  # arguments that type checks against lambda literals.
   interface _Filter
-    def call: (untyped left, *untyped, **untyped) -> untyped
-    def parameters: () -> Array[[Symbol, Symbol]]
+    # def call: (untyped left, *untyped, **untyped) -> untyped
+    def parameters: () -> untyped
+  end
+
+  interface _Undefined
+    def new: (String name, ?node: (Node | nil)) -> Undefined
   end
 
   class Environment
@@ -37,7 +43,7 @@ module Liquid2
     # A mapping of filter names to objects responding to `#call(left, ...)`,
     # along with a flag to indicate if the callable accepts a `context`
     # keyword argument.
-    @filters: Hash[String, [_Filter, bool]]
+    @filters: Hash[String, [_Filter, (Integer | nil)]]
 
     @parser: Parser
 
@@ -57,7 +63,7 @@ module Liquid2
 
     @default_trim: :whitespace_control_plus | :whitespace_control_minus | :whitespace_control_tilde
 
-    @undefined: untyped
+    @undefined: _Undefined
 
     attr_reader mode: :lax | :strict
 
@@ -71,7 +77,7 @@ module Liquid2
 
     attr_reader output_stream_limit: Integer?
 
-    attr_reader filters: Hash[String, [_Filter, bool]]
+    attr_reader filters: Hash[String, [_Filter, (Integer | nil)]]
 
     attr_reader auto_escape: bool
 
@@ -100,7 +106,7 @@ module Liquid2
     # @param name [String] The name of the filter.
     # @return [callable | nil] The callable implementing the removed filter, or nil
     #    if _name_ did not exist in the filter register.
-    def delete_filter: (String name) -> ([_Filter, bool] | nil)
+    def delete_filter: (String name) -> ([_Filter, (Integer | nil)] | nil)
 
     def setup_tags_and_filters: () -> void
 
@@ -222,8 +228,8 @@ module Liquid2
 
     # @param stream [TokenStream]
     # @param left [Expression]
-    # @return [Node]
-    def parse_infix_expression: (TokenStream stream, Expression left) -> Node
+    # @return [Expression]
+    def parse_infix_expression: (TokenStream stream, Expression left) -> Expression
 
     # @param stream [TokenStream]
     # @return [Array<Filter>]
@@ -422,6 +428,7 @@ module Liquid2
 
   # An node representing a block of Liquid markup. Essentially an array of other nodes.
   class Block < Node
+    
     @blank: bool
 
     def initialize: (Array[Node] children) -> void
@@ -481,9 +488,9 @@ module Liquid2
 
     @template: Template
 
-    @globals: Hash[String, untyped]
+    @globals: _Namespace
 
-    @disabled_tags: Array[String]
+    @disabled_tags: (Array[String] | Set[String])
 
     @copy_depth: Integer
 
@@ -530,7 +537,7 @@ module Liquid2
     # @param parent [RenderContext?]
     # @param loop_carry [Integer?]
     # @param local_namespace_carry [Integer?]
-    def initialize: (Template template, ?globals: _Namespace?, ?disabled_tags: Set[String]?, ?copy_depth: ::Integer, ?parent: RenderContext?, ?loop_carry: ::Integer, ?local_namespace_carry: ::Integer) -> void
+    def initialize: (Template template, ?globals: _Namespace?, ?disabled_tags: (Array[String] | Set[String])?, ?copy_depth: ::Integer, ?parent: RenderContext?, ?loop_carry: ::Integer, ?local_namespace_carry: ::Integer) -> void
 
     # Add _key_ to the local scope with value _value_.
     # @param key [String]
@@ -781,7 +788,7 @@ module Liquid2
 
     # @param kind [Set<Symbol>] a set of token kinds that cause us to stop skipping.
     # @return [Array<Token> | nil] the skipped tokens or nil if no tokens were skipped.
-    def skip_until: (Set[Symbol] kinds, ?max: ::Integer) -> Array[Token]
+    def skip_until: (Set[Symbol] kinds, ?max: ::Integer) -> Array[Token]?
 
     # @param reason [String] a string describing the expected token.
     # @return [Node] a new Missing node.
@@ -792,7 +799,7 @@ module Liquid2
   class LiquidError < StandardError
     @node: untyped
 
-    def initialize: (String message, ?Node node) -> void
+    def initialize: (String message, ?Node? node) -> void
   end
 
   class LiquidSyntaxError < LiquidError
@@ -861,7 +868,7 @@ module Liquid2
 
     KEYS: Set[String]
 
-    def initialize: (String name, Enumerable[untyped] enum, Integer length, ForLoop? parent_loop) -> void
+    def initialize: (String name, Enumerable[untyped] enum, Integer length, (ForLoop | Undefined) parent_loop) -> void
 
     def key?: (String key) -> bool
 
@@ -1421,6 +1428,27 @@ module Liquid2
 end
 
 module Liquid2
+  # The AST node representing output statements.
+  class Output < Node
+    @expression: FilteredExpression
+
+    @blank: bool
+
+    @wc: Array[Symbol]
+
+    attr_reader expression: FilteredExpression
+
+    attr_reader wc: Array[Symbol]
+
+    # @param children [Array<Node | Token>]
+    # @param expression [FilteredExpression]
+    def initialize: (Array[Token | Node] children, FilteredExpression expression) -> void
+
+    def render: (RenderContext context, _Buffer buffer) -> Integer
+  end
+end
+
+module Liquid2
   # A string that is safe to be inserted into HTML or XML, either because it is already
   # escaped or because it was explicitly marked as safe.
   #
@@ -1504,3 +1532,26 @@ module Liquid2
   end
 end
 
+module Liquid2
+  # A StringIO subclass that raises an exception when the buffer reaches a limit.
+  class LimitedStringIO < StringIO
+    @limit: Integer
+
+    def initialize: (Integer limit, ?::String string) ?{ (?) -> untyped } -> void
+
+    def write: (*untyped) ?{ (?) -> untyped } -> Integer
+  end
+
+  # A StringIO subclass with a _write_ method that is a no op.
+  class NullIO < StringIO
+    def write: (*untyped) ?{ (?) -> untyped } -> 0
+  end
+end
+
+module Liquid2
+  class SliceFilter
+    def call: (untyped input, ?start: untyped?, ?stop: untyped?, ?step: untyped?) -> ::Array[untyped]
+
+    def parameters: () -> untyped
+  end
+end

@@ -104,7 +104,7 @@ module Liquid2
     # @param kind [Set<Symbol>] a set of token kinds that cause us to stop skipping.
     # @return [Array<Token> | nil] the skipped tokens or nil if no tokens were skipped.
     def skip_until(kinds, max: 10)
-      tokens = []
+      tokens = [] # : Array[Token]
       loop do
         token = current
         if kinds.member?(token.kind) || tokens.length >= max || token.kind == :token_eof

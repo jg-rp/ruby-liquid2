@@ -5,8 +5,8 @@ require "stringio"
 module Liquid2
   # A StringIO subclass that raises an exception when the buffer reaches a limit.
   class LimitedStringIO < StringIO
-    def initialize(limit, ...)
-      super(...)
+    def initialize(limit, string = "")
+      super(string)
       @limit = limit
     end
 

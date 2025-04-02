@@ -9,6 +9,7 @@ t = env.parse(<<~LIQUID
   {% for x in y -%}
   {% if forloop.index == 3 %}{% continue %}{% endif ~%}
     - {{ x }}
+    {# some comment {{ 'foo' }} #}
   {% endfor ~%}
   END
 LIQUID

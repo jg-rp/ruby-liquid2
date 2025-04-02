@@ -110,9 +110,7 @@ module Liquid2
       obj = @scope.fetch(root)
 
       if obj == :undefined
-        if default == :undefined
-          return @env.undefined(root, node: node)
-        end
+        return @env.undefined(root, node: node) if default == :undefined
 
         return default
       end
@@ -189,12 +187,12 @@ module Liquid2
               end
 
       self.class.new(template || @template,
-          globals: scope,
-          disabled_tags: disabled_tags,
-          copy_depth: @copy_depth + 1,
-          parent: self,
-          loop_carry: loop_carry,
-          local_namespace_carry: @assign_score)
+                     globals: scope,
+                     disabled_tags: disabled_tags,
+                     copy_depth: @copy_depth + 1,
+                     parent: self,
+                     loop_carry: loop_carry,
+                     local_namespace_carry: @assign_score)
     end
 
     # Push a new namespace and forloop for the duration of a block.
@@ -229,20 +227,16 @@ module Liquid2
     def raise_for_loop_limit(length: 1)
       return nil unless @env.loop_iteration_limit
 
-      loop_carry = if carry_loop_iterations
-                     @loops.map(&:length).reduce(length * @loop_carry) { |acc, value| acc * value }
-                   else
-                     1
-                   end
+      loop_count = @loops.map(&:length).reduce(length * @loop_carry) { |acc, value| acc * value }
 
-      raise "loop iteration limit reached" if loop_carry > @env.loop_iteration_limit
+      raise "loop iteration limit reached" if loop_count > (@env.loop_iteration_limit || raise)
     end
 
     def get_output_buffer(parent_buffer)
       return StringIO.new unless @env.output_stream_limit
 
       carry = parent_buffer.is_a?(LimitedStringIO) ? parent_buffer.size : 0
-      LimitedStringIO.new(@env.output_stream_limit - carry)
+      LimitedStringIO.new((@env.output_stream_limit || raise) - carry)
     end
 
     # Mark _string_ as "safe" if auto escape is enabled.

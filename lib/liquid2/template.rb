@@ -19,7 +19,7 @@ module Liquid2
     def dump = @ast.dump
 
     def render(globals = nil)
-      buf = @env.output_stream_limit ? LimitedStringIO.new(@env.output_stream_limit) : StringIO.new
+      buf = @env.output_stream_limit ? LimitedStringIO.new(@env.output_stream_limit || raise) : StringIO.new
       context = RenderContext.new(self, globals: globals)
       render_with_context(context, buf)
       buf.string
@@ -32,11 +32,14 @@ module Liquid2
       context.extend(namespace || {}) do
         @ast.children.each do |node|
           if (interrupt = context.interrupts.pop)
+            # steep:ignore:start
             raise LiquidSyntaxError.new("unexpected #{interrupt}", node) if !partial && block_scope
+
+            # steep:ignore:end
 
             context.interrupts << interrupt
           end
-          bytes += node.render(context, buffer)
+          bytes += node.render(context, buffer) # steep:ignore
         end
       end
 

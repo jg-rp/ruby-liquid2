@@ -79,7 +79,7 @@ module Liquid2
 
     def setup_tags_and_filters
       register_filter("upcase", ->(left) { Liquid2.to_s(left).upcase })
-      register_filter("downcase", ->(left) { Liquid.to_s(left).downcase })
+      register_filter("downcase", ->(left) { Liquid2.to_s(left).downcase })
       register_filter("slice", SliceFilter.new)
       register_filter("split", ->(left, sep) { Liquid2.to_s(left).split(Liquid2.to_s(sep)) })
       register_filter("join", ->(left, sep) { left.join(Liquid2.to_s(sep)) })

@@ -33,7 +33,7 @@ module Liquid2
   # An undefined type that always raises an exception.
   class StrictUndefined < Undefined
     def initialize(name, node: nil)
-      super(name, node)
+      super
       @message = "#{name.inspect} is undefined"
     end
 
@@ -117,7 +117,7 @@ module Liquid2
   # A strict undefined type that plays nicely with the _default_ filter.
   class StrictDefaultUndefined < StrictUndefined
     def initialize(name, node: nil)
-      super(name, node)
+      super
       @force_default = true
     end
   end

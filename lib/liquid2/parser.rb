@@ -114,14 +114,15 @@ module Liquid2
     # @return [LoopExpression]
     def parse_loop_expression(stream)
       identifier = parse_identifier(stream)
+      # @type var children: Array[Token | Node]
       children = [identifier, stream.eat(:token_in)]
       enum = parse_primary(stream)
       children << enum
 
       reversed = false
-      offset = nil
-      limit = nil
-      cols = nil
+      offset = nil # : (Expression | nil)
+      limit = nil # : (Expression | nil)
+      cols = nil # : (Expression | nil)
 
       if (token = stream.eat(:token_comma))
         # A comma between the iterable and the first argument is OK.
@@ -138,21 +139,24 @@ module Liquid2
             reversed = true
           when "limit"
             children << stream.next << stream.eat_one_of(:token_colon, :token_assign)
-            limit = parse_primary(stream)
-            children << limit
+            node = parse_primary(stream)
+            children << node
+            limit = node
           when "cols"
             children << stream.next << stream.eat_one_of(:token_colon, :token_assign)
-            cols = parse_primary(stream)
-            children << cols
+            node = parse_primary(stream)
+            children << node
+            cols = node
           when "offset"
             children << stream.next << stream.eat_one_of(:token_colon, :token_assign)
             offset_token = stream.peek
-            offset = if offset_token.kind == :token_word && offset_token.text == "continue"
-                       Identifier.new(stream.next)
-                     else
-                       parse_primary(stream)
-                     end
-            children << offset
+            node = if offset_token.kind == :token_word && offset_token.text == "continue"
+                     Identifier.new(stream.next)
+                   else
+                     parse_primary(stream)
+                   end
+            children << node
+            offset = node
           else
             raise LiquidSyntaxError.new("expected 'reversed', 'offset' or 'limit'", node: token)
           end

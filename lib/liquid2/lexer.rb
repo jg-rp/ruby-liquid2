@@ -171,6 +171,8 @@ module Liquid2
     def accept_comment
       return unless @scanner.scan(RE_COMMENT)
 
+      # steep:ignore:start
+
       # Working around the lack of MatchData when using StringScanner.
       # Note that this works because our named captures span the entire pattern.
       offset = @start
@@ -214,6 +216,8 @@ module Liquid2
                            comment_end[:value])
 
       @start = @scanner.charpos
+
+      # steep:ignore:end
     end
 
     def lex_markup
@@ -348,7 +352,7 @@ module Liquid2
     def scan_string(quote)
       # Characters in the current substring.
       # We're using this to avoid slicing into the StringScanner.
-      buffer = []
+      buffer = [] # : Array[String]
 
       if peek == quote
         self.next
@@ -368,7 +372,7 @@ module Liquid2
           buffer.clear
         end
 
-        if @scanner.match?("${")
+        if @scanner.match?(/\$\{/)
           emit(:token_string, buffer.join) unless buffer.empty?
           buffer.clear
           @scanner.pos += 2
