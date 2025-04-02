@@ -43,7 +43,6 @@ module Liquid2
 
   class RootNode < Node; end
   class Skipped < Node; end
-  class Missing < Node; end
 
   # An node representing a block of Liquid markup. Essentially an array of other nodes.
   class Block < Node
@@ -106,4 +105,6 @@ module Liquid2
       raise "expressions must implement `evaluate(context)` (#{self.class})."
     end
   end
+
+  class Missing < Expression; end
 end

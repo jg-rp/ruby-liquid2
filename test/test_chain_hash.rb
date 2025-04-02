@@ -30,7 +30,7 @@ class TestChainHash < Minitest::Test
   def test_fetch_with_default
     scope = Liquid2::ReadOnlyChainHash.new({ foo: 1 }, { foo: 2 })
 
-    assert_equal(42, scope.fetch(:bar, default: 42))
+    assert_equal(42, scope.fetch(:bar, 42))
   end
 
   def test_push_scope

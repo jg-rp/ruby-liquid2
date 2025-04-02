@@ -4,12 +4,12 @@ require "set"
 require_relative "node"
 require_relative "token_stream"
 require_relative "nodes/comment"
-require_relative "nodes/lambda"
 require_relative "nodes/other"
 require_relative "nodes/output"
 require_relative "nodes/expressions/arguments"
 require_relative "nodes/expressions/blank"
 require_relative "nodes/expressions/boolean"
+require_relative "nodes/expressions/lambda"
 require_relative "nodes/expressions/filtered"
 require_relative "nodes/expressions/identifier"
 require_relative "nodes/expressions/literals"
@@ -21,7 +21,8 @@ require_relative "nodes/expressions/relational"
 require_relative "nodes/expressions/string"
 
 module Liquid2
-  class Parser
+  # Liquid template parser.
+  class Parser # rubocop:disable Metrics/ClassLength
     # @param env [Environment]
     def initialize(env)
       @env = env
@@ -31,7 +32,7 @@ module Liquid2
     # @param source [String]
     # @return [RootNode]
     def parse(source)
-      nodes = []
+      nodes = [] # : Array[Node]
       stream = TokenStream.new(Liquid2.tokenize(source), mode: @env.mode)
       left_trim = :whitespace_control_default
 
@@ -43,14 +44,16 @@ module Liquid2
           nodes << Other.new([text_token], @env.trim(token.text, left_trim, peek_wc(stream)))
           left_trim = :whitespace_control_default
         when :token_output_start
-          nodes << parse_output(stream)
-          left_trim = nodes.last.wc.last
+          output_node = parse_output(stream)
+          nodes << output_node
+          left_trim = output_node.wc.last
         when :token_tag_start
           nodes << parse_tag(stream)
           left_trim = stream.trim_carry
         when :token_comment_start
-          nodes << parse_comment(stream)
-          left_trim = nodes.last.wc.last
+          comment_node = parse_comment(stream)
+          nodes << comment_node
+          left_trim = comment_node.wc.last
         when :token_eof
           return RootNode.new(nodes)
         else
@@ -65,7 +68,7 @@ module Liquid2
     #   indicate the end of the block.
     # @return [Block]
     def parse_block(stream, end_block)
-      nodes = []
+      nodes = [] # : Array[Node]
       left_trim = stream.trim_carry
 
       loop do
@@ -76,16 +79,18 @@ module Liquid2
           nodes << Other.new([text_token], @env.trim(token.text, left_trim, peek_wc(stream)))
           left_trim = :whitespace_control_default
         when :token_output_start
-          nodes << parse_output(stream)
-          left_trim = nodes.last.wc.last
+          output_node = parse_output(stream)
+          nodes << output_node
+          left_trim = output_node.wc.last
         when :token_tag_start
           break if end_block.include? peek_tag_name(stream).text
 
           nodes << parse_tag(stream)
           left_trim = stream.trim_carry
         when :token_comment_start
-          nodes << parse_comment(stream)
-          left_trim = nodes.last.wc.last
+          comment_node = parse_comment(stream)
+          nodes << comment_node
+          left_trim = comment_node.wc.last
         when :token_eof
           break
         else
@@ -129,7 +134,7 @@ module Liquid2
         children << token
       end
 
-      loop do
+      loop do # rubocop:disable Metrics/BlockLength
         token = stream.current
         case token.kind
         when :token_word
@@ -158,7 +163,7 @@ module Liquid2
             children << node
             offset = node
           else
-            raise LiquidSyntaxError.new("expected 'reversed', 'offset' or 'limit'", node: token)
+            raise LiquidSyntaxError.new("expected 'reversed', 'offset' or 'limit'", token)
           end
         when :token_comma
           children << stream.next
@@ -335,8 +340,9 @@ module Liquid2
     end
 
     # @param stream [TokenStream]
-    # @return [Node]
+    # @return [Output]
     def parse_output(stream)
+      # @type var children: Array[Token | Node]
       children = [stream.eat(:token_output_start), stream.eat_whitespace_control]
       expr = parse_filtered_expression(stream)
       children << expr
@@ -364,10 +370,11 @@ module Liquid2
     # @param stream [TokenStream]
     # @return [Node]
     def parse_comment(stream)
+      # @type var children: Array[Token | Node]
       children = [stream.eat(:token_comment_start), stream.eat_whitespace_control]
-      text = stream.eat(:token_comment)
-      children << text << stream.eat_whitespace_control << stream.eat(:token_comment_end)
-      Comment.new(children, text)
+      token = stream.eat(:token_comment)
+      children << token << stream.eat_whitespace_control << stream.eat(:token_comment_end)
+      Comment.new(children, token)
     end
 
     # @param stream [TokenStream]
@@ -376,8 +383,9 @@ module Liquid2
       quote_token = stream.next
       term = quote_token.kind # single or double
 
+      # @type var children: Array[Token | Node]
       children = [quote_token]
-      segments = []
+      segments = [] # : Array[Node]
 
       loop do
         case stream.current.kind
@@ -405,7 +413,7 @@ module Liquid2
     # @param stream [TokenStream]
     # @return [Node]
     def parse_path(stream)
-      segments = []
+      segments = [] # : Array[PathSegment]
 
       if stream.current.kind == :token_word
         token = stream.next
@@ -441,7 +449,7 @@ module Liquid2
         BracketedSegment.new([bracket_token, node, stream.eat(:token_rbracket)], node)
       else
         # TODO: or skip
-        raise "unexpected token in bracketed selector, #{token.kind}"
+        raise "unexpected token in bracketed selector, #{stream.current.kind}"
       end
     end
 
@@ -463,6 +471,7 @@ module Liquid2
     # @param stream [TokenStream]
     # @return [Node]
     def parse_range_lambda_or_grouped_expression(stream)
+      # @type var children: Array[Token | Node]
       children = [stream.eat(:token_lparen)]
       expr = parse_primary(stream)
 
@@ -476,15 +485,11 @@ module Liquid2
       end
 
       # An arrow function, but we've already consumed lparen and the first parameter.
-      if token.kind == :token_comma
-        return parse_partial_arrow_function(stream, children,
-                                            expr)
-      end
+      return parse_partial_arrow_function(stream, children, expr) if token.kind == :token_comma
 
       # An arrow function with a single parameter surrounded by parens.
       if token.kind == :token_rparen && stream.peek.kind == :token_arrow
-        return parse_partial_arrow_function(stream, children,
-                                            expr)
+        return parse_partial_arrow_function(stream, children, expr)
       end
 
       loop do
@@ -505,6 +510,7 @@ module Liquid2
     # @param stream [TokenStream]
     # @return [Node]
     def parse_prefix_expression(stream)
+      # @type var children: Array[Token | Node]
       children = [stream.eat(:token_not)]
       expr = parse_primary(stream)
       LogicalNot.new(children << expr, expr)
@@ -555,20 +561,21 @@ module Liquid2
     # @param stream [TokenStream]
     # @return [Filter]
     def parse_filter(stream)
+      # @type var children: Array[Token | Node]
       children = [stream.next] # pipe or double pipe
       name = stream.eat(:token_word)
       children << name
 
-      unless stream.current.kind == :token_colon || TERMINATE_FILTER.member?(stream.current.kind) == false
+      unless stream.current.kind == :token_colon || !TERMINATE_FILTER.member?(stream.current.kind)
         return Filter.new(children,
                           name,
                           [])
       end
 
       children << stream.eat(:token_colon)
-      args = []
+      args = [] # : Array[PositionalArgument | KeywordArgument]
 
-      loop do
+      loop do # rubocop:disable Metrics/BlockLength
         case stream.current.kind
         when :token_word
           if KEYWORD_ARGUMENT_DELIMITERS.member?(stream.peek.kind)
@@ -618,8 +625,8 @@ module Liquid2
     # @param stream [TokenStream]
     # @return [Node]
     def parse_arrow_function(stream)
-      children = []
-      params = []
+      children = [] # : Array[Token | Node]
+      params = [] # : Array[Identifier]
 
       case stream.current.kind
       when :token_word
@@ -658,7 +665,7 @@ module Liquid2
     # @param expr [Expression] The first parameter already passed by the caller.
     # @return [Expression]
     def parse_partial_arrow_function(stream, children, expr)
-      params = []
+      params = [] # : Array[Identifier]
 
       # expr should be a single segment path, we need an Identifier.
       param = Identifier.from(expr)
@@ -691,17 +698,18 @@ module Liquid2
     # @param left [Expression]
     # @return [Node]
     def parse_ternary_expression(stream, left)
+      # @type var children: Array[Token | Node]
       children = [left, stream.eat(:token_if)]
       condition = BooleanExpression.new(parse_primary(stream))
       children << condition
 
-      alternative = nil
-      filters = []
-      tail_filters = []
+      alternative = nil # : BooleanExpression?
+      filters = [] # : Array[Filter]
+      tail_filters = [] # : Array[Filter]
 
       if stream.current.kind == :token_else
         children << stream.next
-        alternative = parse_primary(stream)
+        alternative = BooleanExpression.new(parse_primary(stream))
         children << alternative
 
         if stream.current.kind == :token_pipe

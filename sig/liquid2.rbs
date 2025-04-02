@@ -146,7 +146,7 @@ module Liquid2
     # expression composed of other primary expressions.
     # @param stream [TokenStream]
     # @return [Expression]
-    def parse_primary: (TokenStream stream, ?precedence: Symbol) -> Expression
+    def parse_primary: (TokenStream stream, ?precedence: Integer) -> Expression
 
     def parse_identifier: (TokenStream stream, ?trailing_question: bool) -> Identifier
 
@@ -192,7 +192,7 @@ module Liquid2
 
     # @param stream [TokenStream]
     # @return [Node]
-    def parse_output: (TokenStream stream) -> Node
+    def parse_output: (TokenStream stream) -> Output
 
     # @param stream [TokenStream]
     # @return [Node]
@@ -200,31 +200,31 @@ module Liquid2
 
     # @param stream [TokenStream]
     # @return [Node]
-    def parse_comment: (TokenStream stream) -> Node
+    def parse_comment: (TokenStream stream) -> Comment
 
     # @param stream [TokenStream]
-    # @return [Node]
-    def parse_string_literal: (TokenStream stream) -> Node
+    # @return [Expression]
+    def parse_string_literal: (TokenStream stream) -> Expression
 
     # @param stream [TokenStream]
-    # @return [Node]
-    def parse_path: (TokenStream stream) -> Node
+    # @return [Expression]
+    def parse_path: (TokenStream stream) -> Expression
 
     # @param stream [TokenStream]
-    # @return [Node]
-    def parse_bracketed_path_selector: (TokenStream stream) -> Node
+    # @return [Expression]
+    def parse_bracketed_path_selector: (TokenStream stream) -> PathSegment
 
     # @param stream [TokenStream]
-    # @return [Node]
-    def parse_shorthand_path_selector: (TokenStream stream) -> Node
+    # @return [Expression]
+    def parse_shorthand_path_selector: (TokenStream stream) -> PathSegment
 
     # @param stream [TokenStream]
-    # @return [Node]
-    def parse_range_lambda_or_grouped_expression: (TokenStream stream) -> Node
+    # @return [Expression]
+    def parse_range_lambda_or_grouped_expression: (TokenStream stream) -> Expression
 
     # @param stream [TokenStream]
-    # @return [Node]
-    def parse_prefix_expression: (TokenStream stream) -> Node
+    # @return [Expression]
+    def parse_prefix_expression: (TokenStream stream) -> Expression
 
     # @param stream [TokenStream]
     # @param left [Expression]
@@ -241,18 +241,18 @@ module Liquid2
 
     # @param stream [TokenStream]
     # @return [Node]
-    def parse_arrow_function: (TokenStream stream) -> Node
+    def parse_arrow_function: (TokenStream stream) -> Expression
 
     # @param stream [TokenStream]
     # @param children [Array<Node>] Child tokens already consumed by the caller.
     # @param expr [Expression] The first parameter already passed by the caller.
     # @return [Node]
-    def parse_partial_arrow_function: (TokenStream stream, Array[Node] children, Expression expr) -> Node
+    def parse_partial_arrow_function: (TokenStream stream, Array[Node | Token] children, Expression expr) -> Expression
 
     # @param stream [TokenStream]
     # @param left [Expression]
     # @return [Node]
-    def parse_ternary_expression: (TokenStream stream, Expression left) -> TernaryExpression
+    def parse_ternary_expression: (TokenStream stream, FilteredExpression left) -> TernaryExpression
   end
 
   interface _Buffer
@@ -423,7 +423,7 @@ module Liquid2
   class Skipped < Node
   end
 
-  class Missing < Node
+  class Missing < Expression
   end
 
   # An node representing a block of Liquid markup. Essentially an array of other nodes.
@@ -791,15 +791,15 @@ module Liquid2
     def skip_until: (Set[Symbol] kinds, ?max: ::Integer) -> Array[Token]?
 
     # @param reason [String] a string describing the expected token.
-    # @return [Node] a new Missing node.
-    def missing: (String reason) -> Node
+    # @return [Expression] a new Missing node.
+    def missing: (String reason) -> Expression
   end
 
   # The base class for all Liquid errors.
   class LiquidError < StandardError
-    @node: untyped
+    @node_or_token: (Node | Token | nil)
 
-    def initialize: (String message, ?Node? node) -> void
+    def initialize: (String message, ?(Node | Token)? node) -> void
   end
 
   class LiquidSyntaxError < LiquidError
@@ -823,7 +823,7 @@ module Liquid2
 
     END_BLOCK: Set[String]
 
-    def self.parse: (TokenStream stream, Parser parser) -> Node
+    def self.parse: (TokenStream stream, Parser parser) -> ForTag
 
     # @param children [Array<Token|Node>]
     # @param expression [LoopExpression]
@@ -836,14 +836,14 @@ module Liquid2
 
   # The standard _break_ tag.
   class BreakTag < Tag
-    def self.parse: (TokenStream stream, Parser _parser) -> Node
+    def self.parse: (TokenStream stream, Parser _parser) -> BreakTag
 
     def render: (RenderContext context, _Buffer _buffer) -> 0
   end
 
   # The standard _continue_ tag.
   class ContinueTag < Tag
-    def self.parse: (TokenStream stream, Parser _parser) -> Node
+    def self.parse: (TokenStream stream, Parser _parser) -> ContinueTag
 
     def render: (RenderContext context, _Buffer _buffer) -> 0
   end
@@ -1387,15 +1387,15 @@ module Liquid2
     attr_reader wc: Array[Symbol]
 
     # @param children [Array<Node | Token>]
-    # @param text [String]
-    def initialize: (Array[Token | Node] children, String text) -> void
+    # @param text [Token]
+    def initialize: (Array[Token | Node] children, Token text) -> void
 
     def render: (RenderContext _context, _Buffer _buffer) -> 0
   end
 end
 
 module Liquid2
-  class Lambda < Node
+  class Lambda < Expression
     @params: Array[Identifier]
 
     @expr: Expression
@@ -1430,19 +1430,19 @@ end
 module Liquid2
   # The AST node representing output statements.
   class Output < Node
-    @expression: FilteredExpression
+    @expression: (FilteredExpression | TernaryExpression)
 
     @blank: bool
 
     @wc: Array[Symbol]
 
-    attr_reader expression: FilteredExpression
+    attr_reader expression: (FilteredExpression | TernaryExpression)
 
     attr_reader wc: Array[Symbol]
 
     # @param children [Array<Node | Token>]
     # @param expression [FilteredExpression]
-    def initialize: (Array[Token | Node] children, FilteredExpression expression) -> void
+    def initialize: (Array[Token | Node] children, (FilteredExpression | TernaryExpression) expression) -> void
 
     def render: (RenderContext context, _Buffer buffer) -> Integer
   end

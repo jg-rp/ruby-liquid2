@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "../node"
+require_relative "../../node"
 
 module Liquid2
-  class Lambda < Node
+  # A lambda expression aka arrow function
+  class Lambda < Expression
     # @param children [Array<Token>]
     # @param params [Array<Identifier>]
     # @param expr [Expression]
@@ -13,13 +14,15 @@ module Liquid2
       @expr = expr
     end
 
+    def evaluate(_context) = nil
+
     # Apply this lambda function to elements from _enum_.
     # @param context [RenderContext]
     # @param enum [Enumerable<Object>]
     # @return [Enumerable<Object>]
     def map(context, enum)
-      scope = {} #: Hash[String, untyped]
-      rv = [] #: Array[untyped]
+      scope = {} # : Hash[String, untyped]
+      rv = [] # : Array[untyped]
 
       if @params.length == 1
         param = @params.first.name

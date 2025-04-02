@@ -116,7 +116,7 @@ module Liquid2
     end
 
     # @param reason [String] a string describing the expected token.
-    # @return [Node] a new Missing node.
+    # @return [Expression] a new Missing node.
     def missing(reason)
       raise "expected #{reason}, found #{current.kind}" if @mode == :strict
 

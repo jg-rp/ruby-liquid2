@@ -35,6 +35,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 require "cgi"
+require "english"
 
 module Liquid2
   # A string that is safe to be inserted into HTML or XML, either because it is already
@@ -69,8 +70,7 @@ module Liquid2
     end
 
     def self.try_convert(object)
-      object = object.respond_to?(:to_html) ? object.to_html : object
-      new(super(object), encoding: "UTF-8")
+      new(super(object.respond_to?(:to_html) ? object.to_html : object), encoding: "UTF-8")
     end
 
     def self.join(array, separator = $OUTPUT_FIELD_SEPARATOR)
@@ -114,7 +114,7 @@ module Liquid2
     end
 
     def split(field_sep = $FIELD_SEPARATOR, limit = 0)
-      super(field_sep, limit) { |string| self.class.new(string) }
+      super { |string| self.class.new(string) }
     end
 
     def capitalize(...)

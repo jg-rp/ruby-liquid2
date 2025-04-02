@@ -8,7 +8,6 @@ target :lib do
 
   library "cgi"
   library "strscan"
-  library "set"
   library "stringio"
 
   # configure_code_diagnostics(D::Ruby.default)      # `default` diagnostics setting (applies by default)
@@ -19,4 +18,3 @@ target :lib do
   #   hash[D::Ruby::NoMethod] = :information
   # end
 end
-
