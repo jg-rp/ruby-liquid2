@@ -22,7 +22,7 @@ require_relative "nodes/expressions/string"
 
 module Liquid2
   # Liquid template parser.
-  class Parser # rubocop:disable Metrics/ClassLength
+  class Parser
     # @param env [Environment]
     def initialize(env)
       @env = env
@@ -134,7 +134,7 @@ module Liquid2
         children << token
       end
 
-      loop do # rubocop:disable Metrics/BlockLength
+      loop do
         token = stream.current
         case token.kind
         when :token_word
@@ -575,7 +575,7 @@ module Liquid2
       children << stream.eat(:token_colon)
       args = [] # : Array[PositionalArgument | KeywordArgument]
 
-      loop do # rubocop:disable Metrics/BlockLength
+      loop do
         case stream.current.kind
         when :token_word
           if KEYWORD_ARGUMENT_DELIMITERS.member?(stream.peek.kind)

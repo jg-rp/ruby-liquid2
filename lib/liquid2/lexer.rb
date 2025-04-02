@@ -15,8 +15,9 @@ module Liquid2
   end
 
   # Lexical scanner for Liquid2 templates.
-  class Lexer # rubocop:disable Metrics/ClassLength
+  class Lexer
     RE_WHITESPACE = /[ \n\r\t]+/
+    RE_LINE_SPACE = /[ \t]+/
     RE_WHITESPACE_CONTROL = /[+\-~]/
     RE_WORD = /[\u0080-\uFFFFa-zA-Z_][\u0080-\uFFFFa-zA-Z0-9_-]*/
     RE_INT  = /-?\d+(?:[eE]\+?\d+)?/
@@ -129,8 +130,24 @@ module Liquid2
       if (trivia = @scanner.scan(RE_WHITESPACE))
         @trivia = trivia
         @start = @scanner.charpos
+        true
       else
         @trivia = ""
+        false
+      end
+    end
+
+    # Consume trivia (whitespace) in a line statement.
+    def accept_line_trivia
+      raise "must emit before accepting trivia" if @scanner.pos != @start
+
+      if (trivia = @scanner.scan(RE_LINE_SPACE))
+        @trivia = trivia
+        @start = @scanner.charpos
+        true
+      else
+        @trivia = ""
+        false
       end
     end
 
@@ -140,6 +157,9 @@ module Liquid2
 
       if (value = @scanner.scan(RE_WHITESPACE_CONTROL))
         emit(:token_whitespace_control, value)
+        true
+      else
+        false
       end
     end
 
@@ -244,7 +264,8 @@ module Liquid2
                    :lex_block_comment
                  when "raw"
                    :lex_raw
-                 # TODO: lex_line_statements
+                 when "liquid"
+                   :lex_line_statements
                  else
                    :lex_expression
                  end
@@ -345,6 +366,45 @@ module Liquid2
       end
 
       :lex_markup
+    end
+
+    def lex_line_statements
+      accept_trivia # Leading newlines are OK
+
+      if (tag_name = accept(/(?:[a-z][a-z_0-9]*|#)/))
+        emit(:token_tag_name, tag_name)
+        :lex_inside_line_statement
+      elsif accept_whitespace_control
+        emit(:token_tag_end, "%}") if accept(/%\}/)
+        :lex_markup
+      elsif accept(/%\}/)
+        emit(:token_tag_end, "%}")
+        :lex_markup
+      else
+        emit(:token_unknown, self.next)
+        :lex_markup
+      end
+    end
+
+    def lex_inside_line_statement
+      loop do
+        accept_line_trivia
+        if (kind, value = accept_expression_token)
+          emit(kind, value)
+          scan_string(value) if S_QUOTES.member?(value)
+        elsif (line_term = accept(/[\r\n]+/))
+          emit(:token_line_term, line_term)
+          return :lex_line_statements
+        elsif accept_whitespace_control
+          emit(:token_tag_end, "%}") if accept(/%\}/)
+          return :lex_markup
+        elsif accept(/%\}/)
+          emit(:token_tag_end, "%}")
+          return :lex_markup
+        else
+          emit(:token_unknown, self.next)
+        end
+      end
     end
 
     # Scan a string literal surrounded by _quote_.

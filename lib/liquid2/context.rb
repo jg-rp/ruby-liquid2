@@ -23,7 +23,7 @@ module Liquid2
 
   # Per render contextual information. A new RenderContext is created automatically
   # every time `Template#render` is called.
-  class RenderContext
+  class RenderContext # rubocop:disable Metrics/ClassLength
     attr_reader :env, :template
     attr_accessor :interrupts
 

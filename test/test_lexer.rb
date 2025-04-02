@@ -246,6 +246,22 @@ class TestLexer < Minitest::Spec
       name: "comment",
       source: "{# some comment #}",
       want: ["{#", " some comment ", "#}"]
+    },
+    {
+      name: "liquid, one line",
+      source: "{% liquid echo 'Hello, World!' %}",
+      want: ["{%", " liquid", " echo", " '", "Hello, World!", "'", " %}"]
+    },
+    {
+      name: "liquid, leading newline",
+      source: "{% liquid\necho 'Hello, World!' %}",
+      want: ["{%", " liquid", "\necho", " '", "Hello, World!", "'", " %}"]
+    },
+    {
+      name: "liquid, multi-line",
+      source: "{% liquid\nif true\necho 'Hello, World!'\nendif %}",
+      want: ["{%", " liquid", "\nif", " true", "\n", "echo", " '", "Hello, World!", "'", "\n",
+             "endif", " %}"]
     }
   ].freeze
 
@@ -253,8 +269,10 @@ class TestLexer < Minitest::Spec
     TEST_CASES.each do |test_case|
       it test_case[:name] do
         tokens = Liquid2.tokenize(test_case[:source])
-        full_text = tokens.map(&:full_text).join
+        token_text = tokens.map(&:full_text)
+        full_text = token_text.join
         _(full_text).must_equal test_case[:source]
+        _(token_text).must_equal test_case[:want]
       end
     end
   end

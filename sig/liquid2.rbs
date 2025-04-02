@@ -675,6 +675,8 @@ module Liquid2
 
     RE_WHITESPACE: ::Regexp
 
+    RE_LINE_SPACE: ::Regexp
+
     RE_WHITESPACE_CONTROL: ::Regexp
 
     RE_WORD: ::Regexp
@@ -692,7 +694,7 @@ module Liquid2
     S_QUOTES: Set[String]
 
     # Keywords and symbols that get their own token kind.
-    TOKEN_MAP: { "true" => :token_true, "false" => :token_false, "nil" => :token_nil, "null" => :token_nil, "and" => :token_and, "or" => :token_or, "not" => :token_not, "in" => :token_in, "contains" => :token_contains, "if" => :token_if, "else" => :token_else, "with" => :token_with, "required" => :token_required, "as" => :token_as, "for" => :token_for, "blank" => :token_blank, "empty" => :token_empty, "?" => :token_question, "[" => :token_lbracket, "]" => :token_rbracket, "|" => :token_pipe, "||" => :token_double_pipe, "." => :token_dot, ".." => :token_double_dot, "," => :token_comma, ":" => :token_colon, "(" => :token_lparen, ")" => :token_rparen, "=" => :token_assign, "<" => :token_lt, "<=" => :token_le, "<>" => :token_lg, ">" => :token_gt, ">=" => :token_ge, "==" => :token_eq, "!=" => :token_ne, "=>" => :token_arrow }
+    TOKEN_MAP: Hash[String, Symbol]
 
     attr_reader tokens: Array[Token]
 
@@ -713,10 +715,12 @@ module Liquid2
     def accept: (untyped pattern) -> (String | nil)
 
     # Consume trivia (whitespace).
-    def accept_trivia: () -> untyped
+    def accept_trivia: () -> bool
+                     
+    def accept_line_trivia: () -> bool
 
     # Accept and emit whitespace control.
-    def accept_whitespace_control: () -> untyped
+    def accept_whitespace_control: () -> bool
 
     # @return [Array<Symbol, String> | nil] An array with two items, token kind and
     # substring.
@@ -734,6 +738,10 @@ module Liquid2
     def lex_raw: () -> (Symbol | nil)
 
     def lex_block_comment: () -> (Symbol | nil)
+
+    def lex_line_statements: () -> (Symbol | nil)
+
+    def lex_inside_line_statement: () -> (Symbol | nil)
 
     # Scan a string literal surrounded by _quote_.
     # Assumes the opening quote has already been consumed and emitted.

@@ -22,7 +22,7 @@ module Liquid2
       block = parser.parse_block(stream, END_BLOCK)
       children << block
 
-      alternatives = [] #: Array[ConditionalBlock]
+      alternatives = [] # : Array[ConditionalBlock]
       alternatives << parse_elsif(stream, parser) while stream.tag?("elsif")
       children.push(*alternatives)
 
