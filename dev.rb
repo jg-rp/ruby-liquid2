@@ -6,9 +6,9 @@ require "liquid2"
 env = Liquid2::Environment.new
 source = <<~LIQUID
   START
-  {% cycle 'odd', 'even' %}
-  {% cycle 'odd', 'even' %}
-  {% cycle 'odd', 'even' %}
+  {% raw %}
+    This will be rendered {{verbatim}}, with the curly brackets.
+  {% endraw %}
   END
 LIQUID
 

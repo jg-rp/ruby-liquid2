@@ -11,6 +11,10 @@ require_relative "nodes/tags/liquid"
 require_relative "nodes/tags/echo"
 require_relative "nodes/tags/capture"
 require_relative "nodes/tags/cycle"
+require_relative "nodes/tags/decrement"
+require_relative "nodes/tags/increment"
+require_relative "nodes/tags/raw"
+require_relative "nodes/tags/unless"
 
 module Liquid2
   # Template parsing and rendering configuration.
@@ -23,8 +27,7 @@ module Liquid2
                 :default_trim
 
     def initialize
-      # A mapping of tag names to objects responding to
-      # `parse: (TokenStream, Parser) -> Tag`
+      # A mapping of tag names to objects responding to `parse`.
       @tags = {
         "assign" => AssignTag,
         "if" => IfTag,
@@ -34,7 +37,11 @@ module Liquid2
         "liquid" => LiquidTag,
         "echo" => EchoTag,
         "capture" => CaptureTag,
-        "cycle" => CycleTag
+        "cycle" => CycleTag,
+        "decrement" => DecrementTag,
+        "increment" => IncrementTag,
+        "raw" => RawTag,
+        "unless" => UnlessTag
       }
 
       # A mapping of filter names to objects responding to `#call(left, ...)`,

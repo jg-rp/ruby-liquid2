@@ -1658,3 +1658,86 @@ module Liquid2
   end
 end
 
+module Liquid2
+  # The standard _decrement_ tag.
+  class DecrementTag < Tag
+    @name: String
+
+    # @param stream [TokenStream]
+    # @param parser [Parser]
+    # @return [DecrementTag]
+    def self.parse: (TokenStream stream, Parser parser) -> DecrementTag
+
+    # @param children [Array<Token | Node>]
+    # @param name [Identifier]
+    def initialize: (Array[Token | Node] children, Identifier name) -> void
+
+    def render: (RenderContext context, _Buffer buffer) -> Integer
+  end
+end
+
+module Liquid2
+  # The standard _increment_ tag.
+  class IncrementTag < Tag
+    @name: String
+
+    # @param stream [TokenStream]
+    # @param parser [Parser]
+    # @return [IncrementTag]
+    def self.parse: (TokenStream stream, Parser parser) -> untyped
+
+    # @param children [Array<Token | Node>]
+    # @param name [Identifier]
+    def initialize: (Array[Token | Node] children, Identifier name) -> void
+
+    def render: (RenderContext context, _Buffer buffer) -> Integer
+  end
+end
+
+module Liquid2
+  class UnlessTag < IfTag
+    END_TAG: Set[String]
+
+    END_BLOCK: Set[String]
+
+    def render: (RenderContext context, _Buffer buffer) -> Integer
+  end
+end
+
+module Liquid2
+  # The standard _raw_ tag.
+  class RawTag < Tag
+    @text: String
+
+    # @param stream [TokenStream]
+    # @param parser [Parser]
+    # @return [RawTag]
+    def self.parse: (TokenStream stream, Parser _parser) -> RawTag
+
+    # @param children [Array<Token | Node>]
+    # @param text [String]
+    def initialize: (Array[Token | Node] children, String text) -> void
+
+    def render: (RenderContext _context, _Buffer buffer) -> Integer
+  end
+end
+
+module Liquid2
+  # The standard _case_ tag.
+  class CaseTag < Tag
+    @expression: Expression
+
+    @whens: Array[Expression]
+
+    @default: Block?
+
+    @blank: bool
+
+    def self.parse: (TokenStream stream, Parser parser) -> CaseTag
+
+    def initialize: (Array[Token | Node] children, Expression expression, Array[Expression] whens, Block? default) -> void
+
+    def render: (RenderContext context, _Buffer buffer) -> Integer
+  end
+end
+
