@@ -247,6 +247,26 @@ module Liquid2
       Identifier.from(parse_primary(stream), trailing_question: trailing_question)
     end
 
+    # Parse comma separated expression from stream.
+    # Leading commas should be consumed by the caller.
+    # @param stream [TokenStream]
+    # @return [Array<PositionalArgument>]
+    def parse_positional_arguments(stream)
+      args = [] # : Array[PositionalArgument]
+
+      loop do
+        item = parse_primary(stream)
+        if stream.current.kind == :token_comma
+          args << PositionalArgument.new([item, stream.eat(:token_comma)], item)
+        else
+          args << PositionalArgument.new([item], item)
+          break
+        end
+      end
+
+      args
+    end
+
     # Return the next tag name token from _stream_ without advancing.
     # Assumes the current token is :token_tag_start.
     def peek_tag_name(stream)

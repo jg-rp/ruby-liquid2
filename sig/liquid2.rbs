@@ -15,7 +15,7 @@ module Liquid2
   def self.truthy?: (RenderContext context, untyped obj) -> bool
 
   # Return `true` if _obj_ is undefined.
-  def undefined?: (untyped obj) -> bool
+  def self.undefined?: (untyped obj) -> bool
 
   alias self.to_s self.to_liquid_string
 
@@ -152,6 +152,11 @@ module Liquid2
 
     def parse_identifier: (TokenStream stream, ?trailing_question: bool) -> Identifier
 
+    # Parse comma separated expression from stream.
+    # @param stream [TokenStream]
+    # @return [Array<PositionalArgument>]
+    def parse_positional_arguments: (TokenStream stream) -> Array[PositionalArgument]
+
     # Return the next tag name token from _stream_ without advancing.
     # Assumes the current token is :token_tag_start.
     def peek_tag_name: (TokenStream stream) -> Token
@@ -259,6 +264,7 @@ module Liquid2
 
   interface _Buffer
     def write: (String) -> Integer
+    def string: () -> String
   end
 
   # A compiled template bound to a Liquid environment and ready to be rendered.
@@ -592,7 +598,7 @@ module Liquid2
 
     def raise_for_loop_limit: (?length: ::Integer) -> (nil | untyped)
 
-    def get_output_buffer: (untyped parent_buffer) -> untyped
+    def get_output_buffer: (untyped parent_buffer) -> _Buffer
 
     # Mark _string_ as "safe" if auto escape is enabled.
     def markup: (String string) -> String
@@ -932,6 +938,8 @@ end
 module Liquid2
   class PositionalArgument < Expression
     @value: Expression
+
+    attr_reader value: Expression
 
     # @param children [Array<Token | Node>]
     # @param value [Expression]
@@ -1601,6 +1609,52 @@ module Liquid2
     def initialize: (Array[Token | Node] children, Expression expression) -> void
 
     def render: (RenderContext context, _Buffer buffer) -> untyped
+  end
+end
+
+module Liquid2
+  # The standard _capture_ tag.
+  class CaptureTag < Tag
+    @name: String
+
+    @block: Block
+
+    END_BLOCK: Set[String]
+
+    # @param stream [TokenStream]
+    # @param parser [Parser]
+    # @return [CaptureTag]
+    def self.parse: (TokenStream stream, Parser parser) -> CaptureTag
+
+    # @param children [Array<Token | Node>]
+    # @param name [Identifier]
+    # @param block [Block]
+    def initialize: (Array[Token | Node] children, Identifier name, Block block) -> void
+
+    def render: (RenderContext context, _Buffer _buffer) -> 0
+  end
+end
+
+module Liquid2
+  # The standard _cycle_ tag.
+  class CycleTag < Tag
+    @name: Expression?
+
+    @items: Array[Expression]
+
+    @blank: bool
+
+    # @param stream [TokenStream]
+    # @param parser [Parser]
+    # @return [CycleTag]
+    def self.parse: (TokenStream stream, Parser parser) -> CycleTag
+
+    # @param children [Array<Token | Node>]
+    # @param name [Expression?]
+    # @param items [Array<Expression>]
+    def initialize: (Array[Token | Node] children, Expression? name, Array[Expression] items) -> void
+
+    def render: (RenderContext context, _Buffer buffer) -> Integer
   end
 end
 

@@ -9,6 +9,8 @@ require_relative "nodes/tags/if"
 require_relative "nodes/tags/for"
 require_relative "nodes/tags/liquid"
 require_relative "nodes/tags/echo"
+require_relative "nodes/tags/capture"
+require_relative "nodes/tags/cycle"
 
 module Liquid2
   # Template parsing and rendering configuration.
@@ -30,7 +32,9 @@ module Liquid2
         "break" => BreakTag,
         "continue" => ContinueTag,
         "liquid" => LiquidTag,
-        "echo" => EchoTag
+        "echo" => EchoTag,
+        "capture" => CaptureTag,
+        "cycle" => CycleTag
       }
 
       # A mapping of filter names to objects responding to `#call(left, ...)`,

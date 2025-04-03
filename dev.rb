@@ -6,18 +6,9 @@ require "liquid2"
 env = Liquid2::Environment.new
 source = <<~LIQUID
   START
-  {% liquid
-    assign username = "Brian"
-
-    if username
-      echo "Hello, " | append: username
-    else
-      echo "Hello, user"
-    endif
-
-    for i in (1..3)
-      echo i
-    endfor -%}
+  {% cycle 'odd', 'even' %}
+  {% cycle 'odd', 'even' %}
+  {% cycle 'odd', 'even' %}
   END
 LIQUID
 

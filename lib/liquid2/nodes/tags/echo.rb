@@ -13,6 +13,7 @@ module Liquid2
       children = [stream.eat(:token_tag_start),
                   stream.eat_whitespace_control,
                   stream.eat(:token_tag_name)]
+
       expression = parser.parse_filtered_expression(stream)
       children << expression << stream.eat_whitespace_control << stream.eat(:token_tag_end)
       new(children, expression)

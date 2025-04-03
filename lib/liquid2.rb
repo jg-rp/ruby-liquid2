@@ -32,7 +32,7 @@ module Liquid2
   end
 
   # Return `true` if _obj_ is undefined.
-  def undefined?(obj)
+  def self.undefined?(obj)
     obj.is_a?(Undefined)
   end
 

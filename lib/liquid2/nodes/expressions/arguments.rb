@@ -4,6 +4,8 @@ require_relative "../../node"
 
 module Liquid2
   class PositionalArgument < Expression
+    attr_reader :value
+
     # @param children [Array<Token | Node>]
     # @param value [Expression]
     def initialize(children, value)
