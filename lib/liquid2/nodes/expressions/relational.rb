@@ -74,6 +74,8 @@ module Liquid2
   end
 
   # TODO: pass or inject a Token into errors
+  # TODO: move these to liquid2.rb?
+  # TODO: rename these with trailing "?"
 
   # Test _left_ and _right_ for Liquid equality.
   def self.eq(left, right)

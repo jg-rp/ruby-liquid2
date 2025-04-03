@@ -101,6 +101,14 @@ module Liquid2
       token.kind == :token_tag_name && token.text == name
     end
 
+    # Return `true` if the current token is a word matching _text_.
+    # @param text [String]
+    # @return [bool]
+    def word?(text)
+      token = current
+      token.kind == :token_word && token.text == text
+    end
+
     # @param kind [Set<Symbol>] a set of token kinds that cause us to stop skipping.
     # @return [Array<Token> | nil] the skipped tokens or nil if no tokens were skipped.
     def skip_until(kinds, max: 10)

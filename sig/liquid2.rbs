@@ -803,6 +803,11 @@ module Liquid2
     # @param name [String]
     # @return [bool]
     def tag?: (String name) -> bool
+            
+    # Return `true` if the current token is a word matching _text_.
+    # @param text [String]
+    # @return [bool]
+    def word?: (String text) -> bool
 
     # @param kind [Set<Symbol>] a set of token kinds that cause us to stop skipping.
     # @return [Array<Token> | nil] the skipped tokens or nil if no tokens were skipped.
@@ -1727,17 +1732,41 @@ module Liquid2
   class CaseTag < Tag
     @expression: Expression
 
-    @whens: Array[Expression]
+    @whens: Array[MultiEqualBlock]
 
     @default: Block?
 
     @blank: bool
 
+    END_BLOCK: Set[String]
+
     def self.parse: (TokenStream stream, Parser parser) -> CaseTag
 
-    def initialize: (Array[Token | Node] children, Expression expression, Array[Expression] whens, Block? default) -> void
+    # @return [MultiEqualBlock]
+    def self.parse_when: (TokenStream stream, Parser parser, Expression expr) -> MultiEqualBlock
+
+    def initialize: (Array[Token | Node] children, Expression expression, Array[MultiEqualBlock] whens, Block? default) -> void
+
+    def render: (RenderContext context, _Buffer buffer) -> Integer
+  end
+
+  class MultiEqualBlock < Node
+    @left: Expression
+
+    @conditions: Array[Expression]
+
+    @block: Block
+
+    @blank: bool
+
+    # @param children [Array<Token | Node>]
+    # @param left [Expression]
+    # @param conditions [Array<Expression>]
+    # @param block [Block]
+    def initialize: (Array[Token | Node] children, Expression left, Array[Expression] conditions, Block block) -> void
 
     def render: (RenderContext context, _Buffer buffer) -> Integer
   end
 end
+
 

@@ -10,6 +10,7 @@ require_relative "nodes/tags/for"
 require_relative "nodes/tags/liquid"
 require_relative "nodes/tags/echo"
 require_relative "nodes/tags/capture"
+require_relative "nodes/tags/case"
 require_relative "nodes/tags/cycle"
 require_relative "nodes/tags/decrement"
 require_relative "nodes/tags/increment"
@@ -41,7 +42,8 @@ module Liquid2
         "decrement" => DecrementTag,
         "increment" => IncrementTag,
         "raw" => RawTag,
-        "unless" => UnlessTag
+        "unless" => UnlessTag,
+        "case" => CaseTag
       }
 
       # A mapping of filter names to objects responding to `#call(left, ...)`,

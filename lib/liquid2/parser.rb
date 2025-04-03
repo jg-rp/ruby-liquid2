@@ -92,6 +92,7 @@ module Liquid2
           nodes << comment_node
           left_trim = comment_node.wc.last
         when :token_eof
+          # TODO: raise
           break
         else
           raise "unexpected token: #{token.inspect}"

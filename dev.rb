@@ -6,9 +6,18 @@ require "liquid2"
 env = Liquid2::Environment.new
 source = <<~LIQUID
   START
-  {% raw %}
-    This will be rendered {{verbatim}}, with the curly brackets.
-  {% endraw %}
+  {% assign day = "Monday" %}
+
+  {% case day %}
+    {% when "Monday" %}
+      Start of the work week!
+    {% when "Friday" %}
+      It's almost the weekend!
+    {% when "Saturday" or "Sunday" %}
+      Enjoy your weekend!
+    {% else %}
+      Just another weekday.
+  {% endcase %}
   END
 LIQUID
 
