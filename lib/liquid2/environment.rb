@@ -136,5 +136,17 @@ module Liquid2
 
       text
     end
+
+    # Load and parse a template using the configured template loader.
+    # @param name [String] The template's name.
+    # @param globals [_Namespace?] Render context variables to attach to the template.
+    # @param context [RenderContext?] An optional render context that can be used to
+    #   narrow the template search space.
+    # @param kwargs Arbitrary arguments that can be used to narrow the template search
+    #   space.
+    # @return [Template]
+    def get_template(name, globals: nil, context: nil, **kwargs)
+      raise "TODO"
+    end
   end
 end

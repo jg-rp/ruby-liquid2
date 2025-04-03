@@ -7,7 +7,7 @@ module Liquid2
   class EchoTag < Tag
     # @param stream [TokenStream]
     # @param parser [Parser]
-    # @return [LiquidTag]
+    # @return [EchoTag]
     def self.parse(stream, parser)
       # @type var children: Array[Token | Node]
       children = [stream.eat(:token_tag_start),

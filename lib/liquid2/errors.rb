@@ -3,9 +3,12 @@
 module Liquid2
   # The base class for all Liquid errors.
   class LiquidError < StandardError
+    attr_accessor :node_or_token
+
     def initialize(message, node_or_token = nil)
       super(message)
       @node_or_token = node_or_token
+      @template_name = nil
     end
 
     # TODO: detailed_message
@@ -14,5 +17,6 @@ module Liquid2
 
   class LiquidSyntaxError < LiquidError; end
   class LiquidArgumentError < LiquidError; end
+  class TemplateNotFoundError < LiquidError; end
   class UndefinedError < LiquidError; end
 end

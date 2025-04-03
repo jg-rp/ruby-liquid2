@@ -113,6 +113,16 @@ module Liquid2
     def undefined: (String name, ?node: Node?) -> Undefined
 
     def trim: (String text, Symbol left_trim, Symbol right_trim) -> String
+            
+    # Load and parse a template using the configured template loader.
+    # @param name [String] The template's name.
+    # @param globals [_Namespace?] Render context variables to attach to the template.
+    # @param context [RenderContext?] An optional render context that can be used to
+    #   narrow the template search space.
+    # @param kwargs Arbitrary arguments that can be used to narrow the template search
+    #   space.
+    # @return [Template]
+    def get_template: (String name, ?globals: _Namespace?, ?context: RenderContext?, **untyped) -> Template
   end
 
   class Parser
@@ -156,6 +166,12 @@ module Liquid2
     # @param stream [TokenStream]
     # @return [Array<PositionalArgument>]
     def parse_positional_arguments: (TokenStream stream) -> Array[PositionalArgument]
+                                  
+    # Parse comma name/value pairs from stream.
+    # Leading commas should be consumed by the caller.
+    # @param stream [TokenStream]
+    # @return [Array<KeywordArgument>]
+    def parse_keyword_arguments: (TokenStream stream) -> Array[KeywordArgument]
 
     # Return the next tag name token from _stream_ without advancing.
     # Assumes the current token is :token_tag_start.
@@ -273,21 +289,44 @@ module Liquid2
 
     @ast: RootNode
 
+    @name: String
+
+    @path: String?
+
+    @globals: _Namespace
+
+    @overlay: _Namespace
+
     attr_reader env: Environment
 
     attr_reader ast: RootNode
 
+    attr_reader name: String
+
+    attr_reader path: String?
+
+    attr_reader globals: _Namespace
+
+    attr_reader overlay: _Namespace
+
     # @param env [Environment]
     # @param ast [RootNode]
-    def initialize: (Environment env, RootNode ast) -> void
+    # @param name [String] The template's name.
+    # @param path [String?] The path or other qualifying data to _name_.
+    # @param globals [_Namespace] Global template variables.
+    # @param overlay [_Namespace] Additional template variables. Could be from front matter
+    #   or other meta data store, for example.
+    def initialize: (Environment env, RootNode ast, ?name: String, ?path: String?, ?globals: _Namespace?, ?overlay: _Namespace?) -> void
 
     def to_s: () -> String
+            
+    def full_name: () -> String
 
     def dump: () -> untyped
 
     def render: (?Hash[String, untyped]? globals) -> String
 
-    def render_with_context: (RenderContext context, _Buffer buffer, ?partial: bool, ?block_scope: bool, ?namespace: Hash[String, untyped]?) -> int
+    def render_with_context: (RenderContext context, _Buffer buffer, ?partial: bool, ?block_scope: bool, ?namespace: Hash[String, untyped]?) -> Integer
   end
 
   # The default undefined type. Can be iterated over an indexed without error.
@@ -822,13 +861,22 @@ module Liquid2
   class LiquidError < StandardError
     @node_or_token: (Node | Token | nil)
 
-    def initialize: (String message, ?(Node | Token)? node) -> void
+    @template_name: String?
+
+    attr_accessor node_or_token: (Node | Token | nil)
+
+    attr_accessor template_name: (String | nil)
+
+    def initialize: (String message, ?(Node | Token)? node_or_token) -> void
   end
 
   class LiquidSyntaxError < LiquidError
   end
 
   class LiquidArgumentError < LiquidError
+  end
+
+  class TemplateNotFoundError < LiquidError
   end
 
   class UndefinedError < LiquidError
@@ -1608,7 +1656,7 @@ module Liquid2
 
     # @param stream [TokenStream]
     # @param parser [Parser]
-    # @return [LiquidTag]
+    # @return [EchoTag]
     def self.parse: (TokenStream stream, Parser parser) -> EchoTag
 
     def initialize: (Array[Token | Node] children, Expression expression) -> void
@@ -1769,4 +1817,33 @@ module Liquid2
   end
 end
 
+module Liquid2
+  # The standard _include_ tag.
+  class IncludeTag < Tag
+    @name: Expression
+
+    @repeat: bool
+
+    @var: Expression?
+
+    @as: String?
+
+    @args: Array[KeywordArgument]
+
+    # @param stream [TokenStream]
+    # @param parser [Parser]
+    # @return [IncludeTag]
+    def self.parse: (TokenStream stream, Parser parser) -> IncludeTag
+
+    # @param children Array[Token | Node]
+    # @param name [Expression]
+    # @param repeat [bool]
+    # @param var [Expression?]
+    # @param as [Identifier?]
+    # @param args [Array<KeywordArgument>]
+    def initialize: (Array[Token | Node] children, Expression name, bool repeat, Expression? var, Identifier? as, Array[KeywordArgument] args) -> void
+
+    def render: (RenderContext context, _Buffer buffer) -> Integer
+  end
+end
 

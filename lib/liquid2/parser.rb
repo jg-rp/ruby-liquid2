@@ -127,7 +127,7 @@ module Liquid2
     # @return [FilteredExpression|TernaryExpression]
     def parse_filtered_expression(stream)
       left = parse_primary(stream)
-      filters = stream.current.kind == :token_pipe ? parse_filters(stream) : []
+      filters = stream.current.kind == :token_pipe ? parse_filters(stream) : [] # steep:ignore UnannotatedEmptyCollection
       expr = FilteredExpression.new([left, *filters], left, filters)
 
       if stream.current.kind == :token_if
@@ -263,6 +263,27 @@ module Liquid2
           args << PositionalArgument.new([item], item)
           break
         end
+      end
+
+      args
+    end
+
+    # Parse comma name/value pairs from stream.
+    # Leading commas should be consumed by the caller.
+    # @param stream [TokenStream]
+    # @return [Array<KeywordArgument>]
+    def parse_keyword_arguments(stream)
+      args = [] # : Array[KeywordArgument]
+
+      loop do
+        unless stream.current.kind == :token_word && KEYWORD_ARGUMENT_DELIMITERS.member?(stream.peek.kind)
+          break
+        end
+
+        word = stream.next
+        sep = stream.next
+        val = parse_primary(stream)
+        args << KeywordArgument.new([word, sep, val], word, val)
       end
 
       args
