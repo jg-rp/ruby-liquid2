@@ -164,6 +164,8 @@ module Liquid2
     def parse_primary: (TokenStream stream, ?precedence: Integer) -> Expression
 
     def parse_identifier: (TokenStream stream, ?trailing_question: bool) -> Identifier
+                        
+    def parse_string: (TokenStream stream) -> StringLiteral
 
     # Parse comma separated expression from stream.
     # @param stream [TokenStream]
@@ -230,7 +232,7 @@ module Liquid2
 
     # @param stream [TokenStream]
     # @return [Expression]
-    def parse_string_literal: (TokenStream stream) -> Expression
+    def parse_string_literal: (TokenStream stream) -> (TemplateString | StringLiteral)
 
     # @param stream [TokenStream]
     # @return [Expression]
@@ -930,6 +932,9 @@ module Liquid2
   class LiquidArgumentError < LiquidError
   end
 
+  class LiquidTypeError < LiquidError
+  end
+
   class TemplateNotFoundError < LiquidError
   end
 
@@ -1421,12 +1426,16 @@ end
 module Liquid2
   # Quoted string literal.
   class StringLiteral < Literal
-    @children: untyped
+    @children: Array[Token | Node]
 
-    @value: untyped
+    @segments: Array[StringSegment]
+
+    @value: String
+
+    attr_reader value: String
 
     # @param children [Array<Token, Expression>]
-    def initialize: (Array[Node | Token] children) -> void
+    def initialize: (Array[Node | Token] children, Array[StringSegment] segments) -> void
 
     def evaluate: (RenderContext _context) -> untyped
   end
@@ -1434,6 +1443,8 @@ module Liquid2
   # A literal part of a template string.
   class StringSegment < Expression
     @value: untyped
+
+    attr_reader value: String
 
     # @param token [Token]
     def initialize: (untyped token) -> void
@@ -1901,3 +1912,64 @@ module Liquid2
   end
 end
 
+module Liquid2
+  # The standard _comment_ tag.
+  class BlockComment < Tag
+    @text: String
+
+    def self.parse: (TokenStream stream, Parser _parser) -> BlockComment
+
+    # @param children [Array<Token|Node>]
+    # @param text [String]
+    def initialize: (Array[Token|Node] children, String text) -> void
+
+    def render: (RenderContext _context, _Buffer _buffer) -> 0
+  end
+end
+
+module Liquid2
+  # `{% # comment %}` style comments.
+  class InlineComment < Tag
+    @text: String
+
+    def self.parse: (Liquid2::TokenStream stream, Parser _parser) -> InlineComment
+
+    # @param children [Array<Node | Token>]
+    # @param text [String]
+    def initialize: (Array[Token|Node] children, String text) -> void
+
+    def render: (RenderContext _context, _Buffer _buffer) -> 0
+  end
+end
+
+module Liquid2
+  DISABLED_TAGS: Set[String]
+
+  # The standard _render_ tag.
+  class RenderTag < Tag
+    @name: StringLiteral
+
+    @repeat: bool
+
+    @var: Expression?
+
+    @as: String?
+
+    @args: Array[KeywordArgument]
+
+    # @param stream [TokenStream]
+    # @param parser [Parser]
+    # @return [RenderTag]
+    def self.parse: (TokenStream stream, Parser parser) -> RenderTag
+
+    # @param children Array[Token | Node]
+    # @param name [StringLiteral]
+    # @param repeat [bool]
+    # @param var [Expression?]
+    # @param as [Identifier?]
+    # @param args [Array<KeywordArgument> | nil]
+    def initialize: (Array[Token | Node] children, StringLiteral name, bool repeat, Expression? var, Identifier? as, Array[KeywordArgument] args) -> void
+
+    def render: (RenderContext context, _Buffer buffer) -> Integer
+  end
+end

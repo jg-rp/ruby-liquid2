@@ -207,7 +207,7 @@ module Liquid2
 
       # Working around the lack of MatchData when using StringScanner.
       # Note that this works because our named captures span the entire pattern.
-      offset = @start
+      offset = @start - 1
       groups = RE_COMMENT.names.to_h do |name|
         value = @scanner[name]
         index = offset
@@ -224,8 +224,7 @@ module Liquid2
       wc0 = groups["WC0"]
       unless wc0[:value].empty?
         wc0_start = wc0[:index]
-        wc0_end = wc0_start + wc0[:value].length
-        @tokens << Token.new(:token_whitespace_control, wc0_start, "", wc0_end)
+        @tokens << Token.new(:token_whitespace_control, wc0_start, "", wc0[:value])
       end
 
       comment_text = groups["TEXT"]
@@ -237,8 +236,7 @@ module Liquid2
       wc1 = groups["WC1"]
       unless wc1[:value].empty?
         wc1_start = wc1[:index]
-        wc1_end = wc1_start + wc1[:value].length
-        @tokens << Token.new(:token_whitespace_control, wc1_start, "", wc1_end)
+        @tokens << Token.new(:token_whitespace_control, wc1_start, "", wc1[:value])
       end
 
       comment_end = groups["END"]

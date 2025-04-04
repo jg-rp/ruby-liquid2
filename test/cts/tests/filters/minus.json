@@ -1,0 +1,66 @@
+{
+  "tests": [
+    {
+      "name": "integer value and integer arg",
+      "template": "{{ 10 | minus: 2 }}",
+      "data": {},
+      "result": "8"
+    },
+    {
+      "name": "integer value and float arg",
+      "template": "{{ 10 | minus: 2.0 }}",
+      "data": {},
+      "result": "8.0"
+    },
+    {
+      "name": "float value and float arg",
+      "template": "{{ 10.1 | minus: 2.2 }}",
+      "data": {},
+      "result": "7.9"
+    },
+    {
+      "name": "string value and string arg",
+      "template": "{{ \"10.1\" | minus: \"2.2\" }}",
+      "data": {},
+      "result": "7.9"
+    },
+    {
+      "name": "string not a number",
+      "template": "{{ \"foo\" | minus: \"2.0\" }}",
+      "data": {},
+      "result": "-2.0"
+    },
+    {
+      "name": "arg string not a number",
+      "template": "{{ \"10\" | minus: \"foo\" }}",
+      "data": {},
+      "result": "10"
+    },
+    {
+      "name": "too many args",
+      "template": "{{ 5 | minus: 1, '5' }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "not a string, int or float",
+      "template": "{{ a | minus: 1 }}",
+      "data": {
+        "a": {}
+      },
+      "result": "-1"
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | minus: 2 }}",
+      "data": {},
+      "result": "-2"
+    },
+    {
+      "name": "undefined argument",
+      "template": "{{ 10 | minus: nosuchthing }}",
+      "data": {},
+      "result": "10"
+    }
+  ]
+}

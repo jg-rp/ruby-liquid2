@@ -1,0 +1,61 @@
+{
+  "tests": [
+    {
+      "name": "size of an array",
+      "template": "{{ a | size }}",
+      "data": {
+        "a": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
+      "result": "3"
+    },
+    {
+      "name": "size of a string",
+      "template": "{{ a | size }}",
+      "data": {
+        "a": "abc"
+      },
+      "result": "3"
+    },
+    {
+      "name": "size of an empty array",
+      "template": "{{ a | size }}",
+      "data": {
+        "a": []
+      },
+      "result": "0"
+    },
+    {
+      "name": "size of a hash",
+      "template": "{{ a | size }}",
+      "data": {
+        "a": {
+          "a": 1,
+          "b": 2
+        }
+      },
+      "result": "2"
+    },
+    {
+      "name": "unexpected argument",
+      "template": "{{ a | size: 'foo' }}",
+      "data": {
+        "a": [
+          1,
+          2,
+          3
+        ]
+      },
+      "invalid": true
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | size }}",
+      "data": {},
+      "result": "0"
+    }
+  ]
+}

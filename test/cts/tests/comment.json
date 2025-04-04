@@ -1,0 +1,28 @@
+{
+  "tests": [
+    {
+      "name": "comment",
+      "template": "Hello, {# this is a comment #} World!",
+      "data": {},
+      "result": "Hello,  World!"
+    },
+    {
+      "name": "no trailing hash",
+      "template": "Hello, {# this is not a comment } World!",
+      "data": {},
+      "result": "Hello, {# this is not a comment } World!"
+    },
+    {
+      "name": "commented markup",
+      "template": "Hello, {# this is {% if %} a {{ comment }} #} World!",
+      "data": {},
+      "result": "Hello,  World!"
+    },
+    {
+      "name": "whitespace control",
+      "template": "Hello,   {#- this is a comment -#}\nWorld!",
+      "data": {},
+      "result": "Hello,World!"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "tests": [
+    {
+      "name": "comment block",
+      "template": "{% comment %}don't render me{% endcomment %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "comment block, whitespace control",
+      "template": "a\n{%- comment %}don't render me{% endcomment -%}\t \rb",
+      "data": {},
+      "result": "ab"
+    },
+    {
+      "name": "comment block with tags",
+      "template": "{% comment %}\n{% if true %}\n{{ title }}\n{% endif %}{% endcomment %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "comment block, ignore invalid expressions",
+      "template": "{% comment %}    {% if true %}    {% if ... %}    {%- for ? -%}    {% while true %}    {%    unless if    %}    {% endcase %}{% endcomment %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "comment block, ignore malformed tags",
+      "template": "{% comment %}{% assign foo = '1'{% endcomment %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "comment block, ignore incomplete tags",
+      "template": "{% comment %}{% {{ {%- endcomment %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "comment block, nested",
+      "template": "{% comment %}{% comment %}{% endcomment %}{% endcomment %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "comment block, nested, unclosed",
+      "template": "{% comment %}{% comment %}{% endcomment %}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "comment block, raw",
+      "template": "a{% comment %}{% raw %}{% endcomment %}{% endraw %}{% endcomment %}b",
+      "data": {},
+      "result": "ab"
+    }
+  ]
+}

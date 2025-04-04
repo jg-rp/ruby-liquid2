@@ -18,6 +18,9 @@ require_relative "nodes/tags/increment"
 require_relative "nodes/tags/include"
 require_relative "nodes/tags/raw"
 require_relative "nodes/tags/unless"
+require_relative "nodes/tags/block_comment"
+require_relative "nodes/tags/inline_comment"
+require_relative "nodes/tags/render"
 
 module Liquid2
   # Template parsing and rendering configuration.
@@ -46,7 +49,10 @@ module Liquid2
         "raw" => RawTag,
         "unless" => UnlessTag,
         "case" => CaseTag,
-        "include" => IncludeTag
+        "include" => IncludeTag,
+        "comment" => BlockComment,
+        "#" => InlineComment,
+        "render" => RenderTag
       }
 
       # A mapping of filter names to objects responding to `#call(left, ...)`,

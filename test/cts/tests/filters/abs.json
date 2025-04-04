@@ -1,0 +1,84 @@
+{
+  "tests": [
+    {
+      "name": "positive integer",
+      "template": "{{ 5 | abs }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "negative integer",
+      "template": "{{ -5 | abs }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "positive float",
+      "template": "{{ 5.4 | abs }}",
+      "data": {},
+      "result": "5.4"
+    },
+    {
+      "name": "negative float",
+      "template": "{{ -5.4 | abs }}",
+      "data": {},
+      "result": "5.4"
+    },
+    {
+      "name": "zero",
+      "template": "{{ 0 | abs }}",
+      "data": {},
+      "result": "0"
+    },
+    {
+      "name": "positive string integer",
+      "template": "{{ '5' | abs }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "negative string integer",
+      "template": "{{ '-5' | abs }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "positive string float",
+      "template": "{{ '5.1' | abs }}",
+      "data": {},
+      "result": "5.1"
+    },
+    {
+      "name": "negative string float",
+      "template": "{{ '-5.1' | abs }}",
+      "data": {},
+      "result": "5.1"
+    },
+    {
+      "name": "unexpected argument",
+      "template": "{{ -3 | abs: 1 }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "string not a number",
+      "template": "{{ 'hello' | abs }}",
+      "data": {},
+      "result": "0"
+    },
+    {
+      "name": "not a string, int or float",
+      "template": "{{ a | abs }}",
+      "data": {
+        "a": {}
+      },
+      "result": "0"
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | abs }}",
+      "data": {},
+      "result": "0"
+    }
+  ]
+}

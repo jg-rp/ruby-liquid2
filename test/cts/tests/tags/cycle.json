@@ -1,0 +1,67 @@
+{
+  "tests": [
+    {
+      "name": "string literals",
+      "template": "{% cycle 'a', 'b' %}{% cycle 'a', 'b' %}{% cycle 'a', 'b' %}",
+      "data": {},
+      "result": "aba"
+    },
+    {
+      "name": "integer literals",
+      "template": "{% cycle 1, 2 %}{% cycle 1, 2 %}{% cycle 1, 2 %}",
+      "data": {},
+      "result": "121"
+    },
+    {
+      "name": "bool literals",
+      "template": "{% cycle true, false %}{% cycle true, false %}{% cycle true, false %}",
+      "data": {},
+      "result": "truefalsetrue"
+    },
+    {
+      "name": "queries",
+      "template": "{% cycle a, b %}{% cycle a, b %}{% cycle a, b %}",
+      "data": { "a": "c", "b": "d" },
+      "result": "cdc"
+    },
+    {
+      "name": "differing items",
+      "template": "{% cycle 'a', 'b' %}{% cycle 'a', 'b', 'c' %}{% cycle 'a', 'b' %}",
+      "data": {},
+      "result": "aab"
+    },
+    {
+      "name": "named",
+      "template": "{% cycle foo: 'a', 'b' %}{% cycle foo: 'a', 'b' %}{% cycle foo: 'a', 'b' %}",
+      "data": {},
+      "result": "aba"
+    },
+    {
+      "name": "named, differing items",
+      "template": "{% cycle foo: 'a', 'b' %}{% cycle foo: 'a', 'b', 'c' %}{% cycle foo: 'a', 'b' %}",
+      "data": {},
+      "result": "aab"
+    },
+    {
+      "name": "differing names, same items",
+      "template": "{% cycle foo: 'a', 'b' %}{% cycle bar: 'a', 'b' %}{% cycle foo: 'a', 'b' %}",
+      "data": {},
+      "result": "aab"
+    },
+    {
+      "name": "name is a path",
+      "template": "{% cycle foo.bar: 'a', 'b' %}",
+      "invalid": true
+    },
+    {
+      "name": "no items",
+      "template": "{% cycle %}",
+      "invalid": true
+    },
+    {
+      "name": "name, no items",
+      "template": "{% cycle foo: %}",
+      "invalid": true
+    }
+  ]
+}

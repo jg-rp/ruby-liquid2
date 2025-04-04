@@ -1,0 +1,94 @@
+{
+  "tests": [
+    {
+      "name": "float round down",
+      "template": "{{ 5.1 | round }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "float round up",
+      "template": "{{ 5.6 | round }}",
+      "data": {},
+      "result": "6"
+    },
+    {
+      "name": "float as a string",
+      "template": "{{ \"5.6\" | round }}",
+      "data": {},
+      "result": "6"
+    },
+    {
+      "name": "string argument",
+      "template": "{{ 5.666 | round: \"1\" }}",
+      "data": {},
+      "result": "5.7"
+    },
+    {
+      "name": "decimal places",
+      "template": "{{ \"5.666666\" | round: 2 }}",
+      "data": {},
+      "result": "5.67"
+    },
+    {
+      "name": "integer",
+      "template": "{{ 5 | round }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "too many args",
+      "template": "{{ 5 | round: 1, 2 }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | round: 2 }}",
+      "data": {},
+      "result": "0"
+    },
+    {
+      "name": "undefined argument",
+      "template": "{{ 5.666 | round: nosuchthing }}",
+      "data": {},
+      "result": "6"
+    },
+    {
+      "name": "argument is a string",
+      "template": "{{ 5.666 | round: 'foo' }}",
+      "data": {},
+      "result": "6"
+    },
+    {
+      "name": "argument is a string representation of an integer",
+      "template": "{{ 5.666 | round: '1' }}",
+      "data": {},
+      "result": "5.7"
+    },
+    {
+      "name": "argument is a string representation of zero",
+      "template": "{{ 5.666 | round: '1' }}",
+      "data": {},
+      "result": "5.7"
+    },
+    {
+      "name": "argument is a negative",
+      "template": "{{ 5.666 | round: -2 }}",
+      "data": {},
+      "result": "0"
+    },
+    {
+      "name": "argument is a float",
+      "template": "{{ 5.666 | round: 1.2 }}",
+      "data": {},
+      "result": "5.7"
+    },
+    {
+      "name": "argument is a zero",
+      "template": "{{ 5.666 | round: 0 }}",
+      "data": {},
+      "result": "6"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "tests": [
+    {
+      "name": "remove substrings",
+      "template": "{{ \"I strained to see the train through the rain\" | remove: \"rain\" }}",
+      "data": {},
+      "result": "I sted to see the t through the "
+    },
+    {
+      "name": "not a string",
+      "template": "{{ 5 | remove: 'there' }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "argument not a string",
+      "template": "{{ \"hello\" | remove: 5 }}",
+      "data": {},
+      "result": "hello"
+    },
+    {
+      "name": "missing argument",
+      "template": "{{ \"hello\" | remove }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "too many arguments",
+      "template": "{{ \"hello\" | remove: \"how\", \"are\", \"you\" }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | remove: \"rain\" }}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "undefined argument",
+      "template": "{{ \"hello\" | remove: nosuchthing }}",
+      "data": {},
+      "result": "hello"
+    }
+  ]
+}

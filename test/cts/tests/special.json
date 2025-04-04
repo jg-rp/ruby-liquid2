@@ -1,0 +1,129 @@
+{
+  "tests": [
+    {
+      "name": "first of an array",
+      "template": "{{ a.first }}",
+      "data": {
+        "a": [3, 2, 1]
+      },
+      "result": "3"
+    },
+    {
+      "name": "last of an array",
+      "template": "{{ a.last }}",
+      "data": {
+        "a": [3, 2, 1]
+      },
+      "result": "1"
+    },
+    {
+      "name": "size of an array",
+      "template": "{{ a.size }}",
+      "data": {
+        "a": [3, 2, 1]
+      },
+      "result": "3"
+    },
+    {
+      "name": "size of a string",
+      "template": "{{ s.size }}",
+      "data": {
+        "s": "hello"
+      },
+      "result": "5"
+    },
+    {
+      "name": "first of a string",
+      "template": "{{ s.first }}",
+      "data": {
+        "s": "hello"
+      },
+      "result": "h"
+    },
+    {
+      "name": "first of an object",
+      "template": "{{ obj.first | join: '#' }}",
+      "data": {
+        "obj": {
+          "a": 1,
+          "b": 2
+        }
+      },
+      "result": "a#1"
+    },
+    {
+      "name": "first of an empty object",
+      "template": "{{ obj.first | join: '#' }}",
+      "data": {
+        "obj": {}
+      },
+      "result": ""
+    },
+    {
+      "name": "last of a string",
+      "template": "{{ s.last }}",
+      "data": {
+        "s": "hello"
+      },
+      "result": "o"
+    },
+    {
+      "name": "last of a object",
+      "template": "{{ obj.last }}",
+      "data": {
+        "obj": {
+          "a": 1,
+          "b": 2
+        }
+      },
+      "result": ""
+    },
+    {
+      "name": "size of an object with a size property",
+      "template": "{{ obj.size }}",
+      "data": {
+        "obj": {
+          "size": 99
+        }
+      },
+      "result": "99"
+    },
+    {
+      "name": "first of an object with a first property",
+      "template": "{{ obj.first }}",
+      "data": {
+        "obj": {
+          "a": 1,
+          "first": 99
+        }
+      },
+      "result": "99"
+    },
+    {
+      "name": "last of an object with a last property",
+      "template": "{{ obj.last }}",
+      "data": {
+        "obj": {
+          "a": 1,
+          "last": 99,
+          "b": 42
+        }
+      },
+      "result": "99"
+    },
+    {
+      "name": "size of undefined",
+      "template": "{{ nosuchthing.last }}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "size of an int",
+      "template": "{{ x.size }}",
+      "data": {
+        "x": 1
+      },
+      "result": ""
+    }
+  ]
+}

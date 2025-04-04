@@ -1,0 +1,106 @@
+{
+  "tests": [
+    {
+      "name": "with whitespace control and padding",
+      "template": "{%- # some comment -%}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "with whitespace control no padding",
+      "template": "{%-# some comment -%}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "no whitespace control with padding",
+      "template": "{% # some comment %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "no whitespace control no padding",
+      "template": "{%# some comment %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "no padding after the hash",
+      "template": "{%#some comment %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "empty",
+      "template": "{%#%}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "liquid tag",
+      "template": "{% liquid \n  # first comment line\n  # second comment line\n\n  # another comment line\n  echo 'Hello '\n\n  # more comments\n  echo 'goodbye'\n-%}",
+      "data": {},
+      "result": "Hello goodbye"
+    },
+    {
+      "name": "multiple lines",
+      "template": "{%-\n  # spread inline comments\n  # over multiple lines\n-%}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "lots of hashes in a liquid tag",
+      "template": "{% liquid\n  ##########################\n  # spread inline comments #\n  ##########################\n-%}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "enforce leading hash",
+      "template": "{%-\n  # spread inline comments\n  over multiple lines\n-%}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "can't comment tags",
+      "template": "{%- # {% echo 'hello world' %} -%}",
+      "data": {},
+      "result": " -%}"
+    },
+    {
+      "name": "comment with single quote",
+      "template": "{%# some 'comment %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "comment with single quoted string",
+      "template": "{%# some 'comment' %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "comment with double quote",
+      "template": "{%# some \"comment %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "comment with double quoted string",
+      "template": "{%# some \"comment\" %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "comment with u2018",
+      "template": "{%# some \u2018comment %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "comment with u201C",
+      "template": "{%# some \u201ccomment %}",
+      "data": {},
+      "result": ""
+    }
+  ]
+}

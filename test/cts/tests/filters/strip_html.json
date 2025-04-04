@@ -1,0 +1,86 @@
+{
+  "tests": [
+    {
+      "name": "some HTML markup",
+      "template": "{{ s | strip_html }}",
+      "data": {
+        "s": "Have <em>you</em> read <strong>Ulysses</strong> &amp; &#20;?"
+      },
+      "result": "Have you read Ulysses &amp; &#20;?"
+    },
+    {
+      "name": "some HTML markup with HTML comment",
+      "template": "{{ s | strip_html }}",
+      "data": {
+        "s": "<!-- Have --><em>you</em> read <strong>Ulysses</strong> &amp; &#20;?"
+      },
+      "result": "you read Ulysses &amp; &#20;?"
+    },
+    {
+      "name": "not a string",
+      "template": "{{ 5 | strip_html }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "unexpected argument",
+      "template": "{{ \"hello\" | strip_html: 5 }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | strip_html }}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "html block",
+      "template": "{{ s | strip_html }}",
+      "data": {
+        "s": "<div>test</div>"
+      },
+      "result": "test"
+    },
+    {
+      "name": "html block with id",
+      "template": "{{ s | strip_html }}",
+      "data": {
+        "s": "<div id='test'>test</div>"
+      },
+      "result": "test"
+    },
+    {
+      "name": "script block",
+      "template": "{{ s | strip_html }}",
+      "data": {
+        "s": "<script type='text/javascript'>document.write('some stuff');</script>"
+      },
+      "result": ""
+    },
+    {
+      "name": "style block",
+      "template": "{{ s | strip_html }}",
+      "data": {
+        "s": "<style type='text/css'>foo bar</style>"
+      },
+      "result": ""
+    },
+    {
+      "name": "html block with newline",
+      "template": "{{ s | strip_html }}",
+      "data": {
+        "s": "<div\nclass='multiline'>test</div>"
+      },
+      "result": "test"
+    },
+    {
+      "name": "html comment with newline",
+      "template": "{{ s | strip_html }}",
+      "data": {
+        "s": "<!-- foo bar \n test -->test"
+      },
+      "result": "test"
+    }
+  ]
+}

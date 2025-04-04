@@ -1,0 +1,40 @@
+{
+  "tests": [
+    {
+      "name": "named counter",
+      "template": "{% decrement a %} {% decrement a %}",
+      "data": {},
+      "result": "-1 -2"
+    },
+    {
+      "name": "multiple",
+      "template": "{% decrement a %} {% decrement b %} {% decrement a %} {% decrement b %}",
+      "data": {},
+      "result": "-1 -1 -2 -2"
+    },
+    {
+      "name": "output",
+      "template": "{% decrement a %} {% decrement a %} {{ a }}",
+      "data": {},
+      "result": "-1 -2 -2"
+    },
+    {
+      "name": "global name already exists",
+      "template": "{{ a }} {% decrement a %} {% decrement a %} {{a}}",
+      "data": { "a": 10 },
+      "result": "10 -1 -2 10"
+    },
+    {
+      "name": "local name already exists",
+      "template": "{% assign a = 10 %}{{ a }} {% decrement a %} {% decrement a %} {{a}}",
+      "data": {},
+      "result": "10 -1 -2 10"
+    },
+    {
+      "name": "and increment",
+      "template": "{% decrement a %} {% decrement a %} {% increment a %} {% increment a %} {% decrement a %}",
+      "data": {},
+      "result": "-1 -2 -2 -1 -1"
+    }
+  ]
+}

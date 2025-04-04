@@ -1,0 +1,159 @@
+{
+  "tests": [
+    {
+      "name": "string literal",
+      "template": "{% assign a = 'b' %}{{ a }}",
+      "data": {},
+      "result": "b"
+    },
+    {
+      "name": "integer literal",
+      "template": "{% assign a = 123 %}{{ a }}",
+      "data": {},
+      "result": "123"
+    },
+    {
+      "name": "float literal",
+      "template": "{% assign a = 1.23 %}{{ a }}",
+      "data": {},
+      "result": "1.23"
+    },
+    {
+      "name": "range literal",
+      "template": "{% assign a = (1..3) %}{{ a | join: '#' }}",
+      "data": {},
+      "result": "1#2#3"
+    },
+    {
+      "name": "simple query",
+      "template": "{% assign a = b %}{{ a }}",
+      "data": { "b": "c" },
+      "result": "c"
+    },
+    {
+      "name": "query, nested object",
+      "template": "{% assign a = b.c %}{{ a }}",
+      "data": { "b": { "c": "d" } },
+      "result": "d"
+    },
+    {
+      "name": "query, nested array element",
+      "template": "{% assign a = b.c[1] %}{{ a }}",
+      "data": { "b": { "c": [1, 2, 3] } },
+      "result": "2"
+    },
+    {
+      "name": "string literal containing an end tag delimiter",
+      "template": "{% assign a = 'foo%}bar' %}{{ a }}",
+      "data": {},
+      "result": "foo%}bar"
+    },
+    {
+      "name": "string literal containing a start output delimiter",
+      "template": "{% assign a = 'foo{{bar' %}{{ a }}",
+      "data": {},
+      "result": "foo{{bar"
+    },
+    {
+      "name": "shadow global variable",
+      "template": "{{ a }}{% assign a = 'c' %}{{ a }}",
+      "data": { "a": "b" },
+      "result": "bc"
+    },
+    {
+      "name": "string literal, filtered",
+      "template": "{% assign a = 'b' | upcase %}{{ a }}",
+      "data": {},
+      "result": "B"
+    },
+    {
+      "name": "ternary expression, truthy",
+      "template": "{% assign a = 'b' if true else 'c' %}{{ a }}",
+      "data": {},
+      "result": "b"
+    },
+    {
+      "name": "ternary expression, falsy",
+      "template": "{% assign a = 'b' if false else 'c' %}{{ a }}",
+      "data": {},
+      "result": "c"
+    },
+    {
+      "name": "ternary expression, truthy filter",
+      "template": "{% assign a = 'b' | upcase if true else 'c' %}{{ a }}",
+      "data": {},
+      "result": "B"
+    },
+    {
+      "name": "ternary expression, falsy filter",
+      "template": "{% assign a = 'b' if false else 'c' | upcase %}{{ a }}",
+      "data": {},
+      "result": "C"
+    },
+    {
+      "name": "ternary expression, truthy, falsy filter",
+      "template": "{% assign a = 'b' if true else 'c' | upcase %}{{ a }}",
+      "data": {},
+      "result": "b"
+    },
+    {
+      "name": "ternary expression, falsy, truthy filter",
+      "template": "{% assign a = 'b' | upcase if false else 'c' %}{{ a }}",
+      "data": {},
+      "result": "c"
+    },
+    {
+      "name": "ternary expression, tail filter",
+      "template": "{% assign a = 'b' if true else 'c' || upcase %}{{ a }}",
+      "data": {},
+      "result": "B"
+    },
+    {
+      "name": "missing assignment operator",
+      "template": "{% assign a 'b' %}",
+      "invalid": true
+    },
+    {
+      "name": "missing expression",
+      "template": "{% assign a = %}",
+      "invalid": true
+    },
+    {
+      "name": "comma before equals",
+      "template": "{% assign a, = b %}",
+      "invalid": true
+    },
+    {
+      "name": "array literal",
+      "template": "{% assign a = b, c, 'd' %}{{ a }}",
+      "data": {
+        "b": 1,
+        "c": 2
+      },
+      "result": "12d"
+    },
+    {
+      "name": "array literal, filtered",
+      "template": "{% assign a = b, c, 'd' | join: '#' %}{{ a }}",
+      "data": {
+        "b": 1,
+        "c": 2
+      },
+      "result": "1#2#d"
+    },
+    {
+      "name": "array literal, leading comma",
+      "template": "{% assign a = , b, c, 'd' %}{{ a }}",
+      "invalid": true
+    },
+    {
+      "name": "array literal, trailing comma",
+      "template": "{% assign a = b, c, 'd',  %}{{ a }}",
+      "data": {
+        "b": 1,
+        "c": 2
+      },
+      "result": "12d"
+    }
+  ]
+}

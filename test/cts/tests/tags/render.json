@@ -1,0 +1,135 @@
+{
+  "tests": [
+    {
+      "name": "string literal",
+      "template": "{% render 'a' %}",
+      "data": { "b": "c" },
+      "templates": {
+        "a": "{{ b }}"
+      },
+      "result": "c"
+    },
+    {
+      "name": "query",
+      "template": "{% render a %}",
+      "invalid": true
+    },
+    {
+      "name": "bind variable",
+      "template": "{% render 'a' with b.c[1] %}",
+      "data": { "b": { "c": [1, { "foo": "bar" }, 3] } },
+      "templates": {
+        "a": "{{ a.foo }}"
+      },
+      "result": "bar"
+    },
+    {
+      "name": "bind variable with alias",
+      "template": "{% render 'a' with b.c[1] as x %}",
+      "data": { "b": { "c": [1, { "foo": "bar" }, 3] } },
+      "templates": {
+        "a": "{{ x.foo }}"
+      },
+      "result": "bar"
+    },
+    {
+      "name": "bind array, for",
+      "template": "{% render 'a' for b.c %}",
+      "data": { "b": { "c": [{ "foo": "bar" }, { "foo": "baz" }] } },
+      "templates": {
+        "a": "{{ a.foo }}"
+      },
+      "result": "barbaz"
+    },
+    {
+      "name": "bind array, with",
+      "template": "{% render 'a' with b.c %}",
+      "data": { "b": { "c": [{ "foo": "bar" }, { "foo": "baz" }] } },
+      "templates": {
+        "a": "{{ a[0].foo }}"
+      },
+      "result": "bar"
+    },
+    {
+      "name": "keyword arguments, commas",
+      "template": "{% render 'a', b: 'c', d: 'e' %}",
+      "data": {},
+      "templates": {
+        "a": "{{ b }} {{ d }}"
+      },
+      "result": "c e"
+    },
+    {
+      "name": "keyword arguments, equals",
+      "template": "{% render 'a', b='c', d='e' %}",
+      "data": {},
+      "templates": {
+        "a": "{{ b }} {{ d }}"
+      },
+      "result": "c e"
+    },
+    {
+      "name": "keyword arguments, no leading comma",
+      "template": "{% render 'a' b: 'c', d: 'e' %}",
+      "data": {},
+      "templates": {
+        "a": "{{ b }} {{ d }}"
+      },
+      "result": "c e"
+    },
+    {
+      "name": "keyword arguments, range literal",
+      "template": "{% render 'a' b: (1..3) %}",
+      "data": {},
+      "templates": {
+        "a": "{{ b | join: '#' }}"
+      },
+      "result": "1#2#3"
+    },
+    {
+      "name": "new scope",
+      "template": "{% assign x = 'y' %}{% render 'a' %}{{ x }}",
+      "data": {},
+      "templates": {
+        "a": "{{ x }}!"
+      },
+      "result": "!y"
+    },
+    {
+      "name": "keyword arguments go out of scope",
+      "template": "{% render 'a' b:'c' %}{{ b }}",
+      "data": {},
+      "templates": {
+        "a": "{{ b }}"
+      },
+      "result": "c"
+    },
+    {
+      "name": "forloop drop",
+      "template": "{% render 'a' for b %}",
+      "data": { "b": [1, 2] },
+      "templates": {
+        "a": "{{ a }} {{ forloop.first }} {{ forloop.last }} {{ forloop.index0 }}, "
+      },
+      "result": "1 true false 0, 2 false true 1, "
+    },
+    {
+      "name": "forloop drop, no parentloop",
+      "template": "{% for x in (1..2) %}{% render 'a' for b %}{% endfor %}",
+      "data": { "b": [1, 2] },
+      "templates": {
+        "a": "{{ a }} {{ forloop.parentloop.index0 }}, "
+      },
+      "result": "1 , 2 , 1 , 2 , "
+    },
+    {
+      "name": "include",
+      "template": "{% render 'a' %}",
+      "templates": {
+        "a": "{% include 'b' %}",
+        "b": "c"
+      },
+      "invalid": true
+    }
+  ]
+}

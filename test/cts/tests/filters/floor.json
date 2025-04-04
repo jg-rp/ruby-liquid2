@@ -1,0 +1,72 @@
+{
+  "tests": [
+    {
+      "name": "positive integer",
+      "template": "{{ 5 | floor }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "negative integer",
+      "template": "{{ -5 | floor }}",
+      "data": {},
+      "result": "-5"
+    },
+    {
+      "name": "positive float",
+      "template": "{{ 5.4 | floor }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "negative float",
+      "template": "{{ -5.4 | floor }}",
+      "data": {},
+      "result": "-6"
+    },
+    {
+      "name": "zero",
+      "template": "{{ 0 | floor }}",
+      "data": {},
+      "result": "0"
+    },
+    {
+      "name": "positive string float",
+      "template": "{{ \"5.1\" | floor }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "negative string float",
+      "template": "{{ \"-5.1\" | floor }}",
+      "data": {},
+      "result": "-6"
+    },
+    {
+      "name": "unexpected argument",
+      "template": "{{ -3.1 | floor: 1 }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "string not a number",
+      "template": "{{ \"hello\" | floor }}",
+      "data": {},
+      "result": "0"
+    },
+    {
+      "name": "not a string, int or float",
+      "template": "{{ a | floor }}",
+      "data": {
+        "a": {}
+      },
+      "result": "0"
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | floor }}",
+      "data": {},
+      "result": "0"
+    }
+  ]
+}

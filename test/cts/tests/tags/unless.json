@@ -1,0 +1,67 @@
+{
+  "tests": [
+    {
+      "name": "literal true, no alternative",
+      "template": "{% unless true %}a{% endunless %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "literal false",
+      "template": "{% unless false %}a{% endunless %}",
+      "data": {},
+      "result": "a"
+    },
+    {
+      "name": "literal true, alternative",
+      "template": "{% unless true %}a{% else %}b{% endunless %}",
+      "data": {},
+      "result": "b"
+    },
+    {
+      "name": "literal true, truthy alternative",
+      "template": "{% unless true %}a{% elsif true %}b{% endunless %}",
+      "data": {},
+      "result": "b"
+    },
+    {
+      "name": "literal true, falsy alternative",
+      "template": "{% unless true %}a{% elsif false %}b{% endunless %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "literal true, falsy alternative, final alternative",
+      "template": "{% unless true %}a{% elsif false %}b{% else %}c{% endunless %}",
+      "data": {},
+      "result": "c"
+    },
+    {
+      "name": "missing whitespace after tag name",
+      "template": "{% unlesstrue %}a{% endunless %}",
+      "invalid": true
+    },
+    {
+      "name": "no whitespace before tag name",
+      "template": "{%unless false %}a{% endunless %}",
+      "data": {},
+      "result": "a"
+    },
+    {
+      "name": "no whitespace after expression",
+      "template": "{% unless false%}a{% endunless %}",
+      "data": {},
+      "result": "a"
+    },
+    {
+      "name": "extra else block",
+      "template": "{% unless true %}a{% else %}b{% else %}c{% endunless %}",
+      "invalid": true
+    },
+    {
+      "name": "extra elsif block",
+      "template": "{% unless true %}a{% else %}b{% elsif true %}c{% endunless %}",
+      "invalid": true
+    }
+  ]
+}

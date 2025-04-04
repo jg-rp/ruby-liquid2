@@ -1,0 +1,120 @@
+{
+  "tests": [
+    {
+      "name": "query, first when",
+      "template": "{% case a %}{% when 'b' %}c{% when 'd' %}e{% endcase %}",
+      "data": { "a": "b" },
+      "result": "c"
+    },
+    {
+      "name": "query, last when",
+      "template": "{% case a %}{% when 'b' %}c{% when 'd' %}e{% endcase %}",
+      "data": { "a": "d" },
+      "result": "e"
+    },
+    {
+      "name": "query, both whens",
+      "template": "{% case a %}{% when 'b' %}c{% when 'b' %}d{% endcase %}",
+      "data": { "a": "b" },
+      "result": "cd"
+    },
+    {
+      "name": "query, no match",
+      "template": "{% case a %}{% when 'b' %}c{% when 'd' %}e{% endcase %}",
+      "data": { "a": "x" },
+      "result": ""
+    },
+    {
+      "name": "string literal",
+      "template": "{% case 'a' %}{% when 'a' %}b{% when 'c' %}d{% endcase %}",
+      "data": {},
+      "result": "b"
+    },
+    {
+      "name": "or",
+      "template": "{% case 'b' %}{% when 'a' or 'b' %}c{% when 'd' %}e{% endcase %}",
+      "data": {},
+      "result": "c"
+    },
+    {
+      "name": "comma separated or",
+      "template": "{% case 'b' %}{% when 'a', 'b' %}c{% when 'd' %}e{% endcase %}",
+      "data": {},
+      "result": "c"
+    },
+    {
+      "name": "or, multiple",
+      "template": "{% case 'b' %}{% when 'a' or 'b' or 'x' %}c{% when 'd' %}e{% endcase %}",
+      "data": {},
+      "result": "c"
+    },
+    {
+      "name": "multiple comma separated or",
+      "template": "{% case 'b' %}{% when 'a', 'b', 'x' %}c{% when 'd' %}e{% endcase %}",
+      "data": {},
+      "result": "c"
+    },
+    {
+      "name": "mixed comma and or separated",
+      "template": "{% case 'b' %}{% when 'a' or 'b', 'x' %}c{% when 'd' %}e{% endcase %}",
+      "data": {},
+      "result": "c"
+    },
+    {
+      "name": "default",
+      "template": "{% case 'a' %}{% when 'b' %}c{% when 'd' %}e{% else %}f{% endcase %}",
+      "data": {},
+      "result": "f"
+    },
+    {
+      "name": "default, not rendered",
+      "template": "{% case 'a' %}{% when 'b' %}c{% when 'a' %}e{% else %}f{% endcase %}",
+      "data": {},
+      "result": "e"
+    },
+    {
+      "name": "default, no whens",
+      "template": "{% case 'a' %}{% else %}f{% endcase %}",
+      "data": {},
+      "result": "f"
+    },
+    {
+      "name": "no whens or default",
+      "template": "{% case 'a' %}{% endcase %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "whitespace after case",
+      "template": "{% case 'a' %}\n  {% when 'a' %}b{% endcase %}",
+      "data": {},
+      "result": "b"
+    },
+    {
+      "name": "content after case",
+      "template": "{% case 'a' %}hello{% when 'b' %}c{% endcase %}",
+      "invalid": true
+    },
+    {
+      "name": "missing when expression",
+      "template": "{% case 'a' %}{% when %}b{% endcase %}",
+      "invalid": true
+    },
+    {
+      "name": "switch on array",
+      "template": "{% case a %}{% when b %}c{% endcase %}",
+      "data": { "a": [1, 2, 3], "b": [1, 2, 3] },
+      "result": "c"
+    },
+    {
+      "name": "multiple else blocks",
+      "template": "{% case a %}{% when b %}c{% else %}d{% else %}{% endcase %}",
+      "invalid": true
+    },
+    {
+      "name": "when after else",
+      "template": "{% case a %}{% when b %}c{% else %}d{% when 'e' %}f{% endcase %}",
+      "invalid": true
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "tests": [
+    {
+      "name": "some special URL characters",
+      "template": "{{ \"email+address+is+bob%40example.com%21\" | url_decode }}",
+      "data": {},
+      "result": "email address is bob@example.com!"
+    },
+    {
+      "name": "not a string",
+      "template": "{{ 5 | url_decode }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "unexpected argument",
+      "template": "{{ \"hello\" | url_decode: 5 }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | url_decode }}",
+      "data": {},
+      "result": ""
+    }
+  ]
+}

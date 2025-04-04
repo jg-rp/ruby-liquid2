@@ -1,0 +1,131 @@
+{
+  "tests": [
+    {
+      "name": "string literal",
+      "template": "{% include 'a' %}",
+      "data": { "b": "c" },
+      "templates": {
+        "a": "{{ b }}"
+      },
+      "result": "c"
+    },
+    {
+      "name": "query",
+      "template": "{% include a %}",
+      "data": { "a": "b", "c": "d" },
+      "templates": {
+        "b": "{{ c }}"
+      },
+      "result": "d"
+    },
+    {
+      "name": "bind variable",
+      "template": "{% include 'a' with b.c[1] %}",
+      "data": { "b": { "c": [1, { "foo": "bar" }, 3] } },
+      "templates": {
+        "a": "{{ a.foo }}"
+      },
+      "result": "bar"
+    },
+    {
+      "name": "bind variable with alias",
+      "template": "{% include 'a' with b.c[1] as x %}",
+      "data": { "b": { "c": [1, { "foo": "bar" }, 3] } },
+      "templates": {
+        "a": "{{ x.foo }}"
+      },
+      "result": "bar"
+    },
+    {
+      "name": "bind array, for",
+      "template": "{% include 'a' for b.c %}",
+      "data": { "b": { "c": [{ "foo": "bar" }, { "foo": "baz" }] } },
+      "templates": {
+        "a": "{{ a.foo }}"
+      },
+      "result": "barbaz"
+    },
+    {
+      "name": "bind array, with",
+      "template": "{% include 'a' with b.c %}",
+      "data": { "b": { "c": [{ "foo": "bar" }, { "foo": "baz" }] } },
+      "templates": {
+        "a": "{{ a.foo }}"
+      },
+      "result": "barbaz"
+    },
+    {
+      "name": "keyword arguments, commas",
+      "template": "{% include 'a', b: 'c', d: 'e' %}",
+      "data": {},
+      "templates": {
+        "a": "{{ b }} {{ d }}"
+      },
+      "result": "c e"
+    },
+    {
+      "name": "keyword arguments, equals",
+      "template": "{% include 'a', b='c', d='e' %}",
+      "data": {},
+      "templates": {
+        "a": "{{ b }} {{ d }}"
+      },
+      "result": "c e"
+    },
+    {
+      "name": "keyword arguments, no leading comma",
+      "template": "{% include 'a' b: 'c', d: 'e' %}",
+      "data": {},
+      "templates": {
+        "a": "{{ b }} {{ d }}"
+      },
+      "result": "c e"
+    },
+    {
+      "name": "shares scope with parents",
+      "template": "{% include 'a' %}{{ x }}",
+      "data": {},
+      "templates": {
+        "a": "{% assign x = 42 %}"
+      },
+      "result": "42"
+    },
+    {
+      "name": "break loop in parent template",
+      "template": "{% for a in b %}{% include 'a' %}{% endfor %}",
+      "data": { "b": [1, 2, 3] },
+      "templates": {
+        "a": "{{ a }}{% break %}"
+      },
+      "result": "1"
+    },
+    {
+      "name": "keyword arguments go out of scope",
+      "template": "{% include 'a' b:'c' %}{{ b }}",
+      "data": {},
+      "templates": {
+        "a": "{{ b }}"
+      },
+      "result": "c"
+    },
+    {
+      "name": "assign to keyword argument",
+      "template": "{% include 'a' b:'c' %}{{ b }}",
+      "data": {},
+      "templates": {
+        "a": "{{ b }}{% assign b = 'x' %}{{ b }}"
+      },
+      "result": "ccx"
+    },
+    {
+      "name": "render",
+      "template": "{% include 'a' %}",
+      "data": {},
+      "templates": {
+        "a": "{% render 'b' %}",
+        "b": "c"
+      },
+      "result": "c"
+    }
+  ]
+}

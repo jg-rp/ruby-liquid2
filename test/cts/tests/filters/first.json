@@ -1,0 +1,74 @@
+{
+  "tests": [
+    {
+      "name": "range literal first filter left value",
+      "template": "{{ (1..3) | first }}",
+      "data": {},
+      "result": "1"
+    },
+    {
+      "name": "array of strings",
+      "template": "{{ arr | first }}",
+      "data": {
+        "arr": [
+          "a",
+          "b"
+        ]
+      },
+      "result": "a"
+    },
+    {
+      "name": "array of things",
+      "template": "{{ arr | first }}",
+      "data": {
+        "arr": [
+          "a",
+          "b",
+          1,
+          [],
+          {}
+        ]
+      },
+      "result": "a"
+    },
+    {
+      "name": "empty left value",
+      "template": "{{ arr | first }}",
+      "data": {
+        "arr": []
+      },
+      "result": ""
+    },
+    {
+      "name": "left value is not an array",
+      "template": "{{ arr | first }}",
+      "data": {
+        "arr": 12
+      },
+      "result": ""
+    },
+    {
+      "name": "left value is undefined",
+      "template": "{{ nosuchthing | first }}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "first of a string",
+      "template": "{{ 'hello' | first }}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "first of a hash",
+      "template": "{% assign x = a | first %}({{ x[0] }},{{ x[1] }})",
+      "data": {
+        "a": {
+          "b": 1,
+          "c": 2
+        }
+      },
+      "result": "(b,1)"
+    }
+  ]
+}

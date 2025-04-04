@@ -1,0 +1,76 @@
+{
+  "tests": [
+    {
+      "name": "array of objects",
+      "template": "{% assign x = a | has: 'title', 'bar' %}{{ x }}",
+      "data": {
+        "a": [
+          {
+            "title": "foo"
+          },
+          {
+            "title": "bar"
+          },
+          {
+            "title": "baz"
+          }
+        ]
+      },
+      "result": "true"
+    },
+    {
+      "name": "array of objects, lambda expression",
+      "template": "{% assign x = a | has: i => i.title == 'bar' %}{{ x }}",
+      "data": {
+        "a": [
+          {
+            "title": "foo"
+          },
+          {
+            "title": "bar"
+          },
+          {
+            "title": "baz"
+          }
+        ]
+      },
+      "result": "true"
+    },
+    {
+      "name": "array of objects, lambda expression, not found",
+      "template": "{% assign x = a | has: i => i.title == '42' %}{{ x }}",
+      "data": {
+        "a": [
+          {
+            "title": "foo"
+          },
+          {
+            "title": "bar"
+          },
+          {
+            "title": "baz"
+          }
+        ]
+      },
+      "result": "false"
+    },
+    {
+      "name": "array of objects, not found",
+      "template": "{% assign x = a | has: i => i.title == 42 %}{{ x }}",
+      "data": {
+        "a": [
+          {
+            "title": "foo"
+          },
+          {
+            "title": "bar"
+          },
+          {
+            "title": "baz"
+          }
+        ]
+      },
+      "result": "false"
+    }
+  ]
+}

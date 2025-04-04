@@ -1,0 +1,64 @@
+{
+  "tests": [
+    {
+      "name": "well formed string",
+      "template": "{{ 'March 14, 2016' | date: '%b %d, %y' }}",
+      "data": {},
+      "result": "Mar 14, 16"
+    },
+    {
+      "name": "too many arguments",
+      "template": "{{ 'March 14, 2016' | date: '%b %d, %y', 'foo' }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | date: '%b %d, %y' }}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "missing argument",
+      "template": "{{ 'March 14, 2016' | date }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "undefined argument",
+      "template": "{{ 'March 14, 2016' | date: nosuchthing }}",
+      "data": {},
+      "result": "March 14, 2016"
+    },
+    {
+      "name": "literal percent",
+      "template": "{{ 'March 14, 2016' | date: '%%%b %d, %y' }}",
+      "data": {},
+      "result": "%Mar 14, 16"
+    },
+    {
+      "name": "timestamp integer",
+      "template": "{{ 1152098955 | date: '%m/%d/%Y' }}",
+      "data": {},
+      "result": "07/05/2006"
+    },
+    {
+      "name": "timestamp string",
+      "template": "{{ '1152098955' | date: '%m/%d/%Y' }}",
+      "data": {},
+      "result": "07/05/2006"
+    },
+    {
+      "name": "negative timestamp string",
+      "template": "{{ '-1152098955' | date: '%m/%d/%Y' }}",
+      "data": {},
+      "result": "-1152098955"
+    },
+    {
+      "name": "seconds since epoch format directive",
+      "template": "{{ 'March 14, 2016' | date: '%s' }}",
+      "data": {},
+      "result": "1457913600"
+    }
+  ]
+}

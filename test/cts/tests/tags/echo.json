@@ -1,0 +1,223 @@
+{
+  "tests": [
+    {
+      "name": "string literal",
+      "template": "{% echo 'a' %}",
+      "data": {},
+      "result": "a"
+    },
+    {
+      "name": "integer literal",
+      "template": "{% echo 1 %}",
+      "data": {},
+      "result": "1"
+    },
+    {
+      "name": "integer literal, negative",
+      "template": "{% echo -1 %}",
+      "data": {},
+      "result": "-1"
+    },
+    {
+      "name": "float literal",
+      "template": "{% echo 1.1 %}",
+      "data": {},
+      "result": "1.1"
+    },
+    {
+      "name": "float literal, negative",
+      "template": "{% echo -1.1 %}",
+      "data": {},
+      "result": "-1.1"
+    },
+    {
+      "name": "integer literal, exponent",
+      "template": "{% echo 1e2 %}",
+      "data": {},
+      "result": "100"
+    },
+    {
+      "name": "float literal, negative exponent",
+      "template": "{% echo 1e-2 %}",
+      "data": {},
+      "result": "0.01"
+    },
+    {
+      "name": "float literal, positive exponent",
+      "template": "{% echo 1e+2 %}",
+      "data": {},
+      "result": "100"
+    },
+    {
+      "name": "null",
+      "template": "{% echo null %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "range",
+      "template": "{% echo (1..3) %}",
+      "data": {},
+      "result": "1..3"
+    },
+    {
+      "name": "query, global",
+      "template": "{% echo a %}",
+      "data": { "a": "b" },
+      "result": "b"
+    },
+    {
+      "name": "query, local",
+      "template": "{% assign a = 'b' %}{% echo a %}",
+      "data": {},
+      "result": "b"
+    },
+    {
+      "name": "query, dotted",
+      "template": "{% echo a.b %}",
+      "data": { "a": { "b": "c" } },
+      "result": "c"
+    },
+    {
+      "name": "query, array index",
+      "template": "{% echo a.b[0] %}",
+      "data": { "a": { "b": [1, 2, 3] } },
+      "result": "1"
+    },
+    {
+      "name": "query, negative array index",
+      "template": "{% echo a.b[-1] %}",
+      "data": { "a": { "b": [1, 2, 3] } },
+      "result": "3"
+    },
+    {
+      "name": "query, array index from variable",
+      "template": "{% assign x = 1 %}{% echo a.b[x] %}",
+      "data": { "a": { "b": [1, 2, 3] } },
+      "result": "2"
+    },
+    {
+      "name": "query, names from variables",
+      "template": "{% echo site.data.menu[include.menu][include.locale] %}",
+      "data": {
+        "site": { "data": { "menu": { "foo": { "bar": "it works!" } } } },
+        "include": { "menu": "foo", "locale": "bar" }
+      },
+      "result": "it works!"
+    },
+    {
+      "name": "filter",
+      "template": "{% echo 'hello' | upcase %}",
+      "data": {},
+      "result": "HELLO"
+    },
+    {
+      "name": "string literal, end output delimiter",
+      "template": "{% echo '}}' %}",
+      "data": {},
+      "result": "}}"
+    },
+    {
+      "name": "string literal, start output delimiter",
+      "template": "{% echo '{{' %}",
+      "data": {},
+      "result": "{{"
+    },
+    {
+      "name": "string literal, end tag delimiter",
+      "template": "{% echo '%}' %}",
+      "data": {},
+      "result": "%}"
+    },
+    {
+      "name": "string literal, start tag delimiter",
+      "template": "{% echo '{%' %}",
+      "data": {},
+      "result": "{%"
+    },
+    {
+      "name": "string literal, end comment delimiter",
+      "template": "{% echo '#}' %}",
+      "data": {},
+      "result": "#}"
+    },
+    {
+      "name": "string literal, start comment delimiter",
+      "template": "{% echo '{#' %}",
+      "data": {},
+      "result": "{#"
+    },
+    {
+      "name": "string literal, escaped single quote in single quoted",
+      "template": "{% echo '\\'' %}",
+      "data": {},
+      "result": "'"
+    },
+    {
+      "name": "string literal, escaped double quote in double quoted",
+      "template": "{% echo \"\\\"\" %}",
+      "data": {},
+      "result": "\""
+    },
+    {
+      "name": "query, bracket notation",
+      "template": "{% echo a['b c'] %}",
+      "data": { "a": { "b c": "d" } },
+      "result": "d"
+    },
+    {
+      "name": "query, bracket notation, root",
+      "template": "{% echo ['a b c'] %}",
+      "data": { "a b c": "d" },
+      "result": "d"
+    },
+    {
+      "name": "query, singular query selector",
+      "template": "{% echo a[a.b.c] %}",
+      "data": { "a": { "b": { "c": "d" }, "d": "x" } },
+      "result": "x"
+    },
+    {
+      "name": "ternary expression, truthy",
+      "template": "{% echo 'b' if true else 'c' %}",
+      "data": {},
+      "result": "b"
+    },
+    {
+      "name": "ternary expression, falsy",
+      "template": "{% echo 'b' if false else 'c' %}",
+      "data": {},
+      "result": "c"
+    },
+    {
+      "name": "ternary expression, truthy filter",
+      "template": "{% echo 'b' | upcase if true else 'c' %}",
+      "data": {},
+      "result": "B"
+    },
+    {
+      "name": "ternary expression, falsy filter",
+      "template": "{% echo 'b' if false else 'c' | upcase %}",
+      "data": {},
+      "result": "C"
+    },
+    {
+      "name": "ternary expression, truthy, falsy filter",
+      "template": "{% echo 'b' if true else 'c' | upcase %}",
+      "data": {},
+      "result": "b"
+    },
+    {
+      "name": "ternary expression, falsy, truthy filter",
+      "template": "{% echo 'b' | upcase if false else 'c' %}",
+      "data": {},
+      "result": "c"
+    },
+    {
+      "name": "ternary expression, tail filter",
+      "template": "{% echo 'b' if true else 'c' || upcase %}",
+      "data": {},
+      "result": "B"
+    }
+  ]
+}

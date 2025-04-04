@@ -1,0 +1,61 @@
+{
+  "tests": [
+    {
+      "name": "array of strings",
+      "template": "{{ a | reverse | join: '#' }}",
+      "data": {
+        "a": [
+          "b",
+          "a",
+          "B",
+          "A"
+        ]
+      },
+      "result": "A#B#a#b"
+    },
+    {
+      "name": "array of things",
+      "template": "{{ a | reverse | join: '#' }}",
+      "data": {
+        "a": [
+          "a",
+          "b",
+          1,
+          [],
+          {}
+        ]
+      },
+      "result": "{}#1#b#a"
+    },
+    {
+      "name": "empty array",
+      "template": "{{ a | reverse | join: '#' }}",
+      "data": {
+        "a": []
+      },
+      "result": ""
+    },
+    {
+      "name": "unexpected argument",
+      "template": "{{ a | reverse: 0 | join: '#' }}",
+      "data": {
+        "a": []
+      },
+      "invalid": true
+    },
+    {
+      "name": "left value not an array",
+      "template": "{{ a | reverse | join: '#' }}",
+      "data": {
+        "a": 123
+      },
+      "result": "123"
+    },
+    {
+      "name": "left value is undefined",
+      "template": "{{ nosuchthing | reverse | join: '#' }}",
+      "data": {},
+      "result": ""
+    }
+  ]
+}

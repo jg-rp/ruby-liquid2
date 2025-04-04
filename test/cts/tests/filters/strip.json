@@ -1,0 +1,40 @@
+{
+  "tests": [
+    {
+      "name": "left padded",
+      "template": "{{ \" \t\r\n  hello\" | strip }}",
+      "data": {},
+      "result": "hello"
+    },
+    {
+      "name": "right padded",
+      "template": "{{ \"hello \t\r\n  \" | strip }}",
+      "data": {},
+      "result": "hello"
+    },
+    {
+      "name": "left and right padded",
+      "template": "{{ \" \t\r\n  hello  \t\r\n \" | strip }}",
+      "data": {},
+      "result": "hello"
+    },
+    {
+      "name": "not a string",
+      "template": "{{ 5 | strip }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "unexpected argument",
+      "template": "{{ \"hello\" | strip: 5 }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | strip }}",
+      "data": {},
+      "result": ""
+    }
+  ]
+}

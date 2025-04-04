@@ -1,0 +1,406 @@
+{
+  "tests": [
+    {
+      "name": "literal true",
+      "template": "{% if true %}a{% endif %}",
+      "data": {},
+      "result": "a"
+    },
+    {
+      "name": "literal false, no alternative",
+      "template": "{% if false %}a{% endif %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "literal false, alternative",
+      "template": "{% if false %}a{% else %}b{% endif %}",
+      "data": {},
+      "result": "b"
+    },
+    {
+      "name": "literal false, truthy alternative",
+      "template": "{% if false %}a{% elsif true %}b{% endif %}",
+      "data": {},
+      "result": "b"
+    },
+    {
+      "name": "literal false, falsy alternative",
+      "template": "{% if false %}a{% elsif false %}b{% endif %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "literal false, falsy alternative, final alternative",
+      "template": "{% if false %}a{% elsif false %}b{% else %}c{% endif %}",
+      "data": {},
+      "result": "c"
+    },
+    {
+      "name": "equality, truthy, strings",
+      "template": "{% if a == 'b' %}c{% endif %}",
+      "data": { "a": "b" },
+      "result": "c"
+    },
+    {
+      "name": "equality, falsy, strings",
+      "template": "{% if a == 'x' %}c{% endif %}",
+      "data": { "a": "b" },
+      "result": ""
+    },
+    {
+      "name": "equality, truthy, integers",
+      "template": "{% if a == 1 %}b{% endif %}",
+      "data": { "a": 1 },
+      "result": "b"
+    },
+    {
+      "name": "equality, falsy, integers",
+      "template": "{% if a == 1 %}b{% endif %}",
+      "data": { "a": 2 },
+      "result": ""
+    },
+    {
+      "name": "equality, truthy, floats",
+      "template": "{% if a == 1.1 %}b{% endif %}",
+      "data": { "a": 1.1 },
+      "result": "b"
+    },
+    {
+      "name": "equality, falsy, floats",
+      "template": "{% if a == 1.2 %}b{% endif %}",
+      "data": { "a": 1.0 },
+      "result": ""
+    },
+    {
+      "name": "equality, truthy, float and integer",
+      "template": "{% if a == 1 %}b{% endif %}",
+      "data": { "a": 1.0 },
+      "result": "b"
+    },
+    {
+      "name": "equality, falsy, float and integer",
+      "template": "{% if a == 1 %}b{% endif %}",
+      "data": { "a": 1.1 },
+      "result": ""
+    },
+    {
+      "name": "less than, truthy, integers",
+      "template": "{% if a < 10 %}b{% endif %}",
+      "data": { "a": 5 },
+      "result": "b"
+    },
+    {
+      "name": "less than, falsy, integers",
+      "template": "{% if a < 10 %}b{% endif %}",
+      "data": { "a": 20 },
+      "result": ""
+    },
+    {
+      "name": "less than, truthy, floats",
+      "template": "{% if a < 10.1 %}b{% endif %}",
+      "data": { "a": 5.1 },
+      "result": "b"
+    },
+    {
+      "name": "less than, falsy, floats",
+      "template": "{% if a < 10.1 %}b{% endif %}",
+      "data": { "a": 20.1 },
+      "result": ""
+    },
+    {
+      "name": "less than, truthy, strings",
+      "template": "{% if 'abc' < 'acb' %}x{% endif %}",
+      "data": {},
+      "result": "x"
+    },
+    {
+      "name": "less than, falsy, strings",
+      "template": "{% if 'bbb' < 'aaa' %}x{% else %}y{% endif %}",
+      "data": {},
+      "result": "y"
+    },
+    {
+      "name": "non-empty hash or dict or map is truthy",
+      "template": "{% if a %}d{% endif %}",
+      "data": { "a": { "b": "c" } },
+      "result": "d"
+    },
+    {
+      "name": "literal null is falsy",
+      "template": "{% if null %}a{% else %}b{% endif %}",
+      "data": {},
+      "result": "b"
+    },
+    {
+      "name": "literal nil is falsy",
+      "template": "{% if nil %}a{% else %}b{% endif %}",
+      "data": {},
+      "result": "b"
+    },
+    {
+      "name": "undefined variables are falsy",
+      "template": "{% if nosuchthing %}a{% else %}b{% endif %}",
+      "data": {},
+      "result": "b"
+    },
+    {
+      "name": "undefined variables are equal to null",
+      "template": "{% if nosuchthing == null %}a{% else %}b{% endif %}",
+      "data": {},
+      "result": "a"
+    },
+    {
+      "name": "nested, truthy",
+      "template": "{% if true %}a{% if true %}b{% endif %}{% else %}c{% endif %}",
+      "data": {},
+      "result": "ab"
+    },
+    {
+      "name": "nested, falsy",
+      "template": "{% if true %}a{% if false %}b{% endif %}{% else %}c{% endif %}",
+      "data": {},
+      "result": "a"
+    },
+    {
+      "name": "contains, truthy, array of integers",
+      "template": "{% if a contains 1 %}b{% endif %}",
+      "data": { "a": [1, 2, 3] },
+      "result": "b"
+    },
+    {
+      "name": "contains, falsy, array of integers",
+      "template": "{% if a contains 5 %}b{% else %}c{% endif %}",
+      "data": { "a": [1, 2, 3] },
+      "result": "c"
+    },
+    {
+      "name": "in, truthy, array of integers",
+      "template": "{% if 1 in a %}b{% else %}c{% endif %}",
+      "data": { "a": [1, 2, 3] },
+      "result": "b"
+    },
+    {
+      "name": "in, falsy, array of integers",
+      "template": "{% if 5 in a %}b{% else %}c{% endif %}",
+      "data": { "a": [1, 2, 3] },
+      "result": "c"
+    },
+    {
+      "name": "contains, truthy, strings",
+      "template": "{% if 'foobar' contains 'oob' %}a{% endif %}",
+      "data": {},
+      "result": "a"
+    },
+    {
+      "name": "contains, falsy, strings",
+      "template": "{% if 'foobar' contains 'baz' %}b{% else %}c{% endif %}",
+      "data": {},
+      "result": "c"
+    },
+    {
+      "name": "contains, string and integer",
+      "template": "{% if 'foo2bar' contains 2 %}a{% else %}b{% endif %}",
+      "data": {},
+      "result": "a"
+    },
+    {
+      "name": "in, truthy, strings",
+      "template": "{% if 'oob' in 'foobar' %}b{% else %}c{% endif %}",
+      "data": {},
+      "result": "b"
+    },
+    {
+      "name": "in, falsy, strings",
+      "template": "{% if 'baz' in 'foobar' %}b{% else %}c{% endif %}",
+      "data": {},
+      "result": "c"
+    },
+    {
+      "name": "contains, truthy, hash or dict or map",
+      "template": "{% if a contains 'b' %}c{% endif %}",
+      "data": { "a": { "b": false } },
+      "result": "c"
+    },
+    {
+      "name": "contains, falsy, hash or dict or map",
+      "template": "{% if a contains 'b' %}c{% else %}d{% endif %}",
+      "data": { "a": { "e": true } },
+      "result": "d"
+    },
+    {
+      "name": "in, truthy, hash or dict or map",
+      "template": "{% if 'a' in b %}c{% else %}d{% endif %}",
+      "data": { "b": { "a": false } },
+      "result": "c"
+    },
+    {
+      "name": "in, falsy, hash or dict or map",
+      "template": "{% if 'a' in b %}c{% else %}d{% endif %}",
+      "data": { "b": { "e": true } },
+      "result": "d"
+    },
+    {
+      "name": "not equal, truthy, strings",
+      "template": "{% if a != 'b' %}c{% endif %}",
+      "data": { "a": "d" },
+      "result": "c"
+    },
+    {
+      "name": "not equal, falsy, strings",
+      "template": "{% if a != 'x' %}c{% else %}d{% endif %}",
+      "data": { "a": "x" },
+      "result": "d"
+    },
+    {
+      "name": "not equal, alternative operator",
+      "template": "{% if a <> 'b' %}c{% endif %}",
+      "data": { "a": "d" },
+      "result": "c"
+    },
+    {
+      "name": "empty string is truthy",
+      "template": "{% if '' %}a{% endif %}",
+      "data": {},
+      "result": "a"
+    },
+    {
+      "name": "empty array is truthy",
+      "template": "{% if a %}b{% endif %}",
+      "data": { "a": [] },
+      "result": "b"
+    },
+    {
+      "name": "empty array is equal to special empty",
+      "template": "{% if a == empty %}b{% endif %}",
+      "data": { "a": [] },
+      "result": "b"
+    },
+    {
+      "name": "empty hash or dict or map is equal to special empty",
+      "template": "{% if a == empty %}b{% endif %}",
+      "data": { "a": {} },
+      "result": "b"
+    },
+    {
+      "name": "empty string is equal to special empty",
+      "template": "{% if a == empty %}b{% endif %}",
+      "data": { "a": "" },
+      "result": "b"
+    },
+    {
+      "name": "empty string is equal to special blank",
+      "template": "{% if a == blank %}b{% endif %}",
+      "data": { "a": "" },
+      "result": "b"
+    },
+    {
+      "name": "whitespace only string is equal to special blank",
+      "template": "{% if '  ' == blank %}a{% endif %}",
+      "data": {},
+      "result": "a"
+    },
+    {
+      "name": "equality, range literal",
+      "template": "{% assign a = (1..3) %}{% if a == (1..3) %}a{% endif %}",
+      "data": {},
+      "result": "a"
+    },
+    {
+      "name": "equality, arrays",
+      "template": "{% assign a = 'a,b,c' | split: ',' %}{% if a == b %}c{% endif %}",
+      "data": { "b": ["a", "b", "c"] },
+      "result": "c"
+    },
+    {
+      "name": "equality, string and integer",
+      "template": "{% if 1 == '1' %}a{% else %}b{% endif %}",
+      "data": {},
+      "result": "b"
+    },
+    {
+      "name": "greater than, string and integer",
+      "template": "{% if 2 > '1' %}a{% else %}b{% endif %}",
+      "invalid": true
+    },
+    {
+      "name": "logical not, false literal",
+      "template": "{% if not false %}a{% endif %}",
+      "data": {},
+      "result": "a"
+    },
+    {
+      "name": "logical not, true literal",
+      "template": "{% if not true %}a{% else %}b{% endif %}",
+      "data": {},
+      "result": "b"
+    },
+    {
+      "name": "logical and binds more tightly than or",
+      "template": "{% if true and false and false or true %}a{% else %}b{% endif %}",
+      "data": {},
+      "result": "a"
+    },
+    {
+      "name": "group terms with parentheses",
+      "template": "{% if (true and (false and (false or true))) %}a{% else %}b{% endif %}",
+      "data": {},
+      "result": "b"
+    },
+    {
+      "name": "unbalanced parentheses",
+      "template": "{% if true and (false and true %}a{% else %}b{% endif %}",
+      "invalid": true
+    },
+    {
+      "name": "more unbalanced parentheses",
+      "template": "{% if (true and (false and (false or true)) %}a{% else %}b{% endif %}",
+      "invalid": true
+    },
+    {
+      "name": "zero is not equal to false",
+      "template": "{% if 0 == false %}a{% else %}b{% endif %}",
+      "data": {},
+      "result": "b"
+    },
+    {
+      "name": "zero is truthy",
+      "template": "{% if 0 %}a{% else %}b{% endif %}",
+      "data": {},
+      "result": "a"
+    },
+    {
+      "name": "float zero is truthy",
+      "template": "{% if 0.0 %}a{% else %}b{% endif %}",
+      "data": {},
+      "result": "a"
+    },
+    {
+      "name": "missing whitespace after tag name",
+      "template": "{% iftrue %}a{% endif %}",
+      "invalid": true
+    },
+    {
+      "name": "no whitespace before tag name",
+      "template": "{%if true %}a{% endif %}",
+      "data": {},
+      "result": "a"
+    },
+    {
+      "name": "no whitespace after expression",
+      "template": "{% if true%}a{% endif %}",
+      "data": {},
+      "result": "a"
+    },
+    {
+      "name": "extra else block",
+      "template": "{% if false %}a{% else %}b{% else %}c{% endif %}",
+      "invalid": true
+    },
+    {
+      "name": "extra elsif block",
+      "template": "{% if false %}a{% else %}b{% elsif true %}c{% endif %}",
+      "invalid": true
+    }
+  ]
+}

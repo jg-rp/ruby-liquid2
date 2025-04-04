@@ -1,0 +1,158 @@
+{
+  "tests": [
+    {
+      "name": "array of strings",
+      "template": "{{ a | sort_natural | join: '#' }}",
+      "data": {
+        "a": ["b", "a", "C", "B", "A"]
+      },
+      "result": "a#A#b#B#C"
+    },
+    {
+      "name": "array of strings with a nul",
+      "template": "{% assign x = a | sort_natural %}{% for i in x %}{{ i }}{% unless forloop.last %}#{% endunless %}{% endfor %}",
+      "data": {
+        "a": ["b", "a", null, "C", "B", "A"]
+      },
+      "result": "a#A#b#B#C#"
+    },
+    {
+      "name": "array of objects with a key",
+      "template": "{% assign x = a | sort_natural: 'title' %}{% for obj in x %}{% for i in obj %}({{ i[0] }},{{ i[1] }}){% endfor %}{% endfor %}",
+      "data": {
+        "a": [
+          {
+            "title": "foo"
+          },
+          {
+            "title": "bar"
+          },
+          {
+            "title": "Baz"
+          }
+        ]
+      },
+      "result": "(title,bar)(title,Baz)(title,foo)"
+    },
+    {
+      "name": "array of objects with a key gets stringified",
+      "template": "{% assign x = a | sort_natural: 'title' %}{% for obj in x %}{% for i in obj %}({{ i[0] }},{{ i[1] }}){% endfor %}{% endfor %}",
+      "data": {
+        "a": [
+          {
+            "title": 9
+          },
+          {
+            "title": 1111
+          },
+          {
+            "title": 87
+          }
+        ]
+      },
+      "result": "(title,1111)(title,87)(title,9)"
+    },
+    {
+      "name": "array of objects with a missing key",
+      "template": "{% assign x = a | sort_natural: 'title' %}{% for obj in x %}{% for i in obj %}({{ i[0] }},{{ i[1] }}){% endfor %}{% endfor %}",
+      "data": {
+        "a": [
+          {
+            "title": "foo"
+          },
+          {
+            "title": "bar"
+          },
+          {
+            "heading": "Baz"
+          }
+        ]
+      },
+      "result": "(title,bar)(title,foo)(heading,Baz)"
+    },
+    {
+      "name": "argument is undefined",
+      "template": "{% assign x = a | sort_natural: nosuchthing %}{% for obj in x %}{% for i in obj %}({{ i[0] }},{{ i[1] }}){% endfor %}{% endfor %}",
+      "data": {
+        "a": [
+          {
+            "title": "foo"
+          },
+          {
+            "title": "bar"
+          },
+          {
+            "title": "Baz"
+          }
+        ]
+      },
+      "result": "(title,bar)(title,Baz)(title,foo)"
+    },
+    {
+      "name": "empty array",
+      "template": "{% assign x = a | sort_natural %}{% for i in x %}{{ i }}{% unless forloop.last %}#{% endunless %}{% endfor %}",
+      "data": {
+        "a": []
+      },
+      "result": ""
+    },
+    {
+      "name": "left value is not an array",
+      "template": "{{ a | sort_natural }}",
+      "data": {
+        "a": 123
+      },
+      "result": "123"
+    },
+    {
+      "name": "left value is undefined",
+      "template": "{{ nosuchthing | sort_natural }}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "incompatible types",
+      "template": "{{ a | sort_natural }}",
+      "data": {
+        "a": [{}, 1, "4"]
+      },
+      "result": "14{}"
+    },
+    {
+      "name": "array of objects, lambda expression",
+      "template": "{% assign x = a | sort_natural: i => i.user.title %}{% for obj in x %}{% for i in obj %}({{ i[0] }}.title,{{ i[1].title }}){% endfor %}{% endfor %}",
+      "data": {
+        "a": [
+          {
+            "user": { "title": "foo" }
+          },
+          {
+            "user": { "title": "bar" }
+          },
+          {
+            "user": { "title": "Baz" }
+          }
+        ]
+      },
+      "result": "(user.title,bar)(user.title,Baz)(user.title,foo)"
+    },
+    {
+      "name": "array of objects, lambda expression, all missing",
+      "template": "{% assign x = a | sort_natural: i => i.user.foo %}{% for obj in x %}{% for i in obj %}({{ i[0] }}.title,{{ i[1].title }}){% endfor %}{% endfor %}",
+      "data": {
+        "a": [
+          {
+            "user": { "title": "foo" }
+          },
+          {
+            "user": { "title": "bar" }
+          },
+          {
+            "user": { "title": "Baz" }
+          }
+        ]
+      },
+      "result": "(user.title,foo)(user.title,bar)(user.title,Baz)"
+    }
+  ]
+}

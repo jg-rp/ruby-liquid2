@@ -1,0 +1,64 @@
+{
+  "tests": [
+    {
+      "name": "default end",
+      "template": "{{ \"Ground control to Major Tom.\" | truncate: 20 }}",
+      "data": {},
+      "result": "Ground control to..."
+    },
+    {
+      "name": "custom end",
+      "template": "{{ \"Ground control to Major Tom.\" | truncate: 25, \", and so on\" }}",
+      "data": {},
+      "result": "Ground control, and so on"
+    },
+    {
+      "name": "no end",
+      "template": "{{ \"Ground control to Major Tom.\" | truncate: 20, \"\" }}",
+      "data": {},
+      "result": "Ground control to Ma"
+    },
+    {
+      "name": "string is shorter than length",
+      "template": "{{ \"Ground control\" | truncate: 20 }}",
+      "data": {},
+      "result": "Ground control"
+    },
+    {
+      "name": "not a string",
+      "template": "{{ 5 | truncate: 10 }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "too many arguments",
+      "template": "{{ \"hello\" | truncate: 5, \"foo\", \"bar\" }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | truncate: 5 }}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "undefined first argument",
+      "template": "{{ \"Ground control to Major Tom.\" | truncate: nosuchthing }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "undefined second argument",
+      "template": "{{ \"Ground control to Major Tom.\" | truncate: 20, nosuchthing }}",
+      "data": {},
+      "result": "Ground control to Ma"
+    },
+    {
+      "name": "default length is 50",
+      "template": "{{ \"Ground control to Major Tom. Ground control to Major Tom.\" | truncate }}",
+      "data": {},
+      "result": "Ground control to Major Tom. Ground control to ..."
+    }
+  ]
+}

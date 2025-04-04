@@ -1,0 +1,94 @@
+{
+  "tests": [
+    {
+      "name": "array of objects, explicit null",
+      "template": "{% assign x = a | reject: 'title', null %}{% for obj in x %}{% for i in obj %}({{ i[0] }},{{ i[1] }}){% endfor %}{% endfor %}",
+      "data": {
+        "a": [
+          {
+            "title": "foo"
+          },
+          {
+            "title": "bar"
+          },
+          {
+            "title": null
+          }
+        ]
+      },
+      "result": "(title,)"
+    },
+    {
+      "name": "array of objects, implicit null",
+      "template": "{% assign x = a | reject: 'title' %}{% for obj in x %}{% for i in obj %}({{ i[0] }},{{ i[1] }}){% endfor %}{% endfor %}",
+      "data": {
+        "a": [
+          {
+            "title": "foo"
+          },
+          {
+            "title": "bar"
+          },
+          {
+            "title": null
+          }
+        ]
+      },
+      "result": "(title,)"
+    },
+    {
+      "name": "array of objects, string match",
+      "template": "{% assign x = a | reject: 'title', 'baz' %}{% for obj in x %}{% for i in obj %}({{ i[0] }},{{ i[1] }}){% endfor %}{% endfor %}",
+      "data": {
+        "a": [
+          {
+            "title": "foo"
+          },
+          {
+            "title": "bar"
+          },
+          {
+            "title": "baz"
+          }
+        ]
+      },
+      "result": "(title,foo)(title,bar)"
+    },
+    {
+      "name": "array of objects, missing key",
+      "template": "{% assign x = a | reject: 'title', 'baz' %}{% for obj in x %}{% for i in obj %}({{ i[0] }},{{ i[1] }}){% endfor %}{% endfor %}",
+      "data": {
+        "a": [
+          {
+            "heading": "foo"
+          },
+          {
+            "title": "bar"
+          },
+          {
+            "title": "baz"
+          }
+        ]
+      },
+      "result": "(heading,foo)(title,bar)"
+    },
+    {
+      "name": "array of objects, lambda expression",
+      "template": "{% assign x = a | reject: i => i.title == 'bar' or i.title == 'baz' %}{% for obj in x %}{% for i in obj %}({{ i[0] }},{{ i[1] }}){% endfor %}{% endfor %}",
+      "data": {
+        "a": [
+          {
+            "heading": "foo"
+          },
+          {
+            "title": "bar"
+          },
+          {
+            "title": "baz"
+          }
+        ]
+      },
+      "result": "(heading,foo)"
+    }
+  ]
+}

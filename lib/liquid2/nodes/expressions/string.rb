@@ -6,12 +6,16 @@ require_relative "../../node"
 module Liquid2
   # Quoted string literal.
   class StringLiteral < Literal
+    attr_reader :value
+
     # @param children [Array<Token, Expression>]
-    def initialize(children)
-      token = children.first #: Token
+    # @param segments [Array<Expression>]
+    def initialize(children, segments)
+      token = children.first # : Token
       super(token)
       @children = children
-      @value = children[1].text
+      @segments = segments
+      @value = segments.map(&:value).join
     end
 
     def evaluate(_context) = @value
@@ -19,6 +23,8 @@ module Liquid2
 
   # A literal part of a template string.
   class StringSegment < Expression
+    attr_reader :value
+
     # @param token [Token]
     def initialize(token)
       super([token])

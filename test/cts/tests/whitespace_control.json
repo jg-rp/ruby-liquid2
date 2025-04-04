@@ -1,0 +1,44 @@
+{
+  "tests": [
+    {
+      "name": "white space control with newlines and spaces",
+      "template": "\n{% if customer -%}\nWelcome back,  {{ customer.first_name -}} !\n {%- endif -%}",
+      "data": {
+        "customer": {
+          "first_name": "Holly"
+        }
+      },
+      "result": "\nWelcome back,  Holly!"
+    },
+    {
+      "name": "white space control with carriage return and spaces",
+      "template": "\r{% if customer -%}\rWelcome back,  {{ customer.first_name -}} !\r {%- endif -%}",
+      "data": {
+        "customer": {
+          "first_name": "Holly"
+        }
+      },
+      "result": "\rWelcome back,  Holly!"
+    },
+    {
+      "name": "white space control with carriage return, newline and spaces",
+      "template": "\r\n{% if customer -%}\r\nWelcome back,  {{ customer.first_name -}} !\r\n {%- endif -%}",
+      "data": {
+        "customer": {
+          "first_name": "Holly"
+        }
+      },
+      "result": "\r\nWelcome back,  Holly!"
+    },
+    {
+      "name": "white space control with newlines, tabs and spaces",
+      "template": "\n\t{% if customer -%}\t\nWelcome back,  {{ customer.first_name -}}\t !\r\n {%- endif -%}",
+      "data": {
+        "customer": {
+          "first_name": "Holly"
+        }
+      },
+      "result": "\n\tWelcome back,  Holly!"
+    }
+  ]
+}

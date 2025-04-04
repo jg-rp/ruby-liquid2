@@ -1,0 +1,40 @@
+{
+  "tests": [
+    {
+      "name": "newline and other whitespace",
+      "template": "{{ \"hello there\nyou\" | strip_newlines }}",
+      "data": {},
+      "result": "hello thereyou"
+    },
+    {
+      "name": "not a string",
+      "template": "{{ 5 | strip_newlines }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "unexpected argument",
+      "template": "{{ \"hello\" | strip_newlines: 5 }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "reference implementation test 1",
+      "template": "{{ \"a\nb\nc\" | strip_newlines }}",
+      "data": {},
+      "result": "abc"
+    },
+    {
+      "name": "reference implementation test 2",
+      "template": "{{ \"a\r\nb\nc\" | strip_newlines }}",
+      "data": {},
+      "result": "abc"
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | strip_newlines }}",
+      "data": {},
+      "result": ""
+    }
+  ]
+}

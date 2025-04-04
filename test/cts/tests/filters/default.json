@@ -1,0 +1,136 @@
+{
+  "tests": [
+    {
+      "name": "nil",
+      "template": "{{ nil | default: 'foo' }}",
+      "data": {},
+      "result": "foo"
+    },
+    {
+      "name": "false",
+      "template": "{{ False | default: 'foo' }}",
+      "data": {},
+      "result": "foo"
+    },
+    {
+      "name": "empty string",
+      "template": "{{ \"\" | default: \"foo\" }}",
+      "data": {},
+      "result": "foo"
+    },
+    {
+      "name": "empty array",
+      "template": "{{ a | default: 'foo' }}",
+      "data": {
+        "a": []
+      },
+      "result": "foo"
+    },
+    {
+      "name": "empty object",
+      "template": "{{ a | default: 'foo' }}",
+      "data": {
+        "a": {}
+      },
+      "result": "foo"
+    },
+    {
+      "name": "not empty string",
+      "template": "{{ \"hello\" | default: \"foo\" }}",
+      "data": {},
+      "result": "hello"
+    },
+    {
+      "name": "not empty list",
+      "template": "{{ a | default: \"foo\" | join: \"#\" }}",
+      "data": {
+        "a": [
+          "hello",
+          "world"
+        ]
+      },
+      "result": "hello#world"
+    },
+    {
+      "name": "not empty object",
+      "template": "{% assign b = a | default: foo %}{% for item in b %}({{ item[0] }},{{ item[1] }}){% endfor %}",
+      "data": {
+        "a": {
+          "greeting": "hello"
+        },
+        "foo": {
+          "greeting": "goodbye"
+        }
+      },
+      "result": "(greeting,hello)"
+    },
+    {
+      "name": "too many arguments",
+      "template": "{{ None | default: 'foo', 'bar', 'baz' }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "missing argument",
+      "template": "{{ false | default }}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "empty",
+      "template": "{{ empty | default: bar }}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "allow false",
+      "template": "{{ false | default: 'bar', allow_false:true }}",
+      "data": {},
+      "result": "false"
+    },
+    {
+      "name": "allow false from context",
+      "template": "{{ false | default: 'bar', allow_false:foo }}",
+      "data": {
+        "foo": true
+      },
+      "result": "false"
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | default: \"bar\" }}",
+      "data": {},
+      "result": "bar"
+    },
+    {
+      "name": "true keyword argument before positional",
+      "template": "{{ false | default: allow_false: true, \"bar\" }}",
+      "data": {},
+      "result": "false"
+    },
+    {
+      "name": "false keyword argument before positional",
+      "template": "{{ false | default: allow_false: false, \"bar\" }}",
+      "data": {},
+      "result": "bar"
+    },
+    {
+      "name": "zero is not falsy",
+      "template": "{{ 0 | default: \"bar\" }}",
+      "data": {},
+      "result": "0"
+    },
+    {
+      "name": "zero is not falsy with allow_false",
+      "template": "{{ 0 | default: \"bar\", allow_false: true }}",
+      "data": {},
+      "result": "0"
+    },
+    {
+      "name": "0.0 is not falsy",
+      "template": "{{ 0.0 | default: \"bar\" }}",
+      "data": {},
+      "result": "0.0"
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "tests": [
+    {
+      "name": "positive integer",
+      "template": "{{ 5 | ceil }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "negative integer",
+      "template": "{{ -5 | ceil }}",
+      "data": {},
+      "result": "-5"
+    },
+    {
+      "name": "positive float",
+      "template": "{{ 5.4 | ceil }}",
+      "data": {},
+      "result": "6"
+    },
+    {
+      "name": "negative float",
+      "template": "{{ -5.4 | ceil }}",
+      "data": {},
+      "result": "-5"
+    },
+    {
+      "name": "zero",
+      "template": "{{ 0 | ceil }}",
+      "data": {},
+      "result": "0"
+    },
+    {
+      "name": "positive string float",
+      "template": "{{ \"5.1\" | ceil }}",
+      "data": {},
+      "result": "6"
+    },
+    {
+      "name": "negative string float",
+      "template": "{{ \"-5.1\" | ceil }}",
+      "data": {},
+      "result": "-5"
+    },
+    {
+      "name": "unexpected argument",
+      "template": "{{ -3.1 | ceil: 1 }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "string not a number",
+      "template": "{{ \"hello\" | ceil }}",
+      "data": {},
+      "result": "0"
+    },
+    {
+      "name": "not a string, int or float",
+      "template": "{{ a | ceil }}",
+      "data": {
+        "a": {}
+      },
+      "result": "0"
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | ceil }}",
+      "data": {},
+      "result": "0"
+    }
+  ]
+}

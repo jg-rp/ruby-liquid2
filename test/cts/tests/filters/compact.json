@@ -1,0 +1,103 @@
+{
+  "tests": [
+    {
+      "name": "array with a nil",
+      "template": "{{ a | compact | join: '#' }}",
+      "data": {
+        "a": ["b", "a", null, "A"]
+      },
+      "result": "b#a#A"
+    },
+    {
+      "name": "empty array",
+      "template": "{{ a | compact | join: '#' }}",
+      "data": {
+        "a": []
+      },
+      "result": ""
+    },
+    {
+      "name": "too many arguments",
+      "template": "{{ a | compact: 'foo', 'bar' }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "left value is not an array",
+      "template": "{{ a | compact | first }}",
+      "data": {
+        "a": 123
+      },
+      "result": "123"
+    },
+    {
+      "name": "left value is undefined",
+      "template": "{{ nosuchthing | compact }}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "array of objects with key property",
+      "template": "{% assign x = a | compact: 'title' %}{% for obj in x %}{% for i in obj %}({{ i[0] }},{{ i[1] }}){% endfor %}{% endfor %}",
+      "data": {
+        "a": [
+          {
+            "title": "foo",
+            "name": "a"
+          },
+          {
+            "title": null,
+            "name": "b"
+          },
+          {
+            "title": "bar",
+            "name": "c"
+          }
+        ]
+      },
+      "result": "(title,foo)(name,a)(title,bar)(name,c)"
+    },
+    {
+      "name": "array of objects, lambda expression",
+      "template": "{% assign x = a | compact: i => i.title %}{% for obj in x %}{% for i in obj %}({{ i[0] }},{{ i[1] }}){% endfor %}{% endfor %}",
+      "data": {
+        "a": [
+          {
+            "title": "foo",
+            "name": "a"
+          },
+          {
+            "title": null,
+            "name": "b"
+          },
+          {
+            "title": "bar",
+            "name": "c"
+          }
+        ]
+      },
+      "result": "(title,foo)(name,a)(title,bar)(name,c)"
+    },
+    {
+      "name": "array of objects, lambda expression is not a path",
+      "template": "{% assign x = a | compact: i => i.title == 'foo' %}{% for obj in x %}{% for i in obj %}({{ i[0] }},{{ i[1] }}){% endfor %}{% endfor %}",
+      "data": {
+        "a": [
+          {
+            "title": "foo",
+            "name": "a"
+          },
+          {
+            "title": null,
+            "name": "b"
+          },
+          {
+            "title": "bar",
+            "name": "c"
+          }
+        ]
+      },
+      "invalid": true
+    }
+  ]
+}

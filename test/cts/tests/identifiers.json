@@ -1,0 +1,214 @@
+{
+  "tests": [
+    {
+      "name": "ascii lowercase",
+      "template": "{% assign foo = 'hello' %}{{ foo }} {{ bar }}",
+      "data": {
+        "bar": "goodbye"
+      },
+      "result": "hello goodbye"
+    },
+    {
+      "name": "ascii uppercase",
+      "template": "{% assign FOO = 'hello' %}{{ FOO }} {{ BAR }}",
+      "data": {
+        "BAR": "goodbye"
+      },
+      "result": "hello goodbye"
+    },
+    {
+      "name": "digits",
+      "template": "{% assign foo1 = 'hello' %}{{ foo1 }} {{ bar2 }}",
+      "data": {
+        "bar2": "goodbye"
+      },
+      "result": "hello goodbye"
+    },
+    {
+      "name": "only digits",
+      "template": "{% assign 123 = 'hello' %}{{ 123 }} {{ 456 }}",
+      "data": {
+        "456": "goodbye"
+      },
+      "invalid": true
+    },
+    {
+      "name": "hyphens",
+      "template": "{% assign foo-a = 'hello' %}{{ foo-a }} {{ bar-b }}",
+      "data": {
+        "bar-b": "goodbye"
+      },
+      "result": "hello goodbye"
+    },
+    {
+      "name": "leading hyphen",
+      "template": "{% assign -foo = 'hello' %}{{ -foo }} {{ -bar }}",
+      "data": {
+        "-bar": "goodbye"
+      },
+      "invalid": true
+    },
+    {
+      "name": "underscore",
+      "template": "{% assign foo_a = 'hello' %}{{ foo_a }} {{ bar_b }}",
+      "data": {
+        "bar_b": "goodbye"
+      },
+      "result": "hello goodbye"
+    },
+    {
+      "name": "only underscore",
+      "template": "{% assign _ = 'hello' %}{{ _ }} {{ __ }}",
+      "data": {
+        "__": "goodbye"
+      },
+      "result": "hello goodbye"
+    },
+    {
+      "name": "leading underscore",
+      "template": "{% assign _foo = 'hello' %}{{ _foo }} {{ _bar }}",
+      "data": {
+        "_bar": "goodbye"
+      },
+      "result": "hello goodbye"
+    },
+    {
+      "name": "trailing question mark assign",
+      "template": "{% assign foo? = 'hello' %}{{ foo? }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "trailing question mark output",
+      "template": "{{ bar? }}",
+      "data": {
+        "bar?": "goodbye"
+      },
+      "invalid": true
+    },
+    {
+      "name": "hyphen in for loop target",
+      "template": "{% for x in f-oo %}{{ x }}{% endfor %}",
+      "data": {
+        "f-oo": [1, 2, 3]
+      },
+      "result": "123"
+    },
+    {
+      "name": "leading hyphen in for loop target",
+      "template": "{% for x in -foo %}{{ x }}{% endfor %}",
+      "data": {
+        "-foo": [1, 2, 3]
+      },
+      "invalid": true
+    },
+    {
+      "name": "hyphen in for loop variable",
+      "template": "{% for x-y in foo %}{{ x-y }}{% endfor %}",
+      "data": {
+        "foo": [1, 2, 3]
+      },
+      "result": "123"
+    },
+    {
+      "name": "trailing question mark in for loop target",
+      "template": "{% for x in foo? %}{{ x }}{% endfor %}",
+      "data": {
+        "foo?": [1, 2, 3]
+      },
+      "invalid": true
+    },
+    {
+      "name": "trailing question mark in for loop variable",
+      "template": "{% for x? in foo %}{{ x? }}{% endfor %}",
+      "data": {
+        "foo": [1, 2, 3]
+      },
+      "invalid": true
+    },
+    {
+      "name": "increment with a hyphen",
+      "template": "{% increment f-oo %}{% increment f-oo %}",
+      "data": {},
+      "result": "01"
+    },
+    {
+      "name": "decrement with a hyphen",
+      "template": "{% decrement f-oo %}{% decrement f-oo %}",
+      "data": {},
+      "result": "-1-2"
+    },
+    {
+      "name": "capture ascii lowercase",
+      "template": "{% capture foo %}hello{% endcapture %}{{ foo }}",
+      "data": {},
+      "result": "hello"
+    },
+    {
+      "name": "capture ascii uppercase",
+      "template": "{% capture FOO %}hello{% endcapture %}{{ FOO }}",
+      "data": {},
+      "result": "hello"
+    },
+    {
+      "name": "capture digits",
+      "template": "{% capture foo1 %}hello{% endcapture %}{{ foo1 }}",
+      "data": {},
+      "result": "hello"
+    },
+    {
+      "name": "capture only digits",
+      "template": "{% capture 123 %}hello{% endcapture %}{{ 123 }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "capture hyphens",
+      "template": "{% capture foo-a %}hello {{ bar-b }}{% endcapture %}{{ foo-a }}",
+      "data": {
+        "bar-b": "goodbye"
+      },
+      "result": "hello goodbye"
+    },
+    {
+      "name": "capture leading hyphen",
+      "template": "{% capture -foo %}hello {{ -bar }}{% endcapture %}{{ -foo }}",
+      "data": {
+        "-bar": "goodbye"
+      },
+      "invalid": true
+    },
+    {
+      "name": "capture underscore",
+      "template": "{% capture foo_a %}hello {{ bar_b }}{% endcapture %}{{ foo_a }}",
+      "data": {
+        "bar_b": "goodbye"
+      },
+      "result": "hello goodbye"
+    },
+    {
+      "name": "capture only underscore",
+      "template": "{% capture _ %}hello {{ __ }}{% endcapture %}{{ _ }}",
+      "data": {
+        "__": "goodbye"
+      },
+      "result": "hello goodbye"
+    },
+    {
+      "name": "capture leading underscore",
+      "template": "{% capture _foo %}hello {{ _bar }}{% endcapture %}{{ _foo }}",
+      "data": {
+        "_bar": "goodbye"
+      },
+      "result": "hello goodbye"
+    },
+    {
+      "name": "at sign",
+      "template": "{{ @foo }}",
+      "data": {
+        "@foo": "hello"
+      },
+      "invalid": true
+    }
+  ]
+}

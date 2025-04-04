@@ -244,6 +244,17 @@ module Liquid2
       left
     end
 
+    # Parse a string literal without interpolation from tokens in _stream_.
+    # @param stream [TokenStream]
+    # @return [StringLiteral]
+    # @raises [LiquidTypeError] If there is no string at the front of the token stream.
+    def parse_string(stream)
+      node = parse_primary(stream)
+      raise LiquidTypeError, "expected a string" unless node.is_a?(StringLiteral)
+
+      node
+    end
+
     def parse_identifier(stream, trailing_question: true)
       Identifier.from(parse_primary(stream), trailing_question: trailing_question)
     end
@@ -450,18 +461,20 @@ module Liquid2
 
       # @type var children: Array[Token | Node]
       children = [quote_token]
-      segments = [] # : Array[Node]
+      segments = [] # : Array[untyped]
+      class_ = StringLiteral # : singleton(StringLiteral) | singleton(TemplateString)
 
       loop do
         case stream.current.kind
         when term
           children << stream.next
-          return TemplateString.new(children, segments)
+          return class_.new(children, segments)
         when :token_string, :token_string_escape
           token = stream.next
           children << token
           segments << StringSegment.new(token)
         when :token_string_interpol
+          class_ = TemplateString
           token = stream.next
           children << token
           node = parse_filtered_expression(stream)
@@ -470,7 +483,7 @@ module Liquid2
         else
           # unclosed string literal
           children << stream.eat(term)
-          return TemplateString.new(children, segments)
+          return class_.new(children, segments)
         end
       end
     end

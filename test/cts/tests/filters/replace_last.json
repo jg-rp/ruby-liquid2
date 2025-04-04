@@ -1,0 +1,58 @@
+{
+  "tests": [
+    {
+      "name": "replace substrings",
+      "template": "{{ \"Take my protein pills and put my helmet on\" | replace_last: \"my\", \"your\" }}",
+      "data": {},
+      "result": "Take my protein pills and put your helmet on"
+    },
+    {
+      "name": "not a string",
+      "template": "{{ 5 | replace_last: 'rain', 'foo' }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "argument not a string",
+      "template": "{{ \"hello5\" | replace_last: 5, \"your\" }}",
+      "data": {},
+      "result": "helloyour"
+    },
+    {
+      "name": "missing argument",
+      "template": "{{ \"hello\" | replace_last: \"ll\" }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "missing arguments",
+      "template": "{{ \"hello\" | replace_last }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "too many arguments",
+      "template": "{{ \"hello\" | replace_last: \"how\", \"are\", \"you\" }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | replace_last: \"my\", \"your\" }}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "undefined first argument",
+      "template": "{{ \"Take my protein\" | replace_last: nosuchthing, \"#\" }}",
+      "data": {},
+      "result": "Take my protein#"
+    },
+    {
+      "name": "undefined second argument",
+      "template": "{{ \"Take my protein pills and put my helmet on\" | replace_last: \"my\", nosuchthing }}",
+      "data": {},
+      "result": "Take my protein pills and put  helmet on"
+    }
+  ]
+}

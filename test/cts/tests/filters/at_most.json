@@ -1,0 +1,76 @@
+{
+  "tests": [
+    {
+      "name": "positive integer < arg",
+      "template": "{{ 5 | at_most: 8 }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "positive integer > arg",
+      "template": "{{ 8 | at_most: 5 }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "negative integer < arg",
+      "template": "{{ -8 | at_most: 5 }}",
+      "data": {},
+      "result": "-8"
+    },
+    {
+      "name": "positive integer == arg",
+      "template": "{{ 5 | at_most: 5 }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "positive float < arg",
+      "template": "{{ 5.4 | at_most: 8.9 }}",
+      "data": {},
+      "result": "5.4"
+    },
+    {
+      "name": "positive float > arg",
+      "template": "{{ 8.4 | at_most: 5.9 }}",
+      "data": {},
+      "result": "5.9"
+    },
+    {
+      "name": "positive string > arg",
+      "template": "{{ \"9\" | at_most: 8 }}",
+      "data": {},
+      "result": "8"
+    },
+    {
+      "name": "missing arg",
+      "template": "{{ 5 | at_most }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "too many args",
+      "template": "{{ 5 | at_most: 1, 2}}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | at_most: 5 }}",
+      "data": {},
+      "result": "0"
+    },
+    {
+      "name": "undefined argument",
+      "template": "{{ 5 | at_most: nosuchthing }}",
+      "data": {},
+      "result": "0"
+    },
+    {
+      "name": "left value not a number",
+      "template": "{{ \"abc\" | at_most: -2 }}",
+      "data": {},
+      "result": "-2"
+    }
+  ]
+}

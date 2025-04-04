@@ -1,0 +1,66 @@
+{
+  "tests": [
+    {
+      "name": "replace substrings",
+      "template": "{{ \"Take my protein pills and put my helmet on\" | replace: \"my\", \"your\" }}",
+      "data": {},
+      "result": "Take your protein pills and put your helmet on"
+    },
+    {
+      "name": "not a string",
+      "template": "{{ 5 | replace: 'rain', 'foo' }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "left value is an object",
+      "template": "{{ a | replace: '{', '!' }}",
+      "data": {
+        "a": {}
+      },
+      "result": "!}"
+    },
+    {
+      "name": "argument not a string",
+      "template": "{{ \"hello\" | replace: 5, \"your\" }}",
+      "data": {},
+      "result": "hello"
+    },
+    {
+      "name": "missing argument",
+      "template": "{{ \"hello\" | replace: \"ll\" }}",
+      "data": {},
+      "result": "heo"
+    },
+    {
+      "name": "missing arguments",
+      "template": "{{ \"hello\" | replace }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "too many arguments",
+      "template": "{{ \"hello\" | replace: \"how\", \"are\", \"you\" }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | replace: \"my\", \"your\" }}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "undefined first argument",
+      "template": "{{ \"Take my protein\" | replace: nosuchthing, \"#\" }}",
+      "data": {},
+      "result": "#T#a#k#e# #m#y# #p#r#o#t#e#i#n#"
+    },
+    {
+      "name": "undefined second argument",
+      "template": "{{ \"Take my protein pills and put my helmet on\" | replace: \"my\", nosuchthing }}",
+      "data": {},
+      "result": "Take  protein pills and put  helmet on"
+    }
+  ]
+}

@@ -1,0 +1,138 @@
+{
+  "tests": [
+    {
+      "name": "zero",
+      "template": "{{ \"hello\" | slice: 0 }}",
+      "data": {},
+      "result": "h"
+    },
+    {
+      "name": "one",
+      "template": "{{ \"hello\" | slice: 1 }}",
+      "data": {},
+      "result": "e"
+    },
+    {
+      "name": "one length three",
+      "template": "{{ \"hello\" | slice: 1, 3 }}",
+      "data": {},
+      "result": "ell"
+    },
+    {
+      "name": "out of range",
+      "template": "{{ \"hello\" | slice: 99 }}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "not a string",
+      "template": "{{ 5 | slice: 1 }}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "first argument is a string",
+      "template": "{{ \"hello\" | slice: \"2\" }}",
+      "data": {},
+      "result": "l"
+    },
+    {
+      "name": "first argument not an integer",
+      "template": "{{ \"hello\" | slice: \"foo\" }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "second argument not an integer",
+      "template": "{{ \"hello\" | slice: 5, \"foo\" }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "second argument is a string",
+      "template": "{{ \"hello\" | slice: 3, \"2\" }}",
+      "data": {},
+      "result": "lo"
+    },
+    {
+      "name": "missing arguments",
+      "template": "{{ \"hello\" | slice }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "too many arguments",
+      "template": "{{ \"hello\" | slice: 1, 2, 3 }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | slice: 1, 3 }}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "undefined first argument",
+      "template": "{{ \"hello\" | slice: nosuchthing, 3 }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "undefined second argument",
+      "template": "{{ \"hello\" | slice: 1, nosuchthing }}",
+      "data": {},
+      "result": "e"
+    },
+    {
+      "name": "slice an array of numbers",
+      "template": "{{ a | slice: 2, 3 | join: '#' }}",
+      "data": {
+        "a": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "result": "3#4#5"
+    },
+    {
+      "name": "first argument is a float",
+      "template": "{{ 'Liquid' | slice: 2.2 }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "second argument is a float",
+      "template": "{{ 'Liquid' | slice: 1, 2.2 }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "negative first argument",
+      "template": "{{ 'Liquid' | slice: -2 }}",
+      "data": {},
+      "result": "i"
+    },
+    {
+      "name": "negative first argument and positive length",
+      "template": "{{ 'Liquid' | slice: -2, 2 }}",
+      "data": {},
+      "result": "id"
+    },
+    {
+      "name": "negative first argument and negative length",
+      "template": "{{ 'Liquid' | slice: -2, -1 }}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "negative first argument and length out of range",
+      "template": "{{ 'Liquid' | slice: -2, 99 }}",
+      "data": {},
+      "result": "id"
+    }
+  ]
+}

@@ -1,0 +1,308 @@
+{
+  "tests": [
+    {
+      "name": "range literal",
+      "template": "{% for a in (1..3) %}{{ a }},{% endfor %}",
+      "data": {},
+      "result": "1,2,3,"
+    },
+    {
+      "name": "array",
+      "template": "{% for a in b %}{{ a }},{% endfor %}",
+      "data": { "b": [1, 2, 3] },
+      "result": "1,2,3,"
+    },
+    {
+      "name": "hash or dict or map",
+      "template": "{% for a in b %}{{ a[0] }} {{ a[1] }},{% endfor %}",
+      "data": { "b": { "x": 1, "y": 2, "z": 3 } },
+      "result": "x 1,y 2,z 3,"
+    },
+    {
+      "name": "empty array",
+      "template": "{% for a in b %}{{ a }},{% endfor %}",
+      "data": { "b": [] },
+      "result": ""
+    },
+    {
+      "name": "empty array with default",
+      "template": "{% for a in b %}{{ a }},{% else %}c{% endfor %}",
+      "data": { "b": [] },
+      "result": "c"
+    },
+    {
+      "name": "string",
+      "template": "{% for a in '123' %}{{ a }},{% endfor %}",
+      "data": {},
+      "result": "1,2,3,"
+    },
+    {
+      "name": "break",
+      "template": "{% for a in b %}{{ a }},{% if a == 2 %}{% break %}{% endif %}{% endfor %}",
+      "data": { "b": [1, 2, 3] },
+      "result": "1,2,"
+    },
+    {
+      "name": "continue",
+      "template": "{% for a in b %}{% if a == 2 %}{% continue %}{% endif %}{{ a }},{% endfor %}",
+      "data": { "b": [1, 2, 3] },
+      "result": "1,3,"
+    },
+    {
+      "name": "array, limit, colon",
+      "template": "{% for a in b limit:3 %}{{ a }},{% endfor %}",
+      "data": { "b": [1, 2, 3, 4, 5] },
+      "result": "1,2,3,"
+    },
+    {
+      "name": "array, limit, equals",
+      "template": "{% for a in b limit=3 %}{{ a }},{% endfor %}",
+      "data": { "b": [1, 2, 3, 4, 5] },
+      "result": "1,2,3,"
+    },
+    {
+      "name": "array, offset, colon",
+      "template": "{% for a in b offset:2 %}{{ a }},{% endfor %}",
+      "data": { "b": [1, 2, 3, 4, 5] },
+      "result": "3,4,5,"
+    },
+    {
+      "name": "array, offset, equals",
+      "template": "{% for a in b offset=2 %}{{ a }},{% endfor %}",
+      "data": { "b": [1, 2, 3, 4, 5] },
+      "result": "3,4,5,"
+    },
+    {
+      "name": "array, reversed",
+      "template": "{% for a in b reversed %}{{ a }},{% endfor %}",
+      "data": { "b": [1, 2, 3] },
+      "result": "3,2,1,"
+    },
+    {
+      "name": "comma separated arguments",
+      "template": "{% for a in b offset:1, limit:3, reversed %}{{ a }},{% endfor %}",
+      "data": { "b": [1, 2, 3, 4, 5] },
+      "result": "4,3,2,"
+    },
+    {
+      "name": "space separated arguments",
+      "template": "{% for a in b offset:1 limit:3 reversed %}{{ a }},{% endfor %}",
+      "data": { "b": [1, 2, 3, 4, 5] },
+      "result": "4,3,2,"
+    },
+    {
+      "name": "reversed is first",
+      "template": "{% for a in b reversed offset:1, limit:3 %}{{ a }},{% endfor %}",
+      "data": { "b": [1, 2, 3, 4, 5] },
+      "result": "4,3,2,"
+    },
+    {
+      "name": "length",
+      "template": "{% for a in b %}{{ a }} {{ forloop.length }},{% endfor %}",
+      "data": { "b": [1, 2, 3] },
+      "result": "1 3,2 3,3 3,"
+    },
+    {
+      "name": "length, limit",
+      "template": "{% for a in b limit:3 %}{{ a }} {{ forloop.length }},{% endfor %}",
+      "data": { "b": [1, 2, 3, 4, 5] },
+      "result": "1 3,2 3,3 3,"
+    },
+    {
+      "name": "length, offset",
+      "template": "{% for a in b offset:2 %}{{ a }} {{ forloop.length }},{% endfor %}",
+      "data": { "b": [1, 2, 3, 4, 5] },
+      "result": "3 3,4 3,5 3,"
+    },
+    {
+      "name": "first",
+      "template": "{% for a in b %}{{ a }} {{ forloop.first }},{% endfor %}",
+      "data": { "b": [1, 2, 3] },
+      "result": "1 true,2 false,3 false,"
+    },
+    {
+      "name": "first, offset",
+      "template": "{% for a in b offset:1 %}{{ a }} {{ forloop.first }},{% endfor %}",
+      "data": { "b": [1, 2, 3] },
+      "result": "2 true,3 false,"
+    },
+    {
+      "name": "last",
+      "template": "{% for a in b %}{{ a }} {{ forloop.last }},{% endfor %}",
+      "data": { "b": [1, 2, 3] },
+      "result": "1 false,2 false,3 true,"
+    },
+    {
+      "name": "last, limit",
+      "template": "{% for a in b limit:2 %}{{ a }} {{ forloop.last }},{% endfor %}",
+      "data": { "b": [1, 2, 3] },
+      "result": "1 false,2 true,"
+    },
+    {
+      "name": "index",
+      "template": "{% for a in b %}{{ a }} {{ forloop.index }},{% endfor %}",
+      "data": { "b": [1, 2, 3] },
+      "result": "1 1,2 2,3 3,"
+    },
+    {
+      "name": "index0",
+      "template": "{% for a in b %}{{ a }} {{ forloop.index0 }},{% endfor %}",
+      "data": { "b": [1, 2, 3] },
+      "result": "1 0,2 1,3 2,"
+    },
+    {
+      "name": "rindex",
+      "template": "{% for a in b %}{{ a }} {{ forloop.rindex }},{% endfor %}",
+      "data": { "b": [1, 2, 3] },
+      "result": "1 3,2 2,3 1,"
+    },
+    {
+      "name": "rindex0",
+      "template": "{% for a in b %}{{ a }} {{ forloop.rindex0 }},{% endfor %}",
+      "data": { "b": [1, 2, 3] },
+      "result": "1 2,2 1,3 0,"
+    },
+    {
+      "name": "name",
+      "template": "{% for a in b limit:1 %}{{ forloop.name }}{% endfor %}",
+      "data": { "b": [1, 2, 3] },
+      "result": "a-b"
+    },
+    {
+      "name": "name, range",
+      "template": "{% for a in (1..3) limit:1 %}{{ forloop.name }}{% endfor %}",
+      "data": {},
+      "result": "a-(1..3)"
+    },
+    {
+      "name": "forloop goes out of scope",
+      "template": "{% for a in b %}{{ a }} {{ forloop.length }},{% endfor %}{{ forloop.length }}",
+      "data": { "b": [1, 2, 3] },
+      "result": "1 3,2 3,3 3,"
+    },
+    {
+      "name": "iterate nested path",
+      "template": "{% for link in linklists[section.settings.menu].links %}{{ link }} {% endfor %}",
+      "data": {
+        "linklists": { "main": { "links": ["1", "2"] } },
+        "section": { "settings": { "menu": "main" } }
+      },
+      "result": "1 2 "
+    },
+    {
+      "name": "offset, continue",
+      "template": "{% for a in b limit:3 %}a{{ a }} {% endfor %}{% for a in b offset:continue %}b{{ a }} {% endfor %}",
+      "data": {
+        "b": [1, 2, 3, 4, 5, 6]
+      },
+      "result": "a1 a2 a3 b4 b5 b6 "
+    },
+    {
+      "name": "offset, continue, range",
+      "template": "{% for a in (1..6) limit:3 %}a{{ a }} {% endfor %}{% for a in (1..6) offset:continue %}b{{ a }} {% endfor %}",
+      "data": {},
+      "result": "a1 a2 a3 b4 b5 b6 "
+    },
+    {
+      "name": "offset, continue, assigned range",
+      "template": "{% assign b = (1..6) %}{% for a in b limit:3 %}a{{ a }} {% endfor %}{% for a in b offset:continue %}b{{ a }} {% endfor %}",
+      "data": {},
+      "result": "a1 a2 a3 b4 b5 b6 "
+    },
+    {
+      "name": "offset, continue, reassigned array",
+      "template": "{% assign b = '1,2,3,4,5,6' | split: ',' %}{% for a in b limit:3 %}{{ a }} {% endfor %}{% assign b = 'u,v,w,x,y,z' | split: ',' %}{% for a in b offset:continue %}{{ a }} {% endfor %}",
+      "data": {},
+      "result": "1 2 3 x y z "
+    },
+    {
+      "name": "offset, continue, different loop variable",
+      "template": "{% for a in b limit:3 %}a{{ a }} {% endfor %}{% for x in b offset:continue %}b{{ x }} {% endfor %}",
+      "data": {
+        "b": [1, 2, 3, 4, 5, 6]
+      },
+      "result": "a1 a2 a3 b1 b2 b3 b4 b5 b6 "
+    },
+    {
+      "name": "offset, continue, nothing to continue from",
+      "template": "{% for a in b %}a{{ a }} {% endfor %}{% for a in b offset:continue %}b{{ a }} {% endfor %}",
+      "data": {
+        "b": [1, 2, 3, 4, 5, 6]
+      },
+      "result": "a1 a2 a3 a4 a5 a6 "
+    },
+    {
+      "name": "offset, continue, no preceding loop",
+      "template": "{% for a in b offset:continue %}{{ a }} {% endfor %}",
+      "data": {
+        "b": [1, 2, 3, 4, 5, 6]
+      },
+      "result": "1 2 3 4 5 6 "
+    },
+    {
+      "name": "offset, continue, twice",
+      "template": "{% for a in b limit:2 %}a{{ a }} {% endfor %}{% for a in b offset:continue limit: 2 %}b{{ a }} {% endfor %}{% for a in b offset:continue %}c{{ a }} {% endfor %}",
+      "data": {
+        "b": [1, 2, 3, 4, 5, 6]
+      },
+      "result": "a1 a2 b3 b4 c5 c6 "
+    },
+    {
+      "name": "offset, continue, broken",
+      "template": "{% for a in b limit:4 %}{% if a == 3 %}{% break %}{% endif %}a{{ a }} {% endfor %}{% for a in b offset:continue limit: 2 %}b{{ a }} {% endfor %}{% for a in b offset:continue %}c{{ a }} {% endfor %}",
+      "data": {
+        "b": [1, 2, 3, 4, 5, 6]
+      },
+      "result": "a1 a2 b5 b6 "
+    },
+    {
+      "name": "offset, continue, forloop length",
+      "template": "{% for a in b limit: 2 %}a{{ a }}-{{ forloop.length }} {% endfor %}{% for a in b offset:continue %}b{{ a }}-{{ forloop.length }} {% endfor %}",
+      "data": {
+        "b": [1, 2, 3, 4, 5, 6]
+      },
+      "result": "a1-2 a2-2 b3-4 b4-4 b5-4 b6-4 "
+    },
+    {
+      "name": "array literal",
+      "template": "{% for a in b, 2, true %}{{ a }},{% endfor %}",
+      "data": { "b": 1 },
+      "result": "1,2,true,"
+    },
+    {
+      "name": "array literal, trailing comma",
+      "template": "{% for a in b, 2, true, %}{{ a }},{% endfor %}",
+      "data": { "b": 1 },
+      "result": "1,2,true,"
+    },
+    {
+      "name": "array literal, leading comma",
+      "template": "{% for a in , b, 2, true %}{{ a }},{% endfor %}",
+      "invalid": true
+    },
+    {
+      "name": "array literal, limit",
+      "template": "{% for a in b, 2, true, limit:2 %}{{ a }},{% endfor %}",
+      "data": { "b": 1 },
+      "invalid": true
+    },
+    {
+      "name": "limit, leading comma",
+      "template": "{% for a in b, limit:2 %}{{ a }},{% endfor %}",
+      "data": { "b": [1, 2, 3, 4] },
+      "result": "1,2,"
+    },
+    {
+      "name": "offset, leading comma",
+      "template": "{% for a in b, offset:2 %}{{ a }},{% endfor %}",
+      "data": { "b": [1, 2, 3, 4] },
+      "result": "3,4,"
+    },
+    {
+      "name": "reversed, leading comma",
+      "template": "{% for a in b, reversed %}{{ a }},{% endfor %}",
+      "data": { "b": [1, 2, 3, 4] },
+      "result": "4,3,2,1,"
+    }
+  ]
+}

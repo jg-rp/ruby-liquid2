@@ -1,0 +1,176 @@
+{
+  "tests": [
+    {
+      "name": "empty sequence",
+      "template": "{{ a | sum }}",
+      "data": {
+        "a": []
+      },
+      "result": "0"
+    },
+    {
+      "name": "only zeros",
+      "template": "{{ a | sum }}",
+      "data": {
+        "a": [0, 0, 0]
+      },
+      "result": "0"
+    },
+    {
+      "name": "ints",
+      "template": "{{ a | sum }}",
+      "data": {
+        "a": [1, 2, 3]
+      },
+      "result": "6"
+    },
+    {
+      "name": "negative ints",
+      "template": "{{ a | sum }}",
+      "data": {
+        "a": [-1, -2, -3]
+      },
+      "result": "-6"
+    },
+    {
+      "name": "negative strings",
+      "template": "{{ a | sum }}",
+      "data": {
+        "a": ["-1", "-2", "-3"]
+      },
+      "result": "-6"
+    },
+    {
+      "name": "positive and negative ints",
+      "template": "{{ a | sum }}",
+      "data": {
+        "a": [-2, -3, 10]
+      },
+      "result": "5"
+    },
+    {
+      "name": "nested ints",
+      "template": "{{ a | sum }}",
+      "data": {
+        "a": [1, [2, [3]]]
+      },
+      "result": "6"
+    },
+    {
+      "name": "hashes with property argument",
+      "template": "{{ a | sum: 'k' }}",
+      "data": {
+        "a": [
+          {
+            "k": 1
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": 3
+          }
+        ]
+      },
+      "result": "6"
+    },
+    {
+      "name": "hashes with numeric strings and property argument",
+      "template": "{{ a | sum: 'k' }}",
+      "data": {
+        "a": [
+          {
+            "k": "1"
+          },
+          {
+            "k": "2"
+          },
+          {
+            "k": "3"
+          }
+        ]
+      },
+      "result": "6"
+    },
+    {
+      "name": "hashes without property argument",
+      "template": "{{ a | sum }}",
+      "data": {
+        "a": [
+          {
+            "k": 1
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": 3
+          }
+        ]
+      },
+      "result": "0"
+    },
+    {
+      "name": "hashes with some missing properties",
+      "template": "{{ a | sum: 'k' }}",
+      "data": {
+        "a": [
+          {
+            "k": 1
+          },
+          {
+            "k": 2
+          },
+          {
+            "x": 3
+          }
+        ]
+      },
+      "result": "3"
+    },
+    {
+      "name": "properties arguments with non-hash items",
+      "template": "{{ a | sum: 'k' }}",
+      "data": {
+        "a": [1, 2, 3]
+      },
+      "invalid": true
+    },
+    {
+      "name": "hashes with lambda argument",
+      "template": "{{ a | sum: i => i.k }}",
+      "data": {
+        "a": [
+          {
+            "k": 1
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": 3
+          }
+        ]
+      },
+      "result": "6"
+    },
+    {
+      "name": "hashes with lambda invalid argument",
+      "template": "{{ a | sum: i => i.k == 'foo' }}",
+      "data": {
+        "a": [
+          {
+            "k": 1
+          },
+          {
+            "k": 2
+          },
+          {
+            "k": 3
+          }
+        ]
+      },
+      "invalid": true
+    }
+  ]
+}

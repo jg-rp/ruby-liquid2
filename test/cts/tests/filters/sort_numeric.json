@@ -1,0 +1,20 @@
+{
+  "tests": [
+    {
+      "name": "array of objects, lambda expression argument",
+      "template": "{% assign x = a | sort_numeric: i => i.x %}{% for item in x %}{% for pair in item %}{{ '(${pair[0]},${pair[1]})' }}{% endfor %}{% endfor %}",
+      "data": {
+        "a": [{ "y": "-1", "x": "10" }, { "x": "2" }, { "x": "3" }]
+      },
+      "result": "(x,2)(x,3)(y,-1)(x,10)"
+    },
+    {
+      "name": "array of objects, lambda expression is not a path",
+      "template": "{% assign x = a | sort_numeric: i => i.x == y %}{% for item in x %}{% for pair in item %}{{ '(${pair[0]},${pair[1]})' }}{% endfor %}{% endfor %}",
+      "data": {
+        "a": [{ "y": "-1", "x": "10" }, { "x": "2" }, { "x": "3" }]
+      },
+      "invalid": true
+    }
+  ]
+}

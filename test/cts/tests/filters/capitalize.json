@@ -1,0 +1,28 @@
+{
+  "tests": [
+    {
+      "name": "lower case string",
+      "template": "{{ \"hello\" | capitalize }}",
+      "data": {},
+      "result": "Hello"
+    },
+    {
+      "name": "already capitalized string",
+      "template": "{{ \"Hello\" | capitalize }}",
+      "data": {},
+      "result": "Hello"
+    },
+    {
+      "name": "unexpected argument",
+      "template": "{{ \"hello\" | capitalize: 2 }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | capitalize }}",
+      "data": {},
+      "result": ""
+    }
+  ]
+}

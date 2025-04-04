@@ -1,0 +1,58 @@
+{
+  "tests": [
+    {
+      "name": "int times int",
+      "template": "{{ 5 | times: 2 }}",
+      "data": {},
+      "result": "10"
+    },
+    {
+      "name": "int times float",
+      "template": "{{ 5 | times: 2.1 }}",
+      "data": {},
+      "result": "10.5"
+    },
+    {
+      "name": "float times float",
+      "template": "{{ 5.0 | times: 2.1 }}",
+      "data": {},
+      "result": "10.5"
+    },
+    {
+      "name": "string times string",
+      "template": "{{ \"5.0\" | times: \"2.1\" }}",
+      "data": {},
+      "result": "10.5"
+    },
+    {
+      "name": "negative multiplication",
+      "template": "{{ -5 | times: 2 }}",
+      "data": {},
+      "result": "-10"
+    },
+    {
+      "name": "missing arg",
+      "template": "{{ 5 | times }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "too many args",
+      "template": "{{ 5 | times: 1, 2 }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | times: 2 }}",
+      "data": {},
+      "result": "0"
+    },
+    {
+      "name": "undefined argument",
+      "template": "{{ 5 | times: nosuchthing }}",
+      "data": {},
+      "result": "0"
+    }
+  ]
+}

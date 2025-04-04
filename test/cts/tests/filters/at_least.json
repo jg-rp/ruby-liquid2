@@ -1,0 +1,88 @@
+{
+  "tests": [
+    {
+      "name": "positive integer < arg",
+      "template": "{{ 5 | at_least: 8 }}",
+      "data": {},
+      "result": "8"
+    },
+    {
+      "name": "positive integer > arg",
+      "template": "{{ 8 | at_least: 5 }}",
+      "data": {},
+      "result": "8"
+    },
+    {
+      "name": "negative integer < arg",
+      "template": "{{ -8 | at_least: 5 }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "positive integer == arg",
+      "template": "{{ 5 | at_least: 5 }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "positive float < arg",
+      "template": "{{ 5.4 | at_least: 8.9 }}",
+      "data": {},
+      "result": "8.9"
+    },
+    {
+      "name": "positive float > arg",
+      "template": "{{ 8.4 | at_least: 5.9 }}",
+      "data": {},
+      "result": "8.4"
+    },
+    {
+      "name": "positive string > arg",
+      "template": "{{ \"9\" | at_least: 8 }}",
+      "data": {},
+      "result": "9"
+    },
+    {
+      "name": "missing arg",
+      "template": "{{ 5 | at_least }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "too many args",
+      "template": "{{ 5 | at_least: 1, 2}}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | at_least: 5 }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "undefined argument",
+      "template": "{{ 5 | at_least: nosuchthing }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "left value not a number",
+      "template": "{{ \"abc\" | at_least: 2 }}",
+      "data": {},
+      "result": "2"
+    },
+    {
+      "name": "left value not a number negative argument",
+      "template": "{{ \"abc\" | at_least: -2 }}",
+      "data": {},
+      "result": "0"
+    },
+    {
+      "name": "argument string not a number",
+      "template": "{{ -1 | at_least: \"abc\" }}",
+      "data": {},
+      "result": "0"
+    }
+  ]
+}

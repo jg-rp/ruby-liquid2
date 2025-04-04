@@ -1,0 +1,28 @@
+{
+  "tests": [
+    {
+      "name": "make HTML-safe",
+      "template": "{{ \"<p>test</p>\" | escape }}",
+      "data": {},
+      "result": "&lt;p&gt;test&lt;/p&gt;"
+    },
+    {
+      "name": "not a string",
+      "template": "{{ 5 | escape }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "unexpected argument",
+      "template": "{{ \"HELLO\" | escape: 5 }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | escape }}",
+      "data": {},
+      "result": ""
+    }
+  ]
+}

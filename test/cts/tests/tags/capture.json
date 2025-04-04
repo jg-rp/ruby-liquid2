@@ -1,0 +1,33 @@
+{
+  "tests": [
+    {
+      "name": "content with global variables",
+      "template": "{% capture a %}Hello, {{ b }}!{% endcapture %}{{ a }}",
+      "data": { "b": "you" },
+      "result": "Hello, you!"
+    },
+    {
+      "name": "into identifier containing a hyphen",
+      "template": "{% capture a-b %}Hello, {{ c }}!{% endcapture %}{{ a-b }}",
+      "data": { "c": "you" },
+      "result": "Hello, you!"
+    },
+    {
+      "name": "empty block",
+      "template": "{% capture a %}{% endcapture %}{{ a }}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "empty block, end of input",
+      "template": "{% capture a %}{% endcapture %}",
+      "data": {},
+      "result": ""
+    },
+    {
+      "name": "extra tokens",
+      "template": "{% capture a b %}{% endcapture %}",
+      "invalid": true
+    }
+  ]
+}

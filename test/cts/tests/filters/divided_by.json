@@ -1,0 +1,114 @@
+{
+  "tests": [
+    {
+      "name": "integer value and integer arg",
+      "template": "{{ 10 | divided_by: 2 }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "integer value and float arg",
+      "template": "{{ 10 | divided_by: 2.0 }}",
+      "data": {},
+      "result": "5.0"
+    },
+    {
+      "name": "integer division",
+      "template": "{{ 9 | divided_by: 2 }}",
+      "data": {},
+      "result": "4"
+    },
+    {
+      "name": "float value and integer arg",
+      "template": "{{ 9.0 | divided_by: 2 }}",
+      "data": {},
+      "result": "4.5"
+    },
+    {
+      "name": "float division",
+      "template": "{{ 20 | divided_by: 7.0 }}",
+      "data": {},
+      "result": "2.857142857142857"
+    },
+    {
+      "name": "string value and argument",
+      "template": "{{ \"10\" | divided_by: \"2\" }}",
+      "data": {},
+      "result": "5"
+    },
+    {
+      "name": "string not a number",
+      "template": "{{ \"foo\" | divided_by: \"2\" }}",
+      "data": {},
+      "result": "0"
+    },
+    {
+      "name": "arg string not a number",
+      "template": "{{ \"10\" | divided_by: \"foo\" }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "too many args",
+      "template": "{{ 5 | divided_by: 1, '5' }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "not a string, int or float",
+      "template": "{{ a | divided_by: 1 }}",
+      "data": {
+        "a": {}
+      },
+      "result": "0"
+    },
+    {
+      "name": "undefined left value",
+      "template": "{{ nosuchthing | divided_by: 2 }}",
+      "data": {},
+      "result": "0"
+    },
+    {
+      "name": "undefined argument",
+      "template": "{{ 10 | divided_by: nosuchthing }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "divied by zero",
+      "template": "{{ 10 | divided_by: 0 }}",
+      "data": {},
+      "invalid": true
+    },
+    {
+      "name": "zero divided by float",
+      "template": "{{ 0 | divided_by: 1.1 }}",
+      "data": {},
+      "result": "0.0"
+    },
+    {
+      "name": "zero divided by integer",
+      "template": "{{ 0 | divided_by: 1 }}",
+      "data": {},
+      "result": "0"
+    },
+    {
+      "name": "issue",
+      "template": "{{ 5 | divided_by: 3 }}",
+      "data": {},
+      "result": "1"
+    },
+    {
+      "name": "render",
+      "template": "{{ 5.0 }} {{ 5 }}",
+      "data": {},
+      "result": "5.0 5"
+    },
+    {
+      "name": "left value is an empty string",
+      "template": "{{ '' | divided_by: 2 }}",
+      "data": {},
+      "result": "0"
+    }
+  ]
+}
