@@ -88,7 +88,7 @@ module Liquid2
 
     attr_reader default_trim: :whitespace_control_plus | :whitespace_control_minus | :whitespace_control_tilde
 
-    def initialize: (?loader: TemplateLoader?) -> void
+    def initialize: (?loader: TemplateLoader?, ?mode: (:lax | :strict)) -> void
 
     # @param source [String] template source text.
     # @return [Template]
@@ -527,6 +527,9 @@ module Liquid2
   end
 
   class Missing < Expression
+    @reason: String
+
+    def initialize: (Array[Token | Node] children, String reason) -> void
   end
 
   # An node representing a block of Liquid markup. Essentially an array of other nodes.
@@ -935,7 +938,13 @@ module Liquid2
   class LiquidTypeError < LiquidError
   end
 
-  class TemplateNotFoundError < LiquidError
+  class LiquidTemplateNotFoundError < LiquidError
+  end
+
+  class LiquidFilterNotFoundError < LiquidError
+  end
+
+  class LiquidResourceLimitError < LiquidError
   end
 
   class UndefinedError < LiquidError

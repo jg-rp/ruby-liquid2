@@ -61,7 +61,7 @@ module Liquid2
     def evaluate(left, context)
       filter, with_context = context.env.filters[@name]
 
-      raise "unknown filter #{@name.inspect}" unless filter
+      raise LiquidFilterNotFoundError.new("unknown filter #{@name.inspect}", self) unless filter
 
       positional_args, keyword_args = evaluate_args(context)
       keyword_args[:context] = context if with_context

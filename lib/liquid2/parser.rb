@@ -57,7 +57,7 @@ module Liquid2
         when :token_eof
           return RootNode.new(nodes)
         else
-          raise "unexpected token: #{token.inspect}"
+          raise LiquidSyntaxError.new("unexpected token: #{token.inspect}", token)
         end
       end
     end
@@ -95,7 +95,7 @@ module Liquid2
           # TODO: raise
           break
         else
-          raise "unexpected token: #{token.inspect}"
+          raise LiquidSyntaxError.new("unexpected token: #{token.inspect}", token)
         end
       end
 
@@ -116,7 +116,7 @@ module Liquid2
         when :token_whitespace_control, :token_tag_end
           break
         else
-          raise "unexpected token: #{token.inspect}"
+          raise LiquidSyntaxError.new("unexpected token: #{token.inspect}", token)
         end
       end
 
@@ -151,9 +151,9 @@ module Liquid2
       limit = nil # : (Expression | nil)
       cols = nil # : (Expression | nil)
 
-      if (token = stream.eat(:token_comma))
+      if stream.current.kind == :token_comma
         # A comma between the iterable and the first argument is OK.
-        children << token
+        children << stream.eat(:token_comma)
       end
 
       loop do
@@ -305,7 +305,7 @@ module Liquid2
     def peek_tag_name(stream)
       token = stream.peek # Whitespace control or tag name
       token = stream.peek(2) if token.kind == :token_whitespace_control
-      raise "missing tag name" unless token.kind == :token_tag_name
+      raise LiquidSyntaxError.new("missing tag name", token) unless token.kind == :token_tag_name
 
       token
     end
@@ -439,7 +439,7 @@ module Liquid2
       if (tag = @env.tags[token.text])
         tag.parse(stream, self)
       else
-        raise "unknown tag #{token.text}"
+        raise LiquidSyntaxError.new("unknown tag #{token.text}", token)
       end
     end
 
@@ -527,7 +527,9 @@ module Liquid2
         BracketedSegment.new([bracket_token, node, stream.eat(:token_rbracket)], node)
       else
         # TODO: or skip
-        raise "unexpected token in bracketed selector, #{stream.current.kind}"
+        raise LiquidSyntaxError.new(
+          "unexpected token in bracketed selector, #{stream.current.kind}", stream.current
+        )
       end
     end
 
@@ -542,7 +544,7 @@ module Liquid2
         ShorthandSegment.new([dot, token], token)
       else
         # TODO: or skip
-        raise "unexpected token in shorthand selector, #{token.kind}"
+        raise LiquidSyntaxError.new("unexpected token in shorthand selector, #{token.kind}", token)
       end
     end
 
@@ -575,7 +577,7 @@ module Liquid2
 
         unless BINARY_OPERATORS.member?(token.kind)
           # TODO: or missing
-          raise "expected an infix operator, found #{token.kind}"
+          raise LiquidSyntaxError.new("expected an infix operator, found #{token.kind}", token)
         end
 
         expr = parse_infix_expression(stream, expr)
@@ -624,7 +626,7 @@ module Liquid2
         LogicalOr.new(children, left, right)
       else
         # TODO:
-        raise "unexpected infix operator, #{op_token.text}"
+        raise LiquidSyntaxError.new("unexpected infix operator, #{op_token.text}", op_token)
       end
     end
 

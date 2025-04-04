@@ -93,7 +93,7 @@ module Liquid2
         # Note that this approach does not account for overwriting keys/values
         # in the local scope. The assign score is always incremented.
         @assign_score += assign_score(value)
-        raise "local namespace limit reached" if @assign_score > limit
+        raise LiquidResourceLimitError, "local namespace limit reached" if @assign_score > limit
       end
     end
 
@@ -105,7 +105,6 @@ module Liquid2
     # @param default [Object?] A default value to return if the path can no be resolved.
     # @return [Object]
     def fetch(path, node:, default: :undefined)
-      # TODO: pass Path object to undefined instead of a single token?
       root = path.first
       obj = @scope.fetch(root)
 
@@ -148,7 +147,9 @@ module Liquid2
     # @param namespace [Hash<String, Object>]
     # @param template [Template?] Replace the current template for the duration of the block.
     def extend(namespace, template: nil)
-      raise "context depth limit reached" if @scope.size > @env.context_depth_limit
+      if @scope.size > @env.context_depth_limit
+        raise LiquidResourceLimitError, "context depth limit reached"
+      end
 
       template_ = @template
       @template = template if template
@@ -172,7 +173,9 @@ module Liquid2
              disabled_tags: nil,
              carry_loop_iterations: false,
              block_scope: false)
-      raise "context depth limit reached" if @copy_depth > @env.context_depth_limit
+      if @copy_depth > @env.context_depth_limit
+        raise LiquidResourceLimitError, "context depth limit reached"
+      end
 
       loop_carry = if carry_loop_iterations
                      @loops.map(&:length).reduce(@loop_carry) { |acc, value| acc * value }
@@ -229,7 +232,9 @@ module Liquid2
 
       loop_count = @loops.map(&:length).reduce(length * @loop_carry) { |acc, value| acc * value }
 
-      raise "loop iteration limit reached" if loop_count > (@env.loop_iteration_limit || raise)
+      return unless loop_count > (@env.loop_iteration_limit || raise)
+
+      raise LiquidResourceLimitError, "loop iteration limit reached"
     end
 
     def get_output_buffer(parent_buffer)

@@ -42,7 +42,10 @@ module Liquid2
         @pos += 1
         token
       else
-        raise "expected #{kind}, found #{token.kind}" if @mode == :strict
+        if @mode == :strict
+          raise LiquidSyntaxError.new("expected #{kind}, found #{token.kind}",
+                                      token)
+        end
 
         MissingToken.new(:token_missing, token.start, "", "", kind)
       end
@@ -57,7 +60,10 @@ module Liquid2
         @pos += 1
         token
       else
-        raise "expected #{kinds.first}, found #{token.kind}" if @mode == :strict
+        if @mode == :strict
+          raise LiquidSyntaxError.new("expected #{kinds.first}, found #{token.kind}",
+                                      token)
+        end
 
         MissingToken.new(:token_missing, token.start, "", "", kinds.first)
       end
@@ -85,7 +91,9 @@ module Liquid2
       name_token = eat(:token_tag_name)
 
       unless name == name_token.text
-        raise "expected tag #{name}, found #{name_token.kind}:#{name_token.text}"
+        raise LiquidSyntaxError.new(
+          "expected tag #{name}, found #{name_token.kind}:#{name_token.text}", name_token
+        )
       end
 
       # TODO: handle tokens between end tag name and closing tag markup.
@@ -116,7 +124,12 @@ module Liquid2
       loop do
         token = current
         if kinds.member?(token.kind) || tokens.length >= max || token.kind == :token_eof
-          return tokens.empty? ? nil : tokens
+          return nil if tokens.empty?
+          if @mode == :strict
+            raise LiquidSyntaxError.new("unexpected #{tokens.first.text.inspect}", tokens.first)
+          end
+
+          return tokens
         end
 
         tokens << self.next
@@ -126,9 +139,13 @@ module Liquid2
     # @param reason [String] a string describing the expected token.
     # @return [Expression] a new Missing node.
     def missing(reason)
-      raise "expected #{reason}, found #{current.kind}" if @mode == :strict
+      if @mode == :strict
+        raise LiquidSyntaxError.new("expected #{reason}, found #{current.kind}",
+                                    current)
+      end
 
-      Missing.new([Token.new(:token_missing, current.start, "", "")])
+      Missing.new([Token.new(:token_missing, current.start, "", "")],
+                  "expected #{reason}, found #{current.kind}")
     end
   end
 end

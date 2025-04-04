@@ -12,7 +12,7 @@ module Liquid2
 
     def write(...)
       byte_count = super
-      raise "output limit reached" if @length > @limit
+      raise LiquidResourceLimitError, "output limit reached" if @length > @limit
 
       byte_count
     end

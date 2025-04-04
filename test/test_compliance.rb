@@ -16,7 +16,7 @@ class TestCompliance < Minitest::Spec
                    Liquid2.HashLoader.new(templates)
                  end
 
-        env = Liquid2::Environment.new(loader: loader)
+        env = Liquid2::Environment.new(loader: loader, mode: :strict)
         if test_case["invalid"]
           assert_raises Liquid2::LiquidError do
             env.parse(test_case["template"]).render(test_case["data"])

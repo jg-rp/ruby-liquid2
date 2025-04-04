@@ -17,7 +17,7 @@ module Liquid2
                   stream.eat(:token_tag_name)]
 
       name = parser.parse_identifier(stream, trailing_question: false)
-      children << name << stream.eat(:token_assign)
+      children << name << stream.eat_whitespace_control << stream.eat(:token_tag_end)
       block = parser.parse_block(stream, END_BLOCK)
       children << block
       children.push(*stream.eat_empty_tag("endcapture"))

@@ -32,7 +32,7 @@ module Liquid2
                 :output_stream_limit, :filters, :auto_escape, :suppress_blank_control_flow_blocks,
                 :default_trim
 
-    def initialize(loader: nil)
+    def initialize(loader: nil, mode: :lax)
       # A mapping of tag names to objects responding to `parse`.
       @tags = {
         "assign" => AssignTag,
@@ -61,7 +61,7 @@ module Liquid2
       @filters = {}
 
       @parser = Parser.new(self)
-      @mode = :lax
+      @mode = mode
       @auto_escape = false
 
       @local_namespace_limit = nil

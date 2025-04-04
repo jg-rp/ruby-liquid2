@@ -18,6 +18,8 @@ module Liquid2
   class LiquidSyntaxError < LiquidError; end
   class LiquidArgumentError < LiquidError; end
   class LiquidTypeError < LiquidError; end
-  class TemplateNotFoundError < LiquidError; end
+  class LiquidTemplateNotFoundError < LiquidError; end
+  class LiquidFilterNotFoundError < LiquidError; end
+  class LiquidResourceLimitError < LiquidError; end
   class UndefinedError < LiquidError; end
 end

@@ -42,6 +42,7 @@ module Liquid2
   end
 
   class RootNode < Node; end
+
   class Skipped < Node; end
 
   # An node representing a block of Liquid markup. Essentially an array of other nodes.
@@ -106,5 +107,15 @@ module Liquid2
     end
   end
 
-  class Missing < Expression; end
+  # Syntax missing from a Liquid expression.
+  class Missing < Expression
+    def initialize(children, reason)
+      super(children)
+      @reason = reason
+    end
+
+    def evaluate(_context)
+      raise LiquidSyntaxError.new(@reason, self)
+    end
+  end
 end
