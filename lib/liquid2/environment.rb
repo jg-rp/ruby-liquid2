@@ -3,6 +3,7 @@
 require_relative "parser"
 require_relative "template"
 require_relative "undefined"
+require_relative "loader"
 require_relative "filters/slice"
 require_relative "nodes/tags/assign"
 require_relative "nodes/tags/if"
@@ -14,6 +15,7 @@ require_relative "nodes/tags/case"
 require_relative "nodes/tags/cycle"
 require_relative "nodes/tags/decrement"
 require_relative "nodes/tags/increment"
+require_relative "nodes/tags/include"
 require_relative "nodes/tags/raw"
 require_relative "nodes/tags/unless"
 
@@ -27,7 +29,7 @@ module Liquid2
                 :output_stream_limit, :filters, :auto_escape, :suppress_blank_control_flow_blocks,
                 :default_trim
 
-    def initialize
+    def initialize(loader: nil)
       # A mapping of tag names to objects responding to `parse`.
       @tags = {
         "assign" => AssignTag,
@@ -43,7 +45,8 @@ module Liquid2
         "increment" => IncrementTag,
         "raw" => RawTag,
         "unless" => UnlessTag,
-        "case" => CaseTag
+        "case" => CaseTag,
+        "include" => IncludeTag
       }
 
       # A mapping of filter names to objects responding to `#call(left, ...)`,
@@ -66,13 +69,18 @@ module Liquid2
 
       @undefined = Undefined
 
+      @loader = loader || HashLoader.new({})
+
       setup_tags_and_filters
     end
 
     # @param source [String] template source text.
     # @return [Template]
-    def parse(source)
-      Template.new(self, @parser.parse(source))
+    def parse(source, name: "", path: nil, up_to_date: nil, globals: nil, overlay: nil)
+      Template.new(self,
+                   @parser.parse(source),
+                   name: name, path: path, up_to_date: up_to_date,
+                   globals: globals, overlay: overlay)
     end
 
     # Add or replace a filter. The same callable can be registered multiple times with
@@ -146,7 +154,10 @@ module Liquid2
     #   space.
     # @return [Template]
     def get_template(name, globals: nil, context: nil, **kwargs)
-      raise "TODO"
+      @loader.load(self, name, globals: globals, context: context, **kwargs)
+    rescue LiquidError => e
+      e.template_name = name unless e.template_name
+      raise e
     end
   end
 end

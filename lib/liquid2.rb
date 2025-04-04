@@ -3,6 +3,7 @@
 require_relative "liquid2/environment"
 require_relative "liquid2/context"
 require_relative "liquid2/lexer"
+require_relative "liquid2/loader"
 require_relative "liquid2/parser"
 require_relative "liquid2/version"
 require_relative "liquid2/undefined"

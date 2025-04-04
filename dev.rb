@@ -3,21 +3,14 @@
 require "json"
 require "liquid2"
 
-env = Liquid2::Environment.new
+templates = {
+  "foo" => "Hello, {{ you }}!"
+}
+
+env = Liquid2::Environment.new(loader: Liquid2::HashLoader.new(templates))
 source = <<~LIQUID
   START
-  {% assign day = "Monday" %}
-
-  {% case day %}
-    {% when "Monday" %}
-      Start of the work week!
-    {% when "Friday" %}
-      It's almost the weekend!
-    {% when "Saturday" or "Sunday" %}
-      Enjoy your weekend!
-    {% else %}
-      Just another weekday.
-  {% endcase %}
+  {% include 'foo' %}
   END
 LIQUID
 
@@ -29,7 +22,7 @@ t = env.parse(source)
 
 # puts JSON.pretty_generate(t.ast.dump)
 
-puts t.render({ "y" => [1, 2, 3, 4, 5] })
+puts t.render({ "you" => "World" })
 
 # TODO: document the drop interface
 #   - #to_liquid(context)

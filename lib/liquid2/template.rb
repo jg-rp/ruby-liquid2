@@ -5,7 +5,7 @@ require_relative "utils/string_io"
 module Liquid2
   # A compiled template bound to a Liquid environment and ready to be rendered.
   class Template
-    attr_reader :env, :ast, :name, :path, :globals, :overlay
+    attr_reader :env, :ast, :name, :path, :globals, :overlay, :up_to_date
 
     # @param env [Environment]
     # @param ast [RootNode]
@@ -14,14 +14,14 @@ module Liquid2
     # @param globals [_Namespace] Global template variables.
     # @param overlay [_Namespace] Additional template variables. Could be from front matter
     #   or other meta data store, for example.
-    def initialize(env, ast, name: "", path: nil, globals: nil, overlay: nil)
+    def initialize(env, ast, name: "", path: nil, up_to_date: nil, globals: nil, overlay: nil)
       @env = env
       @ast = ast
       @name = name
       @path = path
       @globals = globals || {} # steep:ignore UnannotatedEmptyCollection
       @overlay = overlay || {} # steep:ignore UnannotatedEmptyCollection
-      @up_to_date = nil
+      @up_to_date = up_to_date
     end
 
     def to_s = @ast.to_s

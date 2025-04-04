@@ -22,6 +22,7 @@ module Liquid2
   alias self.to_i self.to_liquid_int
 
   interface _Tag
+    # TODO: for some reason a singleton with a self.parse method does not type check.
     def parse: (TokenStream, Parser) -> Tag
   end
 
@@ -65,6 +66,8 @@ module Liquid2
 
     @undefined: _Undefined
 
+    @loader: TemplateLoader
+
     attr_reader mode: :lax | :strict
 
     attr_reader tags: Hash[String, _Tag]
@@ -85,11 +88,11 @@ module Liquid2
 
     attr_reader default_trim: :whitespace_control_plus | :whitespace_control_minus | :whitespace_control_tilde
 
-    def initialize: () -> void
+    def initialize: (?loader: TemplateLoader?) -> void
 
     # @param source [String] template source text.
     # @return [Template]
-    def parse: (String source) -> Template
+    def parse: (String source, ?name: String, ?path: String?, ?up_to_date: Proc::_Callable?, ?globals: _Namespace?, ?overlay: _Namespace?) -> Template
 
     # Add or replace a filter. The same callable can be registered multiple times with
     # different names.
@@ -297,6 +300,8 @@ module Liquid2
 
     @overlay: _Namespace
 
+    @up_to_date: Proc::_Callable?
+
     attr_reader env: Environment
 
     attr_reader ast: RootNode
@@ -309,14 +314,18 @@ module Liquid2
 
     attr_reader overlay: _Namespace
 
+    attr_reader up_to_date: Proc::_Callable?
+
     # @param env [Environment]
     # @param ast [RootNode]
     # @param name [String] The template's name.
     # @param path [String?] The path or other qualifying data to _name_.
+    # @param up_to_date [_Callable] A proc that returns `false` if the template has been
+    #   modified and need to be reloaded.
     # @param globals [_Namespace] Global template variables.
     # @param overlay [_Namespace] Additional template variables. Could be from front matter
     #   or other meta data store, for example.
-    def initialize: (Environment env, RootNode ast, ?name: String, ?path: String?, ?globals: _Namespace?, ?overlay: _Namespace?) -> void
+    def initialize: (Environment env, RootNode ast, ?name: String, ?path: String?, ?up_to_date: Proc::_Callable?, ?globals: _Namespace?, ?overlay: _Namespace?) -> void
 
     def to_s: () -> String
             
@@ -327,6 +336,51 @@ module Liquid2
     def render: (?Hash[String, untyped]? globals) -> String
 
     def render_with_context: (RenderContext context, _Buffer buffer, ?partial: bool, ?block_scope: bool, ?namespace: Hash[String, untyped]?) -> Integer
+  end
+
+  # Liquid template source text and meta data.
+  class TemplateSource
+    @source: String
+
+    @name: String
+
+    @up_to_date: Proc::_Callable?
+
+    @matter: _Namespace?
+
+    attr_reader source: String
+
+    attr_reader name: String
+
+    attr_reader up_to_date: Proc::_Callable?
+
+    attr_reader matter: _Namespace?
+
+    def initialize: (source: String, name: String, ?up_to_date: Proc::_Callable?, ?matter: _Namespace?) -> void
+  end
+
+  # The base class for all template loaders.
+  class TemplateLoader
+    # Load and return template source text and any associated data.
+    # @param env [Environment] The current Liquid environment.
+    # @param name [String] A name or identifier for the target template source text.
+    # @param context [RenderContext?] The current render context, if one is available.
+    # @param *kwrags Arbitrary arguments that can be used to narrow the template source
+    #   search space.
+    # @return [TemplateSource]
+    def get_source: (Environment env, String name, ?context: RenderContext?, **untyped kwargs) -> TemplateSource
+
+    def load: (Environment env, String name, ?globals: _Namespace?, ?context: RenderContext?, **untyped kwargs) -> Template
+  end
+
+  # A template loader that reads templates from a hash.
+  class HashLoader < TemplateLoader
+    @templates: Hash[String, String]
+
+    # @param templates [Hash<String, String>] A mapping of template names to template source text.
+    def initialize: (Hash[String, String] templates) -> void
+
+    def get_source: (Environment env, String name, ?context: RenderContext?, **untyped kwargs) -> TemplateSource
   end
 
   # The default undefined type. Can be iterated over an indexed without error.

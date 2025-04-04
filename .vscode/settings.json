@@ -9,6 +9,7 @@
     "endraw",
     "forloop",
     "ivar",
+    "kwargs",
     "ljust",
     "lparen",
     "lstrip",

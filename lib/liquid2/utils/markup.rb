@@ -73,7 +73,7 @@ module Liquid2
       new(super(object.respond_to?(:to_html) ? object.to_html : object), encoding: "UTF-8")
     end
 
-    def self.join(array, separator = $OUTPUT_FIELD_SEPARATOR)
+    def self.join(array, separator = $OUTPUT_FIELD_SEPARATOR) # steep:ignore UnknownGlobalVariable
       new(array.map { |item| escape(item) }.join(separator))
     end
 
@@ -113,7 +113,7 @@ module Liquid2
       raise "not implemented"
     end
 
-    def split(field_sep = $FIELD_SEPARATOR, limit = 0)
+    def split(field_sep = $FIELD_SEPARATOR, limit = 0) # steep:ignore UnknownGlobalVariable
       super { |string| self.class.new(string) }
     end
 
