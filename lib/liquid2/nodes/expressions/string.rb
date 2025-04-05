@@ -26,9 +26,10 @@ module Liquid2
     attr_reader :value
 
     # @param token [Token]
-    def initialize(token)
+    # @param quote ["'" | "/""]
+    def initialize(token, quote)
       super([token])
-      @value = token.text
+      @value = Liquid2.unescape_string(token.text, quote, self)
     end
 
     def evaluate(_context) = @value

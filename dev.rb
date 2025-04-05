@@ -13,7 +13,11 @@ env = Liquid2::Environment.new(loader: Liquid2::HashLoader.new(templates))
 #   Hello,   {#- this is a comment -#}\nWorld!
 #   END
 # LIQUID
-source = "{{ foo | map: i => i.foo.bar }}"
+source = "{{ obj.first | join: '#' }}"
+
+data = {
+  "obj" => {}
+}
 
 Liquid2.tokenize(source).each do |token|
   puts "#{token.full_start.to_s.ljust(3)}:#{token.kind.to_s.ljust(50)} -> #{token.text.inspect}"
@@ -21,11 +25,9 @@ end
 
 t = env.parse(source)
 
-puts JSON.pretty_generate(t.ast.dump)
+# puts JSON.pretty_generate(t.ast.dump)
 
-# puts t.render({
-#                 "foo" => [1, 2, 3]
-#               })
+puts t.render(data)
 
 # TODO: document the drop interface
 #   - #to_liquid(context)

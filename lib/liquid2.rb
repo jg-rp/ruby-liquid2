@@ -9,18 +9,22 @@ require_relative "liquid2/version"
 require_relative "liquid2/undefined"
 require_relative "liquid2/utils/chain_hash"
 require_relative "liquid2/utils/markup"
+require_relative "liquid2/utils/unescape"
 
 module Liquid2
   DEFAULT_ENVIRONMENT = Environment.new
 
   def self.to_liquid_string(obj, auto_escape: false)
-    # TODO:
-    obj.to_s
+    if obj.is_a?(Array)
+      s = obj.map { |item| to_liquid_string(item, auto_escape: auto_escape) }.join
+      auto_escape ? Markup.new(s) : s
+    else
+      auto_escape ? Markup.escape(obj) : obj.to_s
+    end
   end
 
   def self.to_liquid_int(obj, default: 0)
-    # TODO:
-    obj.to_i
+    obj.to_f.to_i
   end
 
   # Return `true` if _obj_ is Liquid truthy.

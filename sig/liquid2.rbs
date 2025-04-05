@@ -167,6 +167,8 @@ module Liquid2
                         
     def parse_string: (TokenStream stream) -> StringLiteral
 
+    def parse_array_literal: (TokenStream stream, Expression left) -> ArrayLiteral
+
     # Parse comma separated expression from stream.
     # @param stream [TokenStream]
     # @return [Array<PositionalArgument>]
@@ -213,6 +215,8 @@ module Liquid2
     KEYWORD_ARGUMENT_DELIMITERS: Set[Symbol]
 
     PRIMITIVE_TOKENS: Set[Symbol]
+
+    RESERVED_WORDS: Set[Symbol]
 
     WC_TOKENS: Set[Symbol]
 
@@ -424,6 +428,8 @@ module Liquid2
     def each: (*untyped) ?{ (?) -> untyped } -> untyped
 
     def each_with_index: (*untyped) ?{ (?) -> untyped } -> untyped
+                       
+    def join: (*untyped) -> ""
 
     def to_liquid: (RenderContext _context) -> nil
 
@@ -471,6 +477,8 @@ module Liquid2
     def each: (*untyped) ?{ (?) -> untyped } -> untyped
 
     def each_with_index: (*untyped) ?{ (?) -> untyped } -> untyped
+                       
+    def join: (*untyped) -> untyped
 
     def to_liquid: (RenderContext _context) -> untyped
 
@@ -1085,7 +1093,7 @@ end
 
 module Liquid2
   # An array literal.
-  class ImplicitArray < Expression
+  class ArrayLiteral < Expression
     @items: Array[Expression]
 
     # @param children [Array<Token, Node>]
@@ -1159,7 +1167,7 @@ module Liquid2
     # @param alternative [Expression | nil]
     # @param filters [Array<Filter>]
     # @param tail_filters [Array<Filter>]
-    def initialize: (Array[Node | Token] children, FilteredExpression left, BooleanExpression condition, BooleanExpression? alternative, Array[Filter] filters, Array[Filter] tail_filters) -> void
+    def initialize: (Array[Node | Token] children, FilteredExpression left, BooleanExpression condition, Expression? alternative, Array[Filter] filters, Array[Filter] tail_filters) -> void
 
     def evaluate: (RenderContext context) -> untyped
   end
@@ -1451,25 +1459,25 @@ module Liquid2
 
   # A literal part of a template string.
   class StringSegment < Expression
-    @value: untyped
+    @value: String
 
     attr_reader value: String
 
     # @param token [Token]
-    def initialize: (untyped token) -> void
+    def initialize: (Token token, String quote) -> void
 
     def evaluate: (RenderContext _context) -> untyped
   end
 
   # Quoted string with interpolated expressions.
   class TemplateString < Expression
-    @children: untyped
+    @children: Array[Token | Node]
 
-    @segments: untyped
+    @segments: Array[Expression]
 
     # @param children [Array<Token, Expression>]
     # @param segments [Array<Expression>]
-    def initialize: (Array[Node | Token] children, untyped segments) -> void
+    def initialize: (Array[Node | Token] children, Array[Expression] segments) -> void
 
     def evaluate: (RenderContext context) -> untyped
   end
@@ -1981,4 +1989,23 @@ module Liquid2
 
     def render: (RenderContext context, _Buffer buffer) -> Integer
   end
+end
+
+module Liquid2
+  # Replace escape sequences with their equivalent Unicode code point.
+  # @param value [String]
+  # @param quote [String] one of '"' or "'".
+  # @param token [Node | Token]
+  # @return [String] A new string without escape sequences.
+  def self.unescape_string: (String value, String quote, (Node | Token) token) -> String
+
+  def self.decode_hex_char: (String value, Integer index, (Node | Token) token) -> [Integer, Integer]
+
+  def self.parse_hex_digits: (String digits, (Node | Token) token) -> Integer
+
+  def self.high_surrogate?: (Integer code_point) -> bool
+
+  def self.low_surrogate?: (Integer code_point) -> bool
+
+  def self.code_point_to_string: (Integer code_point, (Node | Token) token) -> String
 end

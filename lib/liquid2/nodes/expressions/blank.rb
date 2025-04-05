@@ -3,6 +3,7 @@
 require_relative "../../node"
 
 module Liquid2
+  # The special value _blank_.
   class Blank < Expression
     # @param token [Token]
     def initialize(token)
@@ -22,8 +23,11 @@ module Liquid2
     end
 
     alias eql? ==
+
+    def to_s = ""
   end
 
+  # The special value _empty_.
   class Empty < Expression
     # @param token [Token]
     def initialize(token)
@@ -41,5 +45,7 @@ module Liquid2
     end
 
     alias eql? ==
+
+    def to_s = ""
   end
 end

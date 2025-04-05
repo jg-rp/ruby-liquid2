@@ -4,7 +4,7 @@ require_relative "../../node"
 
 module Liquid2
   # An array literal.
-  class ImplicitArray < Expression
+  class ArrayLiteral < Expression
     # @param children [Array<Token, Node>]
     # @param items [Array<Expression>]
     def initialize(children, items)

@@ -26,6 +26,7 @@ module Liquid2
     def to_f = 0.0
     def each(...) = Enumerator.new {} # rubocop:disable Lint/EmptyBlock
     def each_with_index(...) = Enumerator.new {} # rubocop:disable Lint/EmptyBlock
+    def join(...) = ""
     def to_liquid(_context) = nil
     def poke = true
   end
@@ -102,6 +103,10 @@ module Liquid2
     end
 
     def each_with_index(...)
+      raise UndefinedError.new(@message, @node)
+    end
+
+    def join(...)
       raise UndefinedError.new(@message, @node)
     end
 

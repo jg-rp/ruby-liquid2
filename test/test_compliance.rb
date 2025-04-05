@@ -7,7 +7,7 @@ class TestCompliance < Minitest::Spec
   make_my_diffs_pretty!
 
   # TEST_CASES = JSON.load_file("test/cts/cts.json")
-  TEST_CASES = JSON.load_file("test/cts/tests/identifiers.json")
+  TEST_CASES = JSON.load_file("test/cts/tests/tags/assign.json")
 
   describe "render template" do
     TEST_CASES["tests"].each do |test_case|

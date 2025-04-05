@@ -7,6 +7,7 @@ require_relative "nodes/comment"
 require_relative "nodes/other"
 require_relative "nodes/output"
 require_relative "nodes/expressions/arguments"
+require_relative "nodes/expressions/array"
 require_relative "nodes/expressions/blank"
 require_relative "nodes/expressions/boolean"
 require_relative "nodes/expressions/lambda"
@@ -127,7 +128,9 @@ module Liquid2
     # @return [FilteredExpression|TernaryExpression]
     def parse_filtered_expression(stream)
       left = parse_primary(stream)
-      filters = stream.current.kind == :token_pipe ? parse_filters(stream) : [] # steep:ignore UnannotatedEmptyCollection
+      left = parse_array_literal(stream, left) if stream.current.kind == :token_comma
+      filters = parse_filters(stream) if stream.current.kind == :token_pipe
+      filters ||= [] # : Array[Filter]
       expr = FilteredExpression.new([left, *filters], left, filters)
 
       if stream.current.kind == :token_if
@@ -204,21 +207,24 @@ module Liquid2
     # @param stream [TokenStream]
     # @return [Node]
     def parse_primary(stream, precedence: Precedence::LOWEST)
+      # Keywords followed by a dot or square bracket are parsed as paths.
+      looks_like_a_path = %i[token_dot token_lbracket].include?(stream.peek.kind)
+
       left = case stream.current.kind
              when :token_true
-               TrueLiteral.new(stream.next)
+               looks_like_a_path ? parse_path(stream) : TrueLiteral.new(stream.next)
              when :token_false
-               FalseLiteral.new(stream.next)
+               looks_like_a_path ? parse_path(stream) : FalseLiteral.new(stream.next)
              when :token_nil
-               NilLiteral.new(stream.next)
+               looks_like_a_path ? parse_path(stream) : NilLiteral.new(stream.next)
              when :token_int
                IntegerLiteral.new(stream.next)
              when :token_float
                FloatLiteral.new(stream.next)
              when :token_blank
-               Blank.new(stream.next)
+               looks_like_a_path ? parse_path(stream) : Blank.new(stream.next)
              when :token_empty
-               Empty.new(stream.next)
+               looks_like_a_path ? parse_path(stream) : Empty.new(stream.next)
              when :token_single_quote, :token_double_quote
                parse_string_literal(stream)
              when :token_word, :token_lbracket
@@ -228,7 +234,7 @@ module Liquid2
              when :token_not
                parse_prefix_expression(stream)
              else
-               stream.missing("expression")
+               looks_like_a_path ? parse_path(stream) : stream.missing("expression")
              end
 
       loop do
@@ -257,6 +263,26 @@ module Liquid2
 
     def parse_identifier(stream, trailing_question: true)
       Identifier.from(parse_primary(stream), trailing_question: trailing_question)
+    end
+
+    # Parse a comma separated list of expressions. Assumes the next token is a comma.
+    # @param stream [TokenStream]
+    # @param left [Expression] The first item in the array.
+    # @return [ArrayLiteral]
+    def parse_array_literal(stream, left)
+      children = [left] # : Array[Node | Token]
+      items = [left] # : Array[Expression]
+
+      loop do
+        break unless stream.current.kind == :token_comma
+
+        children << stream.next
+        expr = parse_primary(stream)
+        children << expr
+        items << expr
+      end
+
+      ArrayLiteral.new(children, items)
     end
 
     # Parse comma separated expression from stream.
@@ -400,6 +426,25 @@ module Liquid2
       :token_lparen
     ]
 
+    RESERVED_WORDS = Set[
+      :token_true,
+      :token_false,
+      :token_nil,
+      :token_and,
+      :token_or,
+      :token_not,
+      :token_in,
+      :token_contains,
+      :token_if,
+      :token_else,
+      :token_with,
+      :token_required,
+      :token_as,
+      :token_for,
+      :token_blank,
+      :token_empty,
+    ]
+
     WC_TOKENS = Set[
       :token_output_start,
       :token_comment_start,
@@ -472,7 +517,7 @@ module Liquid2
         when :token_string, :token_string_escape
           token = stream.next
           children << token
-          segments << StringSegment.new(token)
+          segments << StringSegment.new(token, quote_token.text)
         when :token_string_interpol
           class_ = TemplateString
           token = stream.next
@@ -493,7 +538,7 @@ module Liquid2
     def parse_path(stream)
       segments = [] # : Array[PathSegment]
 
-      if stream.current.kind == :token_word
+      unless stream.current.kind == :token_lbracket
         token = stream.next
         segments << ShorthandSegment.new([token], token)
       end
@@ -544,7 +589,12 @@ module Liquid2
         ShorthandSegment.new([dot, token], token)
       else
         # TODO: or skip
-        raise LiquidSyntaxError.new("unexpected token in shorthand selector, #{token.kind}", token)
+        unless RESERVED_WORDS.member?(token.kind)
+          raise LiquidSyntaxError.new("unexpected token in shorthand selector, #{token.kind}",
+                                      token)
+        end
+
+        ShorthandSegment.new([dot, token], token)
       end
     end
 
@@ -783,13 +833,13 @@ module Liquid2
       condition = BooleanExpression.new(parse_primary(stream))
       children << condition
 
-      alternative = nil # : BooleanExpression?
+      alternative = nil # : Expression?
       filters = [] # : Array[Filter]
       tail_filters = [] # : Array[Filter]
 
       if stream.current.kind == :token_else
         children << stream.next
-        alternative = BooleanExpression.new(parse_primary(stream))
+        alternative = parse_primary(stream)
         children << alternative
 
         if stream.current.kind == :token_pipe

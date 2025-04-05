@@ -290,9 +290,25 @@ module Liquid2
     def get_item(obj, key)
       key = key.to_liquid(self) if key.respond_to?(:to_liquid)
 
+      # Strings get special treatment.
+      if obj.is_a?(String)
+        return case key
+               when "size"
+                 obj.size
+               when "first"
+                 obj.empty? ? :undefined : obj[0]
+               when "last"
+                 obj.empty? ? :undefined : obj[-1]
+               else
+                 :undefined
+               end
+      end
+
+      # Otherwise we rely on the `fetch(key, default)` interface.
       return :undefined unless obj.respond_to?(:fetch)
 
-      value = obj.fetch(key, :undefined)
+      # If obj is an array and key is not an int, we'll get a TypeError
+      value = obj.is_a?(Array) && !key.is_a?(Integer) ? :undefined : obj.fetch(key, :undefined)
 
       return value unless value == :undefined
 
@@ -300,9 +316,11 @@ module Liquid2
       when "size"
         obj.respond_to?(:size) ? obj.size : :undefined
       when "first"
-        obj.respond_to?(:first) ? obj.first : :undefined
+        obj.respond_to?(:first) ? obj.first || :undefined : :undefined
       when "last"
-        obj.respond_to?(:last) ? obj.last : :undefined
+        obj.respond_to?(:last) ? obj.last || :undefined : :undefined
+      else
+        :undefined
       end
     end
   end
