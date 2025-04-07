@@ -35,7 +35,6 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 require "cgi"
-require "english"
 
 module Liquid2
   # A string that is safe to be inserted into HTML or XML, either because it is already

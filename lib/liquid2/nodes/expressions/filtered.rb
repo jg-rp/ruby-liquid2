@@ -49,6 +49,8 @@ module Liquid2
   end
 
   class Filter < Node
+    attr_reader :name, :args
+
     # @param children [Array<Token | Node>]
     # @param name [Token]
     # @param args [Array<PositionalArgument | KeywordArgument>]

@@ -35,6 +35,7 @@ module Liquid2
   interface _Filter
     # def call: (untyped left, *untyped, **untyped) -> untyped
     def parameters: () -> untyped
+    def respond_to?: (Symbol) -> bool
   end
 
   interface _Undefined
@@ -66,6 +67,8 @@ module Liquid2
 
     @suppress_blank_control_flow_blocks: bool
 
+    @validate_filter_arguments: bool
+
     @default_trim: :whitespace_control_plus | :whitespace_control_minus | :whitespace_control_tilde
 
     @undefined: _Undefined
@@ -89,6 +92,8 @@ module Liquid2
     attr_reader auto_escape: bool
 
     attr_reader suppress_blank_control_flow_blocks: bool
+
+    attr_reader validate_filter_arguments: bool
 
     attr_reader default_trim: :whitespace_control_plus | :whitespace_control_minus | :whitespace_control_tilde
 
@@ -1088,6 +1093,10 @@ module Liquid2
 
     @value: Expression
 
+    attr_reader name: String
+
+    attr_reader value: Expression
+
     # @param children [Array<Token | Node>]
     # @param name [Token]
     # @param value [Expression]
@@ -1182,6 +1191,10 @@ module Liquid2
     @name: String
 
     @args: Array[PositionalArgument | KeywordArgument]
+
+    attr_reader name: String 
+
+    attr_reader args: Array[PositionalArgument | KeywordArgument] 
 
     # @param children [Array<Token | Node>]
     # @param name [Token]
@@ -1560,6 +1573,10 @@ module Liquid2
     @params: Array[Identifier]
 
     @expr: Expression
+
+    attr_reader params: Array[Identifier]
+
+    attr_reader expr: Expression
 
     # @param children [Array<Token>]
     # @param params [Array<Identifier>]
@@ -2052,17 +2069,27 @@ module Liquid2
     # Return _left_ rounded up to the next whole number.
     def self.ceil: (untyped left) -> Integer
                  
-    # Return a copy of _left_ with nil items removed.
-    # Coerce _left_ to an array-like object if it is not one already.
-    #
-    # If _key_ is given, assume items in _left_ are hash-like and remove items from _left_
-    # where `item.fetch(key, nil)` is nil.
-    #
-    # If key is not `:undefined`, coerce it to a string before calling `fetch` on items in
-    # _left_.
-    def self.compact: (untyped left, ?untyped key) -> Array[untyped]
-                    
     # Return the first item in _left_.
     def self.first: (untyped left) -> untyped
+                  
+    class Compact
+      def validate: (Liquid2::Environment _env, Liquid2::Filter node) -> void
+
+      # Return a copy of _left_ with nil items removed.
+      # Coerce _left_ to an array-like object if it is not one already.
+      #
+      # If _key_ is given, assume items in _left_ are hash-like and remove items from _left_
+      # where `item.fetch(key, nil)` is nil.
+      #
+      # If key is not `:undefined`, coerce it to a string before calling `fetch` on items in
+      # _left_.
+      def call: (untyped left, ?untyped? key, context: Liquid2::RenderContext) -> Array[untyped]
+
+      def parameters: () -> untyped
+    end
+
+    # Return _left_ concatenated with _right_, or nil if _right_ is not an array.
+    # Coerce _left_ to an arrays if it isn't an array already..
+    def self.concat: (untyped left, untyped right) -> Array[untyped]
   end
 end

@@ -5,6 +5,8 @@ require_relative "../../node"
 module Liquid2
   # A lambda expression aka arrow function
   class Lambda < Expression
+    attr_reader :params, :expr
+
     # @param children [Array<Token>]
     # @param params [Array<Identifier>]
     # @param expr [Expression]
@@ -14,7 +16,7 @@ module Liquid2
       @expr = expr
     end
 
-    def evaluate(_context) = nil
+    def evaluate(_context) = self
 
     # Apply this lambda function to elements from _enum_.
     # @param context [RenderContext]

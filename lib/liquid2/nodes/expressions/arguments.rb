@@ -19,6 +19,8 @@ module Liquid2
   end
 
   class KeywordArgument < Expression
+    attr_reader :value, :name
+
     # @param children [Array<Token | Node>]
     # @param name [Token]
     # @param value [Expression]

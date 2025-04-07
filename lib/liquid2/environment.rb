@@ -33,7 +33,7 @@ module Liquid2
   class Environment
     attr_reader :mode, :tags, :local_namespace_limit, :context_depth_limit, :loop_iteration_limit,
                 :output_stream_limit, :filters, :auto_escape, :suppress_blank_control_flow_blocks,
-                :default_trim
+                :default_trim, :validate_filter_arguments
 
     def initialize(loader: nil, mode: :lax)
       # A mapping of tag names to objects responding to `parse`.
@@ -73,6 +73,8 @@ module Liquid2
       @output_stream_limit = nil
 
       @suppress_blank_control_flow_blocks = false
+
+      @validate_filter_arguments = true
 
       @default_trim = :whitespace_control_plus
 
@@ -129,7 +131,8 @@ module Liquid2
       register_filter("append", Liquid2::Filters.method(:append))
       register_filter("capitalize", Liquid2::Filters.method(:capitalize))
       register_filter("ceil", Liquid2::Filters.method(:ceil))
-      register_filter("compact", Liquid2::Filters.method(:compact))
+      register_filter("compact", Liquid2::Filters::Compact.new)
+      register_filter("concat", Liquid2::Filters.method(:concat))
       register_filter("first", Liquid2::Filters.method(:first))
     end
 

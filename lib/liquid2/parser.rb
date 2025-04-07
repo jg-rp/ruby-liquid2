@@ -770,8 +770,19 @@ module Liquid2
         children << stream.eat(:token_comma)
       end
 
-      # TODO: validate args
-      Filter.new(children, name, args)
+      node = Filter.new(children, name, args)
+
+      if @env.validate_filter_arguments
+        filter, _with_context = @env.filters[name.text]
+
+        unless filter
+          raise LiquidFilterNotFoundError.new("unknown filter #{name.text.inspect}", node)
+        end
+
+        filter.validate(@env, node) if filter.respond_to?(:validate) # steep:ignore
+      end
+
+      node
     end
 
     # @param stream [TokenStream]

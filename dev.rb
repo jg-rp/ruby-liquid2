@@ -13,11 +13,24 @@ env = Liquid2::Environment.new(loader: Liquid2::HashLoader.new(templates))
 #   Hello,   {#- this is a comment -#}\nWorld!
 #   END
 # LIQUID
-source = "{% for a in b, limit:2 %}{{ a }},{% endfor %}"
+source = "{% assign x = a | compact: i => i.title %}{% for obj in x %}{% for i in obj %}({{ i[0] }},{{ i[1] }}){% endfor %}{% endfor %}"
 
 data = JSON.parse <<~DATA
   {
-        "b": [1, 2, 3, 4]
+        "a": [
+          {
+            "title": "foo",
+            "name": "a"
+          },
+          {
+            "title": null,
+            "name": "b"
+          },
+          {
+            "title": "bar",
+            "name": "c"
+          }
+        ]
       }
 DATA
 
