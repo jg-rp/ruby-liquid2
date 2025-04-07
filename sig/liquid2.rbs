@@ -222,6 +222,8 @@ module Liquid2
 
     RESERVED_WORDS: Set[Symbol]
 
+    LOOP_KEYWORDS: Set[String]
+
     WC_TOKENS: Set[Symbol]
 
     def peek_wc: (TokenStream stream) -> Symbol
@@ -1317,7 +1319,7 @@ module Liquid2
 
     @offset: Expression?
 
-    @reversed: Expression?
+    @reversed: bool
 
     @cols: Expression?
 
@@ -1329,7 +1331,7 @@ module Liquid2
 
     attr_reader offset: Expression?
 
-    attr_reader reversed: Expression?
+    attr_reader reversed: bool
 
     attr_reader cols: Expression?
 
@@ -2038,5 +2040,29 @@ module Liquid2
 
     # Return the minimum of _left_ and _right_.
     def self.at_most: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
+                    
+    # Return _left_ concatenated with _right_.
+    # Coerce _left_ and _right_ to strings if they aren't strings already.
+    def self.append: (untyped left, untyped right) -> String
+                   
+    # Return _left_ with the first character in uppercase and the rest lowercase.
+    # Coerce _left_ to a string if it is not one already.
+    def self.capitalize: (untyped left) -> String
+                       
+    # Return _left_ rounded up to the next whole number.
+    def self.ceil: (untyped left) -> Integer
+                 
+    # Return a copy of _left_ with nil items removed.
+    # Coerce _left_ to an array-like object if it is not one already.
+    #
+    # If _key_ is given, assume items in _left_ are hash-like and remove items from _left_
+    # where `item.fetch(key, nil)` is nil.
+    #
+    # If key is not `:undefined`, coerce it to a string before calling `fetch` on items in
+    # _left_.
+    def self.compact: (untyped left, ?untyped key) -> Array[untyped]
+                    
+    # Return the first item in _left_.
+    def self.first: (untyped left) -> untyped
   end
 end

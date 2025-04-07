@@ -17,5 +17,10 @@ module Liquid2
     def self.at_most(left, right)
       [to_number(left), to_number(right)].min
     end
+
+    # Return _left_ rounded up to the next whole number.
+    def self.ceil(left)
+      to_number(left).ceil
+    end
   end
 end

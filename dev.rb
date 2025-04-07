@@ -13,11 +13,13 @@ env = Liquid2::Environment.new(loader: Liquid2::HashLoader.new(templates))
 #   Hello,   {#- this is a comment -#}\nWorld!
 #   END
 # LIQUID
-source = "{{ obj | join: '#' }}"
+source = "{% for a in b, limit:2 %}{{ a }},{% endfor %}"
 
-data = {
-  "obj" => { "a" => 42, "b" => 7 }
-}
+data = JSON.parse <<~DATA
+  {
+        "b": [1, 2, 3, 4]
+      }
+DATA
 
 Liquid2.tokenize(source).each do |token|
   puts "#{token.full_start.to_s.ljust(3)}:#{token.kind.to_s.ljust(50)} -> #{token.text.inspect}"

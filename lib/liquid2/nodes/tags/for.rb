@@ -65,13 +65,12 @@ module Liquid2
 
       context.loop(namespace, forloop) do
         forloop.each do |item|
+          namespace[name] = item
+          char_count += @block.render(context, buffer)
           if (interrupt = context.interrupts.pop)
             next if interrupt == :continue
             break if interrupt == :break
           end
-
-          namespace[name] = item
-          char_count += @block.render(context, buffer)
         end
       end
 

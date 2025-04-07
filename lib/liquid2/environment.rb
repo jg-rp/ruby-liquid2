@@ -5,8 +5,9 @@ require_relative "template"
 require_relative "undefined"
 require_relative "loader"
 require_relative "filters/math"
-require_relative "filters/join"
+require_relative "filters/array"
 require_relative "filters/slice"
+require_relative "filters/string"
 require_relative "nodes/tags/assign"
 require_relative "nodes/tags/if"
 require_relative "nodes/tags/for"
@@ -125,7 +126,11 @@ module Liquid2
       register_filter("abs", Liquid2::Filters.method(:abs))
       register_filter("at_least", Liquid2::Filters.method(:at_least))
       register_filter("at_most", Liquid2::Filters.method(:at_most))
-      register_filter("append", ->(left, other) { Liquid2.to_s(left) + Liquid2.to_s(other) })
+      register_filter("append", Liquid2::Filters.method(:append))
+      register_filter("capitalize", Liquid2::Filters.method(:capitalize))
+      register_filter("ceil", Liquid2::Filters.method(:ceil))
+      register_filter("compact", Liquid2::Filters.method(:compact))
+      register_filter("first", Liquid2::Filters.method(:first))
     end
 
     def undefined(name, node: nil)

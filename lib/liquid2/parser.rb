@@ -147,7 +147,6 @@ module Liquid2
       # @type var children: Array[Token | Node]
       children = [identifier, stream.eat(:token_in)]
       enum = parse_primary(stream)
-      children << enum
 
       reversed = false
       offset = nil # : (Expression | nil)
@@ -155,9 +154,18 @@ module Liquid2
       cols = nil # : (Expression | nil)
 
       if stream.current.kind == :token_comma
+        unless LOOP_KEYWORDS.member?(stream.peek.text)
+          enum = parse_array_literal(stream, enum)
+          children << enum
+          return LoopExpression.new(children, identifier, enum,
+                                    limit: limit, offset: offset, reversed: reversed, cols: cols)
+        end
+
         # A comma between the iterable and the first argument is OK.
         children << stream.eat(:token_comma)
       end
+
+      children << enum
 
       loop do
         token = stream.current
@@ -179,7 +187,7 @@ module Liquid2
             cols = node
           when "offset"
             children << stream.next << stream.eat_one_of(:token_colon, :token_assign)
-            offset_token = stream.peek
+            offset_token = stream.current
             node = if offset_token.kind == :token_word && offset_token.text == "continue"
                      Identifier.new(stream.next)
                    else
@@ -448,6 +456,13 @@ module Liquid2
       :token_empty,
     ]
 
+    LOOP_KEYWORDS = Set[
+      "limit",
+      "reversed",
+      "cols",
+      "offset"
+    ]
+
     WC_TOKENS = Set[
       :token_output_start,
       :token_comment_start,
@@ -700,6 +715,7 @@ module Liquid2
       children << name
 
       unless stream.current.kind == :token_colon || !TERMINATE_FILTER.member?(stream.current.kind)
+        # No arguments
         return Filter.new(children,
                           name,
                           [])
@@ -736,12 +752,12 @@ module Liquid2
           children << arg
           args << arg
         when :token_unknown
-          return Filter.new(children, name, args) unless PRIMITIVE_TOKENS.member?(stream.peek.kind)
+          break unless PRIMITIVE_TOKENS.member?(stream.peek.kind)
 
           # Probably still in a filter
           children << Skipped.new([stream.next])
         else
-          return Filter.new(children, name, args) if TERMINATE_FILTER.member?(stream.current.kind)
+          break if TERMINATE_FILTER.member?(stream.current.kind)
 
           node = parse_primary(stream)
           arg = PositionalArgument.new([node], node)
@@ -749,10 +765,13 @@ module Liquid2
           args << arg
         end
 
-        return Filter.new(children, name, args) if TERMINATE_FILTER.member?(stream.current.kind)
+        break if TERMINATE_FILTER.member?(stream.current.kind)
 
         children << stream.eat(:token_comma)
       end
+
+      # TODO: validate args
+      Filter.new(children, name, args)
     end
 
     # @param stream [TokenStream]

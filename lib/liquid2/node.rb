@@ -55,10 +55,18 @@ module Liquid2
     def render(context, buffer)
       if context.env.suppress_blank_control_flow_blocks && @blank
         buf = NullIO.new
-        @children.each { |node| node.render(context, buf) } # steep:ignore
+        @children.each do |node|
+          node.render(context, buf) # steep:ignore
+          return 0 unless context.interrupts.empty?
+        end
         0
       else
-        @children.map { |node| node.render(context, buffer) }.sum # steep:ignore
+        count = 0
+        @children.map do |node|
+          count += node.render(context, buffer) # steep:ignore
+          return count unless context.interrupts.empty?
+        end
+        count
       end
     end
   end

@@ -18,6 +18,17 @@ module Liquid2
 
     # @return [[Enumerator, Integer]] An enumerator and its length.
     def evaluate(context)
+      obj = @enum.evaluate(context)
+
+      # TODO: optionally enable string iteration
+      enum, length = if obj.is_a?(String)
+                       [obj.each_char, obj.length]
+                     elsif obj.respond_to?(:each)
+                       [obj.each, obj.size]
+                     else
+                       [Enumerator.new {}, 0]
+                     end
+
       offset_key = "#{@identifier.name}-#{@enum.text}"
 
       start = if @offset
@@ -31,24 +42,16 @@ module Liquid2
                 0
               end
 
-      stop = Liquid2.to_i((@limit || raise).evaluate(context)) + start if @limit
-      obj = @enum.evaluate(context)
+      stop = @limit ? Liquid2.to_i((@limit || raise).evaluate(context)) + start : length
 
-      if obj.respond_to?(:slice) && !obj.is_a?(String)
+      context.stop_index(offset_key, index: stop)
+
+      if obj.respond_to?(:slice) && !obj.is_a?(String) && !obj.is_a?(Hash)
         array = stop ? obj.slice(start...stop) : obj.slice(start..)
+        array = array.reverse if @reversed
         return [array.to_enum, array.size]
       end
 
-      # TODO: optionally enable string iteration
-      enum, length = if obj.is_a?(String)
-                       obj.empty? ? [Enumerator.new {}, 0] : [[obj].to_enum, 1]
-                     elsif obj.respond_to?(:each)
-                       [obj.each, obj.size]
-                     else
-                       [Enumerator.new {}, 0]
-                     end
-
-      # TODO: set stop_index
       [lazy_slice(enum, start, stop), length]
     end
 
@@ -56,8 +59,8 @@ module Liquid2
 
     def lazy_slice(enum, start_index, stop_index = nil)
       sliced = enum.lazy.drop(start_index)
-      sliced = sliced.take(stop_index - start_index + 1) if stop_index
-      sliced
+      sliced = sliced.take(stop_index - start_index) if stop_index
+      @reversed ? sliced.to_a.reverse : sliced
     end
   end
 end

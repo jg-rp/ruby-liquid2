@@ -5,9 +5,10 @@ require "test_helper"
 
 class TestCompliance < Minitest::Spec
   make_my_diffs_pretty!
+  i_suck_and_my_tests_are_order_dependent!
 
   # TEST_CASES = JSON.load_file("test/cts/cts.json")
-  TEST_CASES = JSON.load_file("test/cts/tests/filters/at_most.json")
+  TEST_CASES = JSON.load_file("test/cts/tests/filters/compact.json")
 
   describe "render template" do
     TEST_CASES["tests"].each do |test_case|
