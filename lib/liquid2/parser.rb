@@ -277,6 +277,9 @@ module Liquid2
         break unless stream.current.kind == :token_comma
 
         children << stream.next
+
+        break if TERMINATE_FILTER.member?(stream.current.kind)
+
         expr = parse_primary(stream)
         children << expr
         items << expr

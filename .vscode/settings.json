@@ -1,6 +1,7 @@
 {
   "rubocop.mode": "enableUnconditionally",
   "cSpell.words": [
+    "bigdecimal",
     "charpos",
     "Cyclomatic",
     "endcapture",
@@ -9,6 +10,7 @@
     "endraw",
     "forloop",
     "ivar",
+    "keyreq",
     "kwargs",
     "ljust",
     "lparen",

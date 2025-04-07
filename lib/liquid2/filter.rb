@@ -1,0 +1,59 @@
+# frozen_string_literal: true
+
+require "bigdecimal"
+
+module Liquid2
+  # Liquid filters and helper methods.
+  module Filters
+    # Cast _obj_ to an enumerable for use in a Liquid filter.
+    # @param obj [Object]
+    # @return [Enumerable]
+    def self.to_enumerable(obj)
+      case obj
+      when Array
+        obj.flatten
+      when Hash
+        obj.to_enum
+      when String
+        obj.each_char
+      when Enumerable
+        obj
+      else
+        obj.respond_to?(:each) ? obj.each : [obj]
+      end
+    end
+
+    # Cast _obj_ to a number.
+    def self.to_number(obj, default: 0)
+      case obj
+      when String
+        # Cast to float before integer as `to_f` will parse exponents, `to_i` will not.
+        # Use `Float(obj)` instead of `obj.to_f` because `to_f` ignores trailing non-digit chars.
+        obj.match?(/\A-?\d+(?:[eE]\+?\d+)?\Z/) ? obj.to_f.to_i : Float(obj)
+      when Float, Integer, BigDecimal, Numeric
+        # Numeric is the base class for heap allocated numbers.
+        obj
+      else
+        default
+      end
+    rescue ArgumentError
+      default
+    end
+
+    # Cast _obj_ to a number, favouring BigDecimal over Float.
+    def self.to_decimal(obj, default: 0)
+      case obj
+      when String
+        obj.match?(/\A-?\d+(?:[eE]\+?\d+)?\Z/) ? obj.to_f.to_i : BigDecimal(obj)
+      when Float
+        BigDecimal(obj.to_s)
+      when Integer, BigDecimal, Numeric
+        obj
+      else
+        default
+      end
+    rescue ArgumentError
+      default
+    end
+  end
+end

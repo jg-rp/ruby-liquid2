@@ -56,7 +56,7 @@ module Liquid2
 
       return 0 if index >= args.length
 
-      buffer.write(Liquid2.to_s(args[index], auto_escape: context.env.auto_escape))
+      buffer.write(Liquid2.to_output_s(args[index], auto_escape: context.env.auto_escape))
     end
   end
 end

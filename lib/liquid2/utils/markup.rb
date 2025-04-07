@@ -62,7 +62,7 @@ module Liquid2
 
       return new(object.to_html, encoding: "UTF-8") if object.respond_to?(:to_html)
 
-      new(object.to_s.gsub(RE_ESCAPE, ESCAPE_MAP), encoding: "UTF-8")
+      new(Liquid2.to_s(object).gsub(RE_ESCAPE, ESCAPE_MAP), encoding: "UTF-8")
     end
 
     def self.soft_to_s(object)
@@ -73,8 +73,8 @@ module Liquid2
       new(super(object.respond_to?(:to_html) ? object.to_html : object), encoding: "UTF-8")
     end
 
-    def self.join(array, separator = $OUTPUT_FIELD_SEPARATOR) # steep:ignore UnknownGlobalVariable
-      new(array.map { |item| escape(item) }.join(separator))
+    def self.join(enum, separator = $OUTPUT_FIELD_SEPARATOR) # steep:ignore UnknownGlobalVariable
+      new(enum.map { |item| escape(item) }.join(escape(separator)))
     end
 
     def to_html

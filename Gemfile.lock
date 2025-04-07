@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     liquid2 (0.1.0)
+      bigdecimal (~> 3.1)
 
 GEM
   remote: https://rubygems.org/
@@ -110,6 +111,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  bigdecimal (~> 3.1)
   liquid2!
   minitest (~> 5.16)
   minitest-fail-fast (~> 0.1.0)

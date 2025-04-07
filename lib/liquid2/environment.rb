@@ -4,6 +4,8 @@ require_relative "parser"
 require_relative "template"
 require_relative "undefined"
 require_relative "loader"
+require_relative "filters/math"
+require_relative "filters/join"
 require_relative "filters/slice"
 require_relative "nodes/tags/assign"
 require_relative "nodes/tags/if"
@@ -100,7 +102,9 @@ module Liquid2
     #   and `#parameters`. Like a Proc or Method.
     def register_filter(name, callable)
       # TODO: optional filter argument validation
-      with_context = callable.parameters.index { |(kind, param)| kind == :key && param == :context }
+      with_context = callable.parameters.index do |(kind, param)|
+        kind == :keyreq && param == :context
+      end
       @filters[name] = [callable, with_context]
     end
 
@@ -117,7 +121,10 @@ module Liquid2
       register_filter("downcase", ->(left) { Liquid2.to_s(left).downcase })
       register_filter("slice", SliceFilter.new)
       register_filter("split", ->(left, sep) { Liquid2.to_s(left).split(Liquid2.to_s(sep)) })
-      register_filter("join", ->(left, sep) { left.join(Liquid2.to_s(sep)) })
+      register_filter("join", Liquid2::Filters.method(:join))
+      register_filter("abs", Liquid2::Filters.method(:abs))
+      register_filter("at_least", Liquid2::Filters.method(:at_least))
+      register_filter("at_most", Liquid2::Filters.method(:at_most))
       register_filter("append", ->(left, other) { Liquid2.to_s(left) + Liquid2.to_s(other) })
     end
 

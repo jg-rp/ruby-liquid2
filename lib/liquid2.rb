@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+require "json"
 require_relative "liquid2/environment"
 require_relative "liquid2/context"
+require_relative "liquid2/filter"
 require_relative "liquid2/lexer"
 require_relative "liquid2/loader"
 require_relative "liquid2/parser"
@@ -14,17 +16,34 @@ require_relative "liquid2/utils/unescape"
 module Liquid2
   DEFAULT_ENVIRONMENT = Environment.new
 
-  def self.to_liquid_string(obj, auto_escape: false)
-    if obj.is_a?(Array)
-      s = obj.map { |item| to_liquid_string(item, auto_escape: auto_escape) }.join
-      auto_escape ? Markup.new(s) : s
+  # Stringify an object. Use this anywhere a string is expected, like in a filter.
+  def self.to_liquid_string(obj)
+    case obj
+    when Hash, Array
+      JSON.generate(obj)
     else
-      auto_escape ? Markup.escape(obj) : obj.to_s
+      Markup.soft_to_s(obj)
+    end
+  end
+
+  # Stringify an object for output. Use this when writing directly to an output buffer.
+  def self.to_output_string(obj, auto_escape: false)
+    case obj
+    when Array
+      # Concatenate string representations of array elements.
+      s = obj.map do |item|
+        auto_escape ? Markup.escape(item) : Liquid2.to_s(item)
+      end.join
+      auto_escape ? Markup.new(s) : s
+    when BigDecimal
+      obj.to_f.to_s
+    else
+      auto_escape ? Markup.escape(obj) : Liquid2.to_s(obj)
     end
   end
 
   def self.to_liquid_int(obj, default: 0)
-    obj.to_f.to_i
+    Float(obj).to_i
   end
 
   # Return `true` if _obj_ is Liquid truthy.
@@ -43,6 +62,7 @@ module Liquid2
 
   class << self
     alias to_s to_liquid_string
+    alias to_output_s to_output_string
     alias to_i to_liquid_int
   end
 end

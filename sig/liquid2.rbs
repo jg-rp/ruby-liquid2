@@ -4,7 +4,9 @@ module Liquid2
   
   DEFAULT_ENVIRONMENT: Environment
 
-  def self.to_liquid_string: (untyped obj, ?auto_escape: bool) -> String
+  def self.to_liquid_string: (untyped obj) -> String
+                           
+  def self.to_output_string: (untyped obj, ?auto_escape: bool) -> String
 
   def self.to_liquid_int: (untyped obj, ?default: ::Integer) -> Integer
 
@@ -18,6 +20,8 @@ module Liquid2
   def self.undefined?: (untyped obj) -> bool
 
   alias self.to_s self.to_liquid_string
+
+  alias self.to_output_s self.to_output_string
 
   alias self.to_i self.to_liquid_int
 
@@ -1621,7 +1625,7 @@ module Liquid2
 
     def self.try_convert: (untyped object) -> String
 
-    def self.join: (Array[untyped] array, ?String separator) -> String
+    def self.join: (Enumerable[untyped] enum, ?String separator) -> String
 
     def to_html: () -> self
 
@@ -2008,4 +2012,31 @@ module Liquid2
   def self.low_surrogate?: (Integer code_point) -> bool
 
   def self.code_point_to_string: (Integer code_point, (Node | Token) token) -> String
+end
+
+module Liquid2
+  module Filters
+    # Cast _obj_ to an enumerable for use in a Liquid filter.
+    # @param obj [Object]
+    # @return [Enumerable]
+    def self.to_enumerable: (untyped obj) -> Enumerable[untyped]
+    
+    # Cast _obj_ to a number.
+    def self.to_number: (untyped obj, ?default: ::Integer) -> (Integer | Float | Numeric | BigDecimal)
+
+    # Cast _obj_ to a number, favouring BigDecimal over Float.
+    def self.to_decimal: (untyped obj, ?default: ::Integer) -> (Integer | BigDecimal | Numeric)
+
+    # Return the concatenation of items in _left_ separated by _sep_.
+    def self.join: (untyped left, ?::String sep, context: RenderContext) -> untyped
+                 
+    # Return the absolute value of _left_.
+    def self.abs: (untyped left) -> (Integer | Float | Numeric | BigDecimal)
+
+    # Return the maximum of _left_ and _right_.
+    def self.at_least: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
+
+    # Return the minimum of _left_ and _right_.
+    def self.at_most: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
+  end
 end

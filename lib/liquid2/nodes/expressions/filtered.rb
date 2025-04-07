@@ -66,8 +66,8 @@ module Liquid2
       positional_args, keyword_args = evaluate_args(context)
       keyword_args[:context] = context if with_context
       filter.call(left, *positional_args, **keyword_args) # steep:ignore
-
-      # TODO: rescue
+    rescue ArgumentError => e
+      raise LiquidArgumentError.new(e.message, self)
     end
 
     private

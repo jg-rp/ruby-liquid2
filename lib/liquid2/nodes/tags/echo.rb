@@ -26,8 +26,7 @@ module Liquid2
     end
 
     def render(context, buffer)
-      buffer.write(Liquid2.to_s(@expression.evaluate(context),
-                                auto_escape: context.env.auto_escape))
+      buffer.write(Liquid2.to_output_s(@expression.evaluate(context)))
     end
   end
 end
