@@ -5,6 +5,8 @@ require_relative "errors"
 module Liquid2
   # The default undefined type. Can be iterated over an indexed without error.
   class Undefined
+    attr_reader :force_default
+
     def initialize(name, node: nil)
       @name = name
       @node = node

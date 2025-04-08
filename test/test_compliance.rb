@@ -8,7 +8,7 @@ class TestCompliance < Minitest::Spec
   i_suck_and_my_tests_are_order_dependent!
 
   # TEST_CASES = JSON.load_file("test/cts/cts.json")
-  TEST_CASES = JSON.load_file("test/cts/tests/filters/concat.json")
+  TEST_CASES = JSON.load_file("test/cts/tests/filters/escape_once.json")
 
   describe "render template" do
     TEST_CASES["tests"].each do |test_case|

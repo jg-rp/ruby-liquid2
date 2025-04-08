@@ -4,6 +4,8 @@ require_relative "parser"
 require_relative "template"
 require_relative "undefined"
 require_relative "loader"
+require_relative "filters/date"
+require_relative "filters/default"
 require_relative "filters/math"
 require_relative "filters/array"
 require_relative "filters/slice"
@@ -121,7 +123,6 @@ module Liquid2
 
     def setup_tags_and_filters
       register_filter("upcase", ->(left) { Liquid2.to_s(left).upcase })
-      register_filter("downcase", ->(left) { Liquid2.to_s(left).downcase })
       register_filter("slice", SliceFilter.new)
       register_filter("split", ->(left, sep) { Liquid2.to_s(left).split(Liquid2.to_s(sep)) })
       register_filter("join", Liquid2::Filters.method(:join))
@@ -133,6 +134,12 @@ module Liquid2
       register_filter("ceil", Liquid2::Filters.method(:ceil))
       register_filter("compact", Liquid2::Filters::Compact.new)
       register_filter("concat", Liquid2::Filters.method(:concat))
+      register_filter("date", Liquid2::Filters.method(:date))
+      register_filter("default", Liquid2::Filters.method(:default))
+      register_filter("divided_by", Liquid2::Filters.method(:divided_by))
+      register_filter("downcase", Liquid2::Filters.method(:downcase))
+      register_filter("escape", Liquid2::Filters.method(:escape))
+      register_filter("escape_once", Liquid2::Filters.method(:escape_once))
       register_filter("first", Liquid2::Filters.method(:first))
     end
 

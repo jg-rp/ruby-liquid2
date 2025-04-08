@@ -22,5 +22,13 @@ module Liquid2
     def self.ceil(left)
       to_number(left).ceil
     end
+
+    # Return the result of dividing _left_ by _right_.
+    # If both _left_ and _right_ are integers, integer division is performed.
+    def self.divided_by(left, right)
+      to_decimal(left) / to_decimal(right) # steep:ignore
+    rescue ZeroDivisionError => e
+      raise LiquidTypeError.new(e.message, nil)
+    end
   end
 end

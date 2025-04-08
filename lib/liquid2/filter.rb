@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "bigdecimal"
+require "time"
 
 module Liquid2
   # Liquid filters and helper methods.
@@ -54,6 +55,30 @@ module Liquid2
       end
     rescue ArgumentError
       default
+    end
+
+    # Cast _obj_ to a  date and time. Return `nil` if casting fails.
+    #
+    # TODO: This was copied from Shopify/liquid. Include their license and copyright.
+    def self.to_date(obj)
+      return obj if obj.respond_to?(:strftime)
+
+      if obj.is_a?(String)
+        return nil if obj.empty?
+
+        obj = obj.downcase
+      end
+
+      case obj
+      when "now", "today"
+        Time.now
+      when /\A\d+\z/, Integer
+        Time.at(obj.to_i)
+      when String
+        Time.parse(obj)
+      end
+    rescue ::ArgumentError
+      nil
     end
   end
 end

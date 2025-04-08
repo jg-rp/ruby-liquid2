@@ -408,6 +408,8 @@ module Liquid2
 
     @force_default: bool
 
+    attr_reader force_default: bool
+
     def initialize: (String name, ?node: Node?) -> void
 
     def []: (*untyped) ?{ (?) -> untyped } -> self
@@ -2046,9 +2048,12 @@ module Liquid2
     # Cast _obj_ to a number, favouring BigDecimal over Float.
     def self.to_decimal: (untyped obj, ?default: ::Integer) -> (Integer | BigDecimal | Numeric)
 
+    # Cast _obj_ to a  date and time. Return `nil` if casting fails.
+    def self.to_date: (untyped obj) -> untyped
+
     # Return the concatenation of items in _left_ separated by _sep_.
     def self.join: (untyped left, ?::String sep, context: RenderContext) -> untyped
-                 
+
     # Return the absolute value of _left_.
     def self.abs: (untyped left) -> (Integer | Float | Numeric | BigDecimal)
 
@@ -2057,21 +2062,21 @@ module Liquid2
 
     # Return the minimum of _left_ and _right_.
     def self.at_most: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
-                    
+
     # Return _left_ concatenated with _right_.
     # Coerce _left_ and _right_ to strings if they aren't strings already.
     def self.append: (untyped left, untyped right) -> String
-                   
+
     # Return _left_ with the first character in uppercase and the rest lowercase.
     # Coerce _left_ to a string if it is not one already.
     def self.capitalize: (untyped left) -> String
-                       
+
     # Return _left_ rounded up to the next whole number.
     def self.ceil: (untyped left) -> Integer
-                 
+
     # Return the first item in _left_.
     def self.first: (untyped left) -> untyped
-                  
+
     class Compact
       def validate: (Liquid2::Environment _env, Liquid2::Filter node) -> void
 
@@ -2091,5 +2096,32 @@ module Liquid2
     # Return _left_ concatenated with _right_, or nil if _right_ is not an array.
     # Coerce _left_ to an arrays if it isn't an array already..
     def self.concat: (untyped left, untyped right) -> Array[untyped]
+                   
+    # Format date and time object _left_ with _format_.
+    # Coerce _left_ to a `Time` if it is not a time-like object already.
+    # Coerce _format_ to a string if it is not a string already.
+    def self.date: (untyped left, untyped format) -> (Time | nil)
+                 
+    # Return _left_, or _default_ if _obj_ is `nil`, `false` or empty.
+    # If _allow_false_ is `true`, _left_ is returned if _left_ is `false`.
+    def self.default: (untyped left, ?untyped default, context: RenderContext, ?allow_false: bool) -> untyped
+                    
+    # Return the result of dividing _left_ by _right_.
+    # If both _left_ and _right_ are integers, integer division is performed.
+    def self.divided_by: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
+                       
+    # Return _left_ with all characters converted to lowercase.
+    # Coerce _left_ to a string if it is not one already.
+    def self.downcase: (untyped left) -> String
+                     
+    # Return _left_ with special HTML characters replaced with their HTML-safe escape sequences.
+    # Coerce _left_ to a string if it is not one already.
+    def self.escape: (untyped left) -> (String | nil)
+
+    # Return _left_ with special HTML characters replaced with their HTML-safe escape sequences.
+    # Coerce _left_ to a string if it is not one already.
+    #
+    # It is safe to use `escape_once` on string values that already contain HTML-escape sequences.
+    def self.escape_once: (untyped left) -> String
   end
 end
