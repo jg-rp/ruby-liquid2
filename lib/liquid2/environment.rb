@@ -6,6 +6,7 @@ require_relative "undefined"
 require_relative "loader"
 require_relative "filters/date"
 require_relative "filters/default"
+require_relative "filters/find"
 require_relative "filters/math"
 require_relative "filters/array"
 require_relative "filters/slice"
@@ -140,6 +141,9 @@ module Liquid2
       register_filter("downcase", Liquid2::Filters.method(:downcase))
       register_filter("escape", Liquid2::Filters.method(:escape))
       register_filter("escape_once", Liquid2::Filters.method(:escape_once))
+      register_filter("find", Liquid2::Filters::Find.new)
+      register_filter("find_index", Liquid2::Filters::FindIndex.new)
+      register_filter("has", Liquid2::Filters::Has.new)
       register_filter("first", Liquid2::Filters.method(:first))
     end
 

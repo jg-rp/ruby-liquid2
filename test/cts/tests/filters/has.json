@@ -71,6 +71,241 @@
         ]
       },
       "result": "false"
+    },
+    {
+      "name": "array of strings, default value",
+      "template": "{{ a | has: 'z' }}",
+      "data": {
+        "a": ["x", "y", "z"]
+      },
+      "result": "true"
+    },
+    {
+      "name": "array of strings, default value, substring match",
+      "template": "{{ a | has: 'z' }}",
+      "data": {
+        "a": ["x", "y", "zoo"]
+      },
+      "result": "true"
+    },
+    {
+      "name": "array of strings, default value, no match",
+      "template": "{{ a | has: ':(' }}",
+      "data": {
+        "a": ["x", "y", "z"]
+      },
+      "result": "false"
+    },
+    {
+      "name": "array of ints, default value",
+      "template": "{{ a | has: 2 }}",
+      "data": {
+        "a": [1, 2, 3]
+      },
+      "result": "true"
+    },
+    {
+      "name": "array of ints, string argument, default value",
+      "template": "{{ a | has: '2' }}",
+      "data": {
+        "a": [1, 2, 3]
+      },
+      "result": "false"
+    },
+    {
+      "name": "mixed array, default value",
+      "template": "{{ a | has: 'z' }}",
+      "data": {
+        "a": ["x", null, "z", false, true]
+      },
+      "result": "true"
+    },
+    {
+      "name": "string input, default value, match",
+      "template": "{{ a | has: 'z' }}",
+      "data": {
+        "a": "zoo"
+      },
+      "result": "true"
+    },
+    {
+      "name": "string input, default value, no match",
+      "template": "{{ a | has: 'z' }}",
+      "data": {
+        "a": "foo"
+      },
+      "result": "false"
+    },
+    {
+      "name": "hash input, default value, match",
+      "template": "{{ a | has: 'z' }}",
+      "data": {
+        "a": {
+          "z": 42
+        }
+      },
+      "result": "true"
+    },
+    {
+      "name": "hash input, default value, no match",
+      "template": "{{ a | has: 'z' }}",
+      "data": {
+        "a": {
+          "x": 42
+        }
+      },
+      "result": "false"
+    },
+    {
+      "name": "hash input, int value, match",
+      "template": "{{ a | has: 'z', 42 }}",
+      "data": {
+        "a": {
+          "z": 42
+        }
+      },
+      "result": "true"
+    },
+    {
+      "name": "hash input, int value, no match",
+      "template": "{{ a | has: 'z', 99 }}",
+      "data": {
+        "a": {
+          "z": 42
+        }
+      },
+      "result": "false"
+    },
+    {
+      "name": "hash input, string value, no type coercion",
+      "template": "{{ a | has: 'z', '42' }}",
+      "data": {
+        "a": {
+          "z": 42
+        }
+      },
+      "result": "false"
+    },
+    {
+      "name": "hash input, explicit nil, no match",
+      "template": "{{ a | has: 'z', nil }}",
+      "data": {
+        "a": {
+          "z": 42
+        }
+      },
+      "result": "true"
+    },
+    {
+      "name": "hash input, explicit nil, match",
+      "template": "{{ a | has: 'z', nil }}",
+      "data": {
+        "a": {
+          "z": null
+        }
+      },
+      "result": "false"
+    },
+    {
+      "name": "hash input, false value, match",
+      "template": "{{ a | has: 'z', false }}",
+      "data": {
+        "a": {
+          "z": false
+        }
+      },
+      "result": "true"
+    },
+    {
+      "name": "array of hashes, int value, match",
+      "template": "{{ a | has: 'z', 42 }}",
+      "data": {
+        "a": [
+          {
+            "x": 99
+          },
+          {
+            "z": 42
+          }
+        ]
+      },
+      "result": "true"
+    },
+    {
+      "name": "array of hashes, int value, no match",
+      "template": "{{ a | has: 'z', 7 }}",
+      "data": {
+        "a": [
+          {
+            "x": 99
+          },
+          {
+            "z": 42
+          }
+        ]
+      },
+      "result": "false"
+    },
+    {
+      "name": "array of hashes, with a nil",
+      "template": "{{ a | has: 'z', 42 }}",
+      "data": {
+        "a": [
+          {
+            "x": 99
+          },
+          null,
+          {
+            "z": 42
+          }
+        ]
+      },
+      "result": "true"
+    },
+    {
+      "name": "array of hashes, nil property",
+      "template": "{{ a | has: nil }}",
+      "data": {
+        "a": [
+          {
+            "x": 99
+          },
+          {
+            "z": 42
+          }
+        ]
+      },
+      "result": "false"
+    },
+    {
+      "name": "array of hashes, int property",
+      "template": "{{ a | has: 42 }}",
+      "data": {
+        "a": [
+          {
+            "x": 99
+          },
+          {
+            "z": 42
+          }
+        ]
+      },
+      "result": "false"
+    },
+    {
+      "name": "array of hashes, false property",
+      "template": "{{ a | has: false }}",
+      "data": {
+        "a": [
+          {
+            "x": 99
+          },
+          {
+            "z": 42
+          }
+        ]
+      },
+      "result": "false"
     }
   ]
 }

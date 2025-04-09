@@ -71,6 +71,149 @@
         ]
       },
       "result": "not found"
+    },
+    {
+      "name": "array of strings, default value",
+      "template": "{{ a | find_index: 'z' }}",
+      "data": {
+        "a": ["x", "y", "z"]
+      },
+      "result": "2"
+    },
+    {
+      "name": "array of strings, substring match, default value",
+      "template": "{{ a | find_index: 'oo' }}",
+      "data": {
+        "a": ["x", "y", "zoo"]
+      },
+      "result": "2"
+    },
+    {
+      "name": "array of strings, default value, no match",
+      "template": "{{ a | find_index: 'foo' }}",
+      "data": {
+        "a": ["x", "y", "zoo"]
+      },
+      "result": ""
+    },
+    {
+      "name": "mixed array, default value",
+      "template": "{{ a | find_index: 'z' }}",
+      "data": {
+        "a": ["x", null, "z", false, true]
+      },
+      "result": "2"
+    },
+    {
+      "name": "string input, default value, match",
+      "template": "{{ a | find_index: 'z' }}",
+      "data": {
+        "a": "zoo"
+      },
+      "result": "0"
+    },
+    {
+      "name": "string input, string value, match",
+      "template": "{{ a | find_index: 'z', 'z' }}",
+      "data": {
+        "a": "zoo"
+      },
+      "result": "0"
+    },
+    {
+      "name": "string input, string value, no match",
+      "template": "{{ a | find_index: 'z', 'y' }}",
+      "data": {
+        "a": "zoo"
+      },
+      "result": ""
+    },
+    {
+      "name": "hash input, default value, match",
+      "template": "{{ a | find_index: 'z' }}",
+      "data": {
+        "a": {
+          "z": 42
+        }
+      },
+      "result": "0"
+    },
+    {
+      "name": "hash input, default value, no match",
+      "template": "{{ a | find_index: 'foo' }}",
+      "data": {
+        "a": {
+          "z": 42
+        }
+      },
+      "result": ""
+    },
+    {
+      "name": "hash input, int value, match",
+      "template": "{{ a | find_index: 'z', 42 }}",
+      "data": {
+        "a": {
+          "z": 42
+        }
+      },
+      "result": "0"
+    },
+    {
+      "name": "hash input, explicit nil, match",
+      "template": "{{ a | find_index: 'z', nil }}",
+      "data": {
+        "a": {
+          "z": null
+        }
+      },
+      "result": ""
+    },
+    {
+      "name": "array of hashes, explicit nil, match",
+      "template": "{{ a | find_index: 'z', nil }}",
+      "data": {
+        "a": [
+          "foo",
+          "bar",
+          {
+            "z": null
+          }
+        ]
+      },
+      "result": ""
+    },
+    {
+      "name": "array of hashes, int value, match",
+      "template": "{{ a | find_index: 'z', 42 }}",
+      "data": {
+        "a": [
+          {
+            "x": 99
+          },
+          {
+            "z": 42,
+            "foo": "bar"
+          }
+        ]
+      },
+      "result": "1"
+    },
+    {
+      "name": "array of hashes, with a nil",
+      "template": "{% assign b = a | find_index: 'z', 42 %}{{ a[b].foo }}",
+      "data": {
+        "a": [
+          {
+            "x": 99
+          },
+          null,
+          {
+            "z": 42,
+            "foo": "bar"
+          }
+        ]
+      },
+      "result": "bar"
     }
   ]
 }

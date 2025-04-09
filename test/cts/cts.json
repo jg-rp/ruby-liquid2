@@ -1837,6 +1837,153 @@
       "result": "not found"
     },
     {
+      "name": "filters, find, array of strings, default value",
+      "template": "{{ a | find: 'z' }}",
+      "data": {
+        "a": [
+          "x",
+          "y",
+          "z"
+        ]
+      },
+      "result": "z"
+    },
+    {
+      "name": "filters, find, array of strings, substring match, default value",
+      "template": "{{ a | find: 'oo' }}",
+      "data": {
+        "a": [
+          "x",
+          "y",
+          "zoo"
+        ]
+      },
+      "result": "zoo"
+    },
+    {
+      "name": "filters, find, array of strings, default value, no match",
+      "template": "{{ a | find: 'foo' }}",
+      "data": {
+        "a": [
+          "x",
+          "y",
+          "zoo"
+        ]
+      },
+      "result": ""
+    },
+    {
+      "name": "filters, find, mixed array, default value",
+      "template": "{{ a | find: 'z' }}",
+      "data": {
+        "a": [
+          "x",
+          null,
+          "z",
+          false,
+          true
+        ]
+      },
+      "result": "z"
+    },
+    {
+      "name": "filters, find, string input, default value, match",
+      "template": "{{ a | find: 'z' }}",
+      "data": {
+        "a": "zoo"
+      },
+      "result": "z"
+    },
+    {
+      "name": "filters, find, string input, string value, match",
+      "template": "{{ a | find: 'z', 'z' }}",
+      "data": {
+        "a": "zoo"
+      },
+      "result": "z"
+    },
+    {
+      "name": "filters, find, string input, string value, no match",
+      "template": "{{ a | find: 'z', 'y' }}",
+      "data": {
+        "a": "zoo"
+      },
+      "result": ""
+    },
+    {
+      "name": "filters, find, hash input, default value, match",
+      "template": "{% assign b = a | find: 'z' %}{{ b.z }}",
+      "data": {
+        "a": {
+          "z": 42
+        }
+      },
+      "result": "42"
+    },
+    {
+      "name": "filters, find, hash input, default value, no match",
+      "template": "{% assign b = a | find: 'foo' %}{{ b }}",
+      "data": {
+        "a": {
+          "z": 42
+        }
+      },
+      "result": ""
+    },
+    {
+      "name": "filters, find, hash input, int value, match",
+      "template": "{% assign b = a | find: 'z', 42 %}{{ b.z }}",
+      "data": {
+        "a": {
+          "z": 42
+        }
+      },
+      "result": "42"
+    },
+    {
+      "name": "filters, find, hash input, explicit nil, match",
+      "template": "{% assign b = a | find: 'z', nil %}{{ b.z }}",
+      "data": {
+        "a": {
+          "z": null
+        }
+      },
+      "result": ""
+    },
+    {
+      "name": "filters, find, array of hashes, int value, match",
+      "template": "{% assign b = a | find: 'z', 42 %}{{ b.foo }}",
+      "data": {
+        "a": [
+          {
+            "x": 99
+          },
+          {
+            "z": 42,
+            "foo": "bar"
+          }
+        ]
+      },
+      "result": "bar"
+    },
+    {
+      "name": "filters, find, array of hashes, with a nil",
+      "template": "{% assign b = a | find: 'z', 42 %}{{ b.foo }}",
+      "data": {
+        "a": [
+          {
+            "x": 99
+          },
+          null,
+          {
+            "z": 42,
+            "foo": "bar"
+          }
+        ]
+      },
+      "result": "bar"
+    },
+    {
       "name": "filters, find index, array of objects",
       "template": "{% assign x = a | find_index: 'title', 'bar' %}{{ x }}",
       "data": {
@@ -1907,6 +2054,167 @@
         ]
       },
       "result": "not found"
+    },
+    {
+      "name": "filters, find index, array of strings, default value",
+      "template": "{{ a | find_index: 'z' }}",
+      "data": {
+        "a": [
+          "x",
+          "y",
+          "z"
+        ]
+      },
+      "result": "2"
+    },
+    {
+      "name": "filters, find index, array of strings, substring match, default value",
+      "template": "{{ a | find_index: 'oo' }}",
+      "data": {
+        "a": [
+          "x",
+          "y",
+          "zoo"
+        ]
+      },
+      "result": "2"
+    },
+    {
+      "name": "filters, find index, array of strings, default value, no match",
+      "template": "{{ a | find_index: 'foo' }}",
+      "data": {
+        "a": [
+          "x",
+          "y",
+          "zoo"
+        ]
+      },
+      "result": ""
+    },
+    {
+      "name": "filters, find index, mixed array, default value",
+      "template": "{{ a | find_index: 'z' }}",
+      "data": {
+        "a": [
+          "x",
+          null,
+          "z",
+          false,
+          true
+        ]
+      },
+      "result": "2"
+    },
+    {
+      "name": "filters, find index, string input, default value, match",
+      "template": "{{ a | find_index: 'z' }}",
+      "data": {
+        "a": "zoo"
+      },
+      "result": "0"
+    },
+    {
+      "name": "filters, find index, string input, string value, match",
+      "template": "{{ a | find_index: 'z', 'z' }}",
+      "data": {
+        "a": "zoo"
+      },
+      "result": "0"
+    },
+    {
+      "name": "filters, find index, string input, string value, no match",
+      "template": "{{ a | find_index: 'z', 'y' }}",
+      "data": {
+        "a": "zoo"
+      },
+      "result": ""
+    },
+    {
+      "name": "filters, find index, hash input, default value, match",
+      "template": "{{ a | find_index: 'z' }}",
+      "data": {
+        "a": {
+          "z": 42
+        }
+      },
+      "result": "0"
+    },
+    {
+      "name": "filters, find index, hash input, default value, no match",
+      "template": "{{ a | find_index: 'foo' }}",
+      "data": {
+        "a": {
+          "z": 42
+        }
+      },
+      "result": ""
+    },
+    {
+      "name": "filters, find index, hash input, int value, match",
+      "template": "{{ a | find_index: 'z', 42 }}",
+      "data": {
+        "a": {
+          "z": 42
+        }
+      },
+      "result": "0"
+    },
+    {
+      "name": "filters, find index, hash input, explicit nil, match",
+      "template": "{{ a | find_index: 'z', nil }}",
+      "data": {
+        "a": {
+          "z": null
+        }
+      },
+      "result": ""
+    },
+    {
+      "name": "filters, find index, array of hashes, explicit nil, match",
+      "template": "{{ a | find_index: 'z', nil }}",
+      "data": {
+        "a": [
+          "foo",
+          "bar",
+          {
+            "z": null
+          }
+        ]
+      },
+      "result": ""
+    },
+    {
+      "name": "filters, find index, array of hashes, int value, match",
+      "template": "{{ a | find_index: 'z', 42 }}",
+      "data": {
+        "a": [
+          {
+            "x": 99
+          },
+          {
+            "z": 42,
+            "foo": "bar"
+          }
+        ]
+      },
+      "result": "1"
+    },
+    {
+      "name": "filters, find index, array of hashes, with a nil",
+      "template": "{% assign b = a | find_index: 'z', 42 %}{{ a[b].foo }}",
+      "data": {
+        "a": [
+          {
+            "x": 99
+          },
+          null,
+          {
+            "z": 42,
+            "foo": "bar"
+          }
+        ]
+      },
+      "result": "bar"
     },
     {
       "name": "filters, first, range literal first filter left value",
@@ -2113,6 +2421,267 @@
           },
           {
             "title": "baz"
+          }
+        ]
+      },
+      "result": "false"
+    },
+    {
+      "name": "filters, has, array of strings, default value",
+      "template": "{{ a | has: 'z' }}",
+      "data": {
+        "a": [
+          "x",
+          "y",
+          "z"
+        ]
+      },
+      "result": "true"
+    },
+    {
+      "name": "filters, has, array of strings, default value, substring match",
+      "template": "{{ a | has: 'z' }}",
+      "data": {
+        "a": [
+          "x",
+          "y",
+          "zoo"
+        ]
+      },
+      "result": "true"
+    },
+    {
+      "name": "filters, has, array of strings, default value, no match",
+      "template": "{{ a | has: ':(' }}",
+      "data": {
+        "a": [
+          "x",
+          "y",
+          "z"
+        ]
+      },
+      "result": "false"
+    },
+    {
+      "name": "filters, has, array of ints, default value",
+      "template": "{{ a | has: 2 }}",
+      "data": {
+        "a": [
+          1,
+          2,
+          3
+        ]
+      },
+      "result": "true"
+    },
+    {
+      "name": "filters, has, array of ints, string argument, default value",
+      "template": "{{ a | has: '2' }}",
+      "data": {
+        "a": [
+          1,
+          2,
+          3
+        ]
+      },
+      "result": "false"
+    },
+    {
+      "name": "filters, has, mixed array, default value",
+      "template": "{{ a | has: 'z' }}",
+      "data": {
+        "a": [
+          "x",
+          null,
+          "z",
+          false,
+          true
+        ]
+      },
+      "result": "true"
+    },
+    {
+      "name": "filters, has, string input, default value, match",
+      "template": "{{ a | has: 'z' }}",
+      "data": {
+        "a": "zoo"
+      },
+      "result": "true"
+    },
+    {
+      "name": "filters, has, string input, default value, no match",
+      "template": "{{ a | has: 'z' }}",
+      "data": {
+        "a": "foo"
+      },
+      "result": "false"
+    },
+    {
+      "name": "filters, has, hash input, default value, match",
+      "template": "{{ a | has: 'z' }}",
+      "data": {
+        "a": {
+          "z": 42
+        }
+      },
+      "result": "true"
+    },
+    {
+      "name": "filters, has, hash input, default value, no match",
+      "template": "{{ a | has: 'z' }}",
+      "data": {
+        "a": {
+          "x": 42
+        }
+      },
+      "result": "false"
+    },
+    {
+      "name": "filters, has, hash input, int value, match",
+      "template": "{{ a | has: 'z', 42 }}",
+      "data": {
+        "a": {
+          "z": 42
+        }
+      },
+      "result": "true"
+    },
+    {
+      "name": "filters, has, hash input, int value, no match",
+      "template": "{{ a | has: 'z', 99 }}",
+      "data": {
+        "a": {
+          "z": 42
+        }
+      },
+      "result": "false"
+    },
+    {
+      "name": "filters, has, hash input, string value, no type coercion",
+      "template": "{{ a | has: 'z', '42' }}",
+      "data": {
+        "a": {
+          "z": 42
+        }
+      },
+      "result": "false"
+    },
+    {
+      "name": "filters, has, hash input, explicit nil, no match",
+      "template": "{{ a | has: 'z', nil }}",
+      "data": {
+        "a": {
+          "z": 42
+        }
+      },
+      "result": "true"
+    },
+    {
+      "name": "filters, has, hash input, explicit nil, match",
+      "template": "{{ a | has: 'z', nil }}",
+      "data": {
+        "a": {
+          "z": null
+        }
+      },
+      "result": "false"
+    },
+    {
+      "name": "filters, has, hash input, false value, match",
+      "template": "{{ a | has: 'z', false }}",
+      "data": {
+        "a": {
+          "z": false
+        }
+      },
+      "result": "true"
+    },
+    {
+      "name": "filters, has, array of hashes, int value, match",
+      "template": "{{ a | has: 'z', 42 }}",
+      "data": {
+        "a": [
+          {
+            "x": 99
+          },
+          {
+            "z": 42
+          }
+        ]
+      },
+      "result": "true"
+    },
+    {
+      "name": "filters, has, array of hashes, int value, no match",
+      "template": "{{ a | has: 'z', 7 }}",
+      "data": {
+        "a": [
+          {
+            "x": 99
+          },
+          {
+            "z": 42
+          }
+        ]
+      },
+      "result": "false"
+    },
+    {
+      "name": "filters, has, array of hashes, with a nil",
+      "template": "{{ a | has: 'z', 42 }}",
+      "data": {
+        "a": [
+          {
+            "x": 99
+          },
+          null,
+          {
+            "z": 42
+          }
+        ]
+      },
+      "result": "true"
+    },
+    {
+      "name": "filters, has, array of hashes, nil property",
+      "template": "{{ a | has: nil }}",
+      "data": {
+        "a": [
+          {
+            "x": 99
+          },
+          {
+            "z": 42
+          }
+        ]
+      },
+      "result": "false"
+    },
+    {
+      "name": "filters, has, array of hashes, int property",
+      "template": "{{ a | has: 42 }}",
+      "data": {
+        "a": [
+          {
+            "x": 99
+          },
+          {
+            "z": 42
+          }
+        ]
+      },
+      "result": "false"
+    },
+    {
+      "name": "filters, has, array of hashes, false property",
+      "template": "{{ a | has: false }}",
+      "data": {
+        "a": [
+          {
+            "x": 99
+          },
+          {
+            "z": 42
           }
         ]
       },

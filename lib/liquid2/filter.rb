@@ -14,7 +14,7 @@ module Liquid2
       when Array
         obj.flatten
       when Hash
-        obj.to_enum
+        [obj]
       when String
         obj.each_char
       when Enumerable

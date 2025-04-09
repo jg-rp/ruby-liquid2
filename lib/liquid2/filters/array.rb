@@ -29,7 +29,7 @@ module Liquid2
       def validate(_env, node)
         if node.args.length > 1
           raise LiquidArgumentError.new(
-            "#{node.name.inspect} expects at most one argument. got #{node.args.length}", node
+            "#{node.name.inspect} expects at most one argument, got #{node.args.length}", node
           )
         end
 

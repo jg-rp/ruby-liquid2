@@ -107,7 +107,7 @@ module Liquid2
       end
 
       count
-    rescue TemplateNotFoundError => e
+    rescue LiquidTemplateNotFoundError => e
       e.node_or_token = @name
       e.template_name = context.template.full_name
       raise e

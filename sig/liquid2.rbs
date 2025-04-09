@@ -2123,5 +2123,23 @@ module Liquid2
     #
     # It is safe to use `escape_once` on string values that already contain HTML-escape sequences.
     def self.escape_once: (untyped left) -> String
+                        
+    class Find
+      def validate: (Liquid2::Environment _env, Liquid2::Filter node) -> void
+
+      def call: (untyped left, untyped key, ?untyped? value, context: Liquid2::RenderContext) -> untyped
+
+      def parameters: () -> untyped
+
+      def fetch: (untyped obj, untyped key, ?untyped default) -> untyped
+    end
+
+    class FindIndex < Find
+      def call: (untyped left, untyped key, ?untyped? value, context: RenderContext) -> (Integer | nil)
+    end
+
+    class Has < Find
+      def call: (untyped left, untyped key, ?untyped? value, context: RenderContext) -> bool
+    end
   end
 end
