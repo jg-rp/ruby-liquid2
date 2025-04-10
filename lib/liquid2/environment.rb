@@ -145,6 +145,12 @@ module Liquid2
       register_filter("find_index", Liquid2::Filters::FindIndex.new)
       register_filter("has", Liquid2::Filters::Has.new)
       register_filter("first", Liquid2::Filters.method(:first))
+      register_filter("floor", Liquid2::Filters.method(:floor))
+      register_filter("last", Liquid2::Filters.method(:last))
+      register_filter("lstrip", Liquid2::Filters.method(:lstrip))
+      register_filter("map", Liquid2::Filters::Map.new)
+      register_filter("minus", Liquid2::Filters.method(:minus))
+      register_filter("modulo", Liquid2::Filters.method(:modulo))
     end
 
     def undefined(name, node: nil)

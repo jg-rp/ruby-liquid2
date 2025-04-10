@@ -2074,9 +2074,6 @@ module Liquid2
     # Return _left_ rounded up to the next whole number.
     def self.ceil: (untyped left) -> Integer
 
-    # Return the first item in _left_.
-    def self.first: (untyped left) -> untyped
-
     class Compact
       def validate: (Liquid2::Environment _env, Liquid2::Filter node) -> void
 
@@ -2141,5 +2138,35 @@ module Liquid2
     class Has < Find
       def call: (untyped left, untyped key, ?untyped? value, context: RenderContext) -> bool
     end
+
+    # Return the first item in _left_, or `nil` if _left_ does not have a first item.
+    def self.first: (untyped left) -> untyped
+
+    # Return _left_ rounded down to the next whole number.
+    def self.floor: (untyped left) -> Integer
+
+    # Return the last item in _left_, or `nil` if _left_ does not have a last item.
+    def self.last: (untyped left) -> untyped
+                 
+    # Return _left_ with leading whitespace removed.
+    # Coerce _left_ to a string if it is not one already.
+    def self.lstrip: (untyped left) -> String
+
+    # The _map_ filter.
+    class Map
+      def validate: (Liquid2::Environment _env, Liquid2::Filter node) -> void
+
+      def call: (untyped left, untyped key, context: RenderContext) -> Array[untyped]
+
+      def parameters: () -> untyped
+                    
+      def fetch: (untyped obj, String key) -> untyped
+    end
+
+    # Return _right_ subtracted from _left_.
+    def self.minus: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
+
+    # Return the remainder of dividing _left_ by _right_.
+    def self.modulo: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
   end
 end

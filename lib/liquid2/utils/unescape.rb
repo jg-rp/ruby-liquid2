@@ -39,7 +39,7 @@ module Liquid2
           raise LiquidSyntaxError.new("unknown escape sequence", token)
         end
       else
-        raise LiquidSyntaxError.new("invalid character", token) if ch.ord <= 0x1F
+        # raise LiquidSyntaxError.new("invalid character #{ch.inspect}", token) if ch.ord <= 0x1F
 
         unescaped << ch
       end

@@ -30,5 +30,22 @@ module Liquid2
     rescue ZeroDivisionError => e
       raise LiquidTypeError.new(e.message, nil)
     end
+
+    # Return _left_ rounded down to the next whole number.
+    def self.floor(left)
+      to_number(left).floor
+    end
+
+    # Return _right_ subtracted from _left_.
+    def self.minus(left, right)
+      to_decimal(left) - to_decimal(right) # steep:ignore
+    end
+
+    # Return the remainder of dividing _left_ by _right_.
+    def self.modulo(left, right)
+      to_decimal(left) % to_decimal(right) # steep:ignore
+    rescue ZeroDivisionError => e
+      raise LiquidTypeError.new(e.message, nil)
+    end
   end
 end

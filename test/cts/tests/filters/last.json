@@ -10,10 +10,7 @@
       "name": "array of strings",
       "template": "{{ arr | last }}",
       "data": {
-        "arr": [
-          "a",
-          "b"
-        ]
+        "arr": ["a", "b"]
       },
       "result": "b"
     },
@@ -21,13 +18,7 @@
       "name": "array of things",
       "template": "{{ arr | last }}",
       "data": {
-        "arr": [
-          "a",
-          "b",
-          1,
-          [],
-          {}
-        ]
+        "arr": ["a", "b", 1, [], {}]
       },
       "result": "{}"
     },
@@ -57,7 +48,7 @@
       "name": "last of a string",
       "template": "{{ 'hello' | last }}",
       "data": {},
-      "result": ""
+      "result": "o"
     },
     {
       "name": "last of a hash",

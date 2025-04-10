@@ -13,7 +13,7 @@ env = Liquid2::Environment.new(loader: Liquid2::HashLoader.new(templates))
 #   Hello,   {#- this is a comment -#}\nWorld!
 #   END
 # LIQUID
-source = "{% assign x = a | find_index: i => i.title == 42 %}{{ x.title if x else 'not found' }}"
+source = "{{ \" \t\r\n  hello  \t\r\n \" | lstrip }}"
 
 data = JSON.parse <<~DATA
   {

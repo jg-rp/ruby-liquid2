@@ -36,5 +36,11 @@ module Liquid2
     def self.escape_once(left)
       CGI.escape_html(CGI.unescape_html(Liquid2.to_s(left)))
     end
+
+    # Return _left_ with leading whitespace removed.
+    # Coerce _left_ to a string if it is not one already.
+    def self.lstrip(left)
+      Liquid2.to_s(left).lstrip
+    end
   end
 end

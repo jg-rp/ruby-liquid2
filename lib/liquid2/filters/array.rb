@@ -14,16 +14,6 @@ module Liquid2
       end
     end
 
-    # Return the first item in _left_.
-    def self.first(left)
-      case left
-      when String
-        left.each_char.first
-      else
-        left.first if left.respond_to?(:first)
-      end
-    end
-
     # The _compact_ filter.
     class Compact
       def validate(_env, node)
@@ -81,6 +71,68 @@ module Liquid2
       end
 
       Filters.to_enumerable(left).to_a.concat(right)
+    end
+
+    # Return the first item in _left_, or `nil` if _left_ does not have a first item.
+    def self.first(left)
+      case left
+      when String
+        left[0]
+      else
+        left.first if left.respond_to?(:first)
+      end
+    end
+
+    # Return the last item in _left_, or `nil` if _left_ does not have a last item.
+    def self.last(left)
+      case left
+      when String
+        left[-1]
+      else
+        left.last if left.respond_to?(:last)
+      end
+    end
+
+    # The _map_ filter.
+    class Map
+      def validate(_env, node)
+        if node.args.length != 1
+          raise LiquidArgumentError.new(
+            "#{node.name.inspect} expects one argument, got #{node.args.length}", node
+          )
+        end
+
+        return unless node.args.length == 1
+
+        arg = node.args.first.value
+
+        return unless arg.is_a?(Liquid2::Lambda) && !arg.expr.is_a?(Liquid2::Path)
+
+        raise LiquidArgumentError.new("#{node.name.inspect} expects a path to a variable", node)
+      end
+
+      def call(left, key, context:)
+        left = Liquid2::Filters.to_enumerable(left)
+
+        if key.is_a?(Liquid2::Lambda)
+          key.map(context, left).map do |item|
+            item.is_a?(Liquid2::Undefined) ? nil : item
+          end
+        else
+          key = Liquid2.to_s(key)
+          left.map { |item| fetch(item, key) }
+        end
+      end
+
+      def parameters
+        method(:call).parameters
+      end
+
+      def fetch(obj, key)
+        obj.fetch(key, nil)
+      rescue StandardError
+        raise LiquidArgumentError.new("can't select property #{key.inspect}", nil)
+      end
     end
   end
 end
