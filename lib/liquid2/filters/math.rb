@@ -47,5 +47,10 @@ module Liquid2
     rescue ZeroDivisionError => e
       raise LiquidTypeError.new(e.message, nil)
     end
+
+    # Return _right_ added to _left_.
+    def self.plus(left, right)
+      to_decimal(left) + to_decimal(right) # steep:ignore
+    end
   end
 end

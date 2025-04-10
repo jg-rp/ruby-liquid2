@@ -6,6 +6,7 @@ require_relative "undefined"
 require_relative "loader"
 require_relative "filters/date"
 require_relative "filters/default"
+require_relative "filters/filter"
 require_relative "filters/find"
 require_relative "filters/math"
 require_relative "filters/array"
@@ -123,9 +124,6 @@ module Liquid2
     end
 
     def setup_tags_and_filters
-      register_filter("upcase", ->(left) { Liquid2.to_s(left).upcase })
-      register_filter("slice", SliceFilter.new)
-      register_filter("split", ->(left, sep) { Liquid2.to_s(left).split(Liquid2.to_s(sep)) })
       register_filter("join", Liquid2::Filters.method(:join))
       register_filter("abs", Liquid2::Filters.method(:abs))
       register_filter("at_least", Liquid2::Filters.method(:at_least))
@@ -151,6 +149,10 @@ module Liquid2
       register_filter("map", Liquid2::Filters::Map.new)
       register_filter("minus", Liquid2::Filters.method(:minus))
       register_filter("modulo", Liquid2::Filters.method(:modulo))
+      register_filter("newline_to_br", Liquid2::Filters.method(:newline_to_br))
+      register_filter("plus", Liquid2::Filters.method(:plus))
+      register_filter("prepend", Liquid2::Filters.method(:prepend))
+      register_filter("reject", Liquid2::Filters::Reject.new)
     end
 
     def undefined(name, node: nil)

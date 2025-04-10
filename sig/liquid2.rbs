@@ -2168,5 +2168,23 @@ module Liquid2
 
     # Return the remainder of dividing _left_ by _right_.
     def self.modulo: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
+                   
+    # Return _left_ with LF or CRLF replaced with `<br />\n`.
+    def self.newline_to_br: (untyped left) -> String
+
+    # Return _right_ added to _left_.
+    def self.plus: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
+                 
+     # Return _right_ concatenated with _left_.
+    # Coerce _left_ and _right_ to strings if they aren't strings already.
+    def self.prepend: (untyped left, untyped right) -> String
+                    
+    class Reject
+      def call: (untyped left, untyped key, ?untyped? value, context: RenderContext) -> Array[untyped]
+
+      def parameters: () -> untyped
+
+      def fetch: (untyped obj, untyped key, ?untyped? default) -> untyped
+    end
   end
 end

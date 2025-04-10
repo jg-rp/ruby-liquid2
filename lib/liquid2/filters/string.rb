@@ -42,5 +42,16 @@ module Liquid2
     def self.lstrip(left)
       Liquid2.to_s(left).lstrip
     end
+
+    # Return _left_ with LF or CRLF replaced with `<br />\n`.
+    def self.newline_to_br(left)
+      Liquid2.to_s(left).gsub(/\r?\n/, "<br />\n")
+    end
+
+    # Return _right_ concatenated with _left_.
+    # Coerce _left_ and _right_ to strings if they aren't strings already.
+    def self.prepend(left, right)
+      Liquid2.to_s(right) + Liquid2.to_s(left)
+    end
   end
 end

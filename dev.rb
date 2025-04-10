@@ -13,13 +13,13 @@ env = Liquid2::Environment.new(loader: Liquid2::HashLoader.new(templates))
 #   Hello,   {#- this is a comment -#}\nWorld!
 #   END
 # LIQUID
-source = "{{ \" \t\r\n  hello  \t\r\n \" | lstrip }}"
+source = "{{ a | reject: i => i.title == 'bar' or i.title == 'baz' }}"
 
 data = JSON.parse <<~DATA
   {
         "a": [
           {
-            "title": "foo"
+            "heading": "foo"
           },
           {
             "title": "bar"
