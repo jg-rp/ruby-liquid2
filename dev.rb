@@ -13,22 +13,12 @@ env = Liquid2::Environment.new(loader: Liquid2::HashLoader.new(templates))
 #   Hello,   {#- this is a comment -#}\nWorld!
 #   END
 # LIQUID
-source = "{{ a | reject: i => i.title == 'bar' or i.title == 'baz' }}"
+source = "{{ \"Take my protein pills and put my helmet on\" | replace_last: \"my\", \"your\" }}"
 
 data = JSON.parse <<~DATA
   {
-        "a": [
-          {
-            "heading": "foo"
-          },
-          {
-            "title": "bar"
-          },
-          {
-            "title": "baz"
-          }
-        ]
-      }
+         "s": "foobar"
+       }
 DATA
 
 Liquid2.tokenize(source).each do |token|

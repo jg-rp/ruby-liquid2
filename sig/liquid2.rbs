@@ -2151,6 +2151,10 @@ module Liquid2
     # Return _left_ with leading whitespace removed.
     # Coerce _left_ to a string if it is not one already.
     def self.lstrip: (untyped left) -> String
+                   
+    # Return _left_ with trailing whitespace removed.
+    # Coerce _left_ to a string if it is not one already.
+    def self.rstrip: (untyped left) -> String
 
     # The _map_ filter.
     class Map
@@ -2186,5 +2190,39 @@ module Liquid2
 
       def fetch: (untyped obj, untyped key, ?untyped? default) -> untyped
     end
+
+    # Return _left_ with all occurrences of _pattern_ replaced with _replacement_.
+    # All arguments are coerced to strings if they aren't strings already.
+    def self.replace: (untyped left, untyped pattern, ?untyped replacement) -> String
+
+    # Return _left_ with the first occurrence of _pattern_ replaced with _replacement_.
+    # All arguments are coerced to strings if they aren't strings already.
+    def self.replace_first: (untyped left, untyped pattern, ?untyped replacement) -> String
+                          
+    # Return _left_ with the last occurrence of _pattern_ replaced with _replacement_.
+    # All arguments are coerced to strings if they aren't strings already.
+    def self.replace_last: (untyped left, untyped pattern, untyped replacement) -> String
+                         
+    # Return _left_ with all occurrences of _pattern_ removed.
+    # All arguments are coerced to strings if they aren't strings already.
+    def self.remove: (untyped left, untyped pattern) -> String
+
+    # Return _left_ with the first occurrence of _pattern_ removed.
+    # All arguments are coerced to strings if they aren't strings already.
+    def self.remove_first: (untyped left, untyped pattern) -> String
+
+    # Return _left_ with the last occurrence of _pattern_ removed.
+    # All arguments are coerced to strings if they aren't strings already.
+    def self.remove_last: (untyped left, untyped pattern) -> String
+                        
+    # Return _left_ with all items in reverse order.
+    # Coerce _left_ to an array if it isn't an array already.
+    def self.reverse: (untyped left) -> Array[untyped]
+                    
+    # Return _left_ rounded to _ndigits_ decimal digits.
+    def self.round: (untyped left, ?::Integer ndigits) -> untyped
+                  
+    # Return the size of _left_, or zero if _left_ has no size.
+    def self.size: (untyped left) -> Integer
   end
 end

@@ -13,12 +13,12 @@ module Liquid2
       case obj
       when Array
         obj.flatten
-      when Hash
+      when Hash, String
         # XXX: This needs to be changed.
         # It is a throwback from Shopify/liquid and impacts the behavior of array filters.
         [obj]
-      when String
-        obj.each_char
+      # when String
+      #   obj.each_char
       when Enumerable
         obj
       else

@@ -15,6 +15,7 @@
     "ljust",
     "lparen",
     "lstrip",
+    "ndigits",
     "parentloop",
     "rparen",
     "rpartition",

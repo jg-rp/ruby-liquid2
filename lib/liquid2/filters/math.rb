@@ -52,5 +52,13 @@ module Liquid2
     def self.plus(left, right)
       to_decimal(left) + to_decimal(right) # steep:ignore
     end
+
+    # Return _left_ rounded to _ndigits_ decimal digits.
+    def self.round(left, ndigits = 0)
+      left = to_decimal(left)
+      return left.round if ndigits == 0 # steep:ignore
+
+      left.round(to_decimal(ndigits)) # steep:ignore
+    end
   end
 end

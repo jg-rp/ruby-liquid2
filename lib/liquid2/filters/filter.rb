@@ -12,12 +12,16 @@ module Liquid2
           key.map(context, left).zip(left).reject do |r, _item|
             r.is_a?(Liquid2::Undefined) || Liquid2.truthy?(context, r)
           end.map(&:last)
-        elsif !Liquid2.undefined?(value)
+        elsif !value.nil? && !Liquid2.undefined?(value)
           key = Liquid2.to_s(key)
-          left.reject { |item| fetch(item, key) == value }
+          left.reject do |item|
+            fetch(item, key) == value
+          end
         else
           key = Liquid2.to_s(key)
-          left.filter { |item| Liquid2.truthy?(context, fetch(item, key)) }
+          left.reject do |item|
+            Liquid2.truthy?(context, fetch(item, key))
+          end
         end
       end
 

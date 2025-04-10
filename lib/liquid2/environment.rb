@@ -10,6 +10,7 @@ require_relative "filters/filter"
 require_relative "filters/find"
 require_relative "filters/math"
 require_relative "filters/array"
+require_relative "filters/size"
 require_relative "filters/slice"
 require_relative "filters/string"
 require_relative "nodes/tags/assign"
@@ -153,6 +154,16 @@ module Liquid2
       register_filter("plus", Liquid2::Filters.method(:plus))
       register_filter("prepend", Liquid2::Filters.method(:prepend))
       register_filter("reject", Liquid2::Filters::Reject.new)
+      register_filter("replace", Liquid2::Filters.method(:replace))
+      register_filter("replace_first", Liquid2::Filters.method(:replace_first))
+      register_filter("replace_last", Liquid2::Filters.method(:replace_last))
+      register_filter("remove", Liquid2::Filters.method(:remove))
+      register_filter("remove_first", Liquid2::Filters.method(:remove_first))
+      register_filter("remove_last", Liquid2::Filters.method(:remove_last))
+      register_filter("reverse", Liquid2::Filters.method(:reverse))
+      register_filter("round", Liquid2::Filters.method(:round))
+      register_filter("rstrip", Liquid2::Filters.method(:rstrip))
+      register_filter("size", Liquid2::Filters.method(:size))
     end
 
     def undefined(name, node: nil)

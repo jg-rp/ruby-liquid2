@@ -64,7 +64,7 @@ module Liquid2
     end
 
     # Return _left_ concatenated with _right_, or nil if _right_ is not an array.
-    # Coerce _left_ to an arrays if it isn't an array already.
+    # Coerce _left_ to an array if it isn't an array already.
     def self.concat(left, right)
       unless right.respond_to?(:to_ary)
         raise Liquid2::LiquidArgumentError.new("expected an array", nil)
@@ -133,6 +133,12 @@ module Liquid2
       rescue StandardError
         raise LiquidArgumentError.new("can't select property #{key.inspect}", nil)
       end
+    end
+
+    # Return _left_ with all items in reverse order.
+    # Coerce _left_ to an array if it isn't an array already.
+    def self.reverse(left)
+      to_enumerable(left).to_a.reverse
     end
   end
 end
