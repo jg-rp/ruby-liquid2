@@ -43,6 +43,11 @@ module Liquid2
       default
     end
 
+    # Case _obj_ to an Integer.
+    def self.to_integer(obj)
+      obj.is_a?(Integer) ? obj : Integer(obj)
+    end
+
     # Cast _obj_ to a number, favouring BigDecimal over Float.
     def self.to_decimal(obj, default: 0)
       case obj

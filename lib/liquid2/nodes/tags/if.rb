@@ -6,7 +6,7 @@ require_relative "../../node"
 module Liquid2
   # The standard _if_ tag
   class IfTag < Node
-    END_TAG = Set["endif"].freeze
+    END_TAG = "endif"
     END_BLOCK = Set["else", "elsif", "endif"].freeze
 
     def self.parse(stream, parser)
@@ -19,7 +19,7 @@ module Liquid2
 
       # TODO: skip until ..
       children << expression << stream.eat_whitespace_control << stream.eat(:token_tag_end)
-      block = parser.parse_block(stream, END_BLOCK)
+      block = parser.parse_block(stream, self::END_BLOCK)
       children << block
 
       alternatives = [] # : Array[ConditionalBlock]
@@ -28,13 +28,13 @@ module Liquid2
 
       if stream.tag?("else")
         children.push(*stream.eat_empty_tag("else"))
-        default = parser.parse_block(stream, END_BLOCK)
+        default = parser.parse_block(stream, self::END_BLOCK)
         children << default
       else
         default = nil
       end
 
-      children.push(*stream.eat_empty_tag("endif"))
+      children.push(*stream.eat_empty_tag(self::END_TAG))
       new(children, expression, block, alternatives, default)
     end
 
@@ -49,7 +49,7 @@ module Liquid2
 
       # TODO: skip until ..
       children << expression << stream.eat_whitespace_control << stream.eat(:token_tag_end)
-      block = parser.parse_block(stream, END_BLOCK)
+      block = parser.parse_block(stream, self::END_BLOCK)
       children << block
       ConditionalBlock.new(children, expression, block)
     end

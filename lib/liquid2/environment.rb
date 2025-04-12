@@ -12,6 +12,7 @@ require_relative "filters/math"
 require_relative "filters/array"
 require_relative "filters/size"
 require_relative "filters/slice"
+require_relative "filters/sort"
 require_relative "filters/string"
 require_relative "nodes/tags/assign"
 require_relative "nodes/tags/if"
@@ -109,7 +110,6 @@ module Liquid2
     # @param callable [responds to call] An object that responds to `#call(left, ...)`
     #   and `#parameters`. Like a Proc or Method.
     def register_filter(name, callable)
-      # TODO: optional filter argument validation
       with_context = callable.parameters.index do |(kind, param)|
         kind == :keyreq && param == :context
       end
@@ -164,6 +164,12 @@ module Liquid2
       register_filter("round", Liquid2::Filters.method(:round))
       register_filter("rstrip", Liquid2::Filters.method(:rstrip))
       register_filter("size", Liquid2::Filters.method(:size))
+      register_filter("slice", Liquid2::Filters.method(:slice))
+      register_filter("sort", Liquid2::Filters::Sort.new)
+      register_filter("sort_natural", Liquid2::Filters::SortNatural.new)
+      register_filter("split", Liquid2::Filters.method(:split))
+      register_filter("upcase", Liquid2::Filters.method(:upcase))
+      register_filter("where", Liquid2::Filters::Where.new)
     end
 
     def undefined(name, node: nil)

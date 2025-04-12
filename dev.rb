@@ -8,17 +8,18 @@ templates = {
 }
 
 env = Liquid2::Environment.new(loader: Liquid2::HashLoader.new(templates))
-# source = <<~LIQUID
-#   START
-#   Hello,   {#- this is a comment -#}\nWorld!
-#   END
-# LIQUID
-source = "{{ \"Take my protein pills and put my helmet on\" | replace_last: \"my\", \"your\" }}"
+source = <<~LIQUID
+  START
+  {% unless false %}
+  foo
+  {% endunless %}
+  END
+LIQUID
 
 data = JSON.parse <<~DATA
   {
-         "s": "foobar"
-       }
+        "a": ["b", "a"]
+      }
 DATA
 
 Liquid2.tokenize(source).each do |token|

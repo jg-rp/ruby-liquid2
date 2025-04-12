@@ -4,7 +4,7 @@ require_relative "if"
 
 module Liquid2
   class UnlessTag < IfTag
-    END_TAG = Set["endunless"].freeze
+    END_TAG = "endunless"
     END_BLOCK = Set["else", "elsif", "endunless"].freeze
 
     def render(context, buffer)

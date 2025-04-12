@@ -23,6 +23,12 @@ module Liquid2
       Liquid2.to_s(left).downcase
     end
 
+    # Return _left_ with all characters converted to uppercase.
+    # Coerce _left_ to a string if it is not one already.
+    def self.upcase(left)
+      Liquid2.to_s(left).upcase
+    end
+
     # Return _left_ with special HTML characters replaced with their HTML-safe escape sequences.
     # Coerce _left_ to a string if it is not one already.
     def self.escape(left)
@@ -104,6 +110,11 @@ module Liquid2
       return left if match.empty?
 
       head + tail
+    end
+
+    # Split _left_ on every occurrence of _pattern_.
+    def self.split(left, pattern)
+      Liquid2.to_s(left).split(Liquid2.to_s(pattern))
     end
   end
 end

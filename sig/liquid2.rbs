@@ -1534,7 +1534,7 @@ module Liquid2
 
     @default: Block
 
-    END_TAG: Set[String]
+    END_TAG: String
 
     END_BLOCK: Set[String]
 
@@ -1856,7 +1856,7 @@ end
 
 module Liquid2
   class UnlessTag < IfTag
-    END_TAG: Set[String]
+    END_TAG: String
 
     END_BLOCK: Set[String]
 
@@ -2045,6 +2045,9 @@ module Liquid2
     # Cast _obj_ to a number.
     def self.to_number: (untyped obj, ?default: ::Integer) -> (Integer | Float | Numeric | BigDecimal)
 
+    # Case _obj_ to an Integer.
+    def self.to_integer: (untyped obj) -> Integer
+
     # Cast _obj_ to a number, favouring BigDecimal over Float.
     def self.to_decimal: (untyped obj, ?default: ::Integer) -> (Integer | BigDecimal | Numeric)
 
@@ -2183,12 +2186,18 @@ module Liquid2
     # Coerce _left_ and _right_ to strings if they aren't strings already.
     def self.prepend: (untyped left, untyped right) -> String
                     
-    class Reject
-      def call: (untyped left, untyped key, ?untyped? value, context: RenderContext) -> Array[untyped]
+    class FilteringFilter
+      def fetch: (untyped obj, untyped key, ?untyped? default) -> untyped
 
       def parameters: () -> untyped
+    end
 
-      def fetch: (untyped obj, untyped key, ?untyped? default) -> untyped
+    class Reject < FilteringFilter
+      def call: (untyped left, untyped key, ?untyped? value, context: RenderContext) -> Array[untyped]
+    end
+
+    class Where < FilteringFilter
+      def call: (untyped left, untyped key, ?untyped? value, context: untyped) -> untyped
     end
 
     # Return _left_ with all occurrences of _pattern_ replaced with _replacement_.
@@ -2224,5 +2233,34 @@ module Liquid2
                   
     # Return the size of _left_, or zero if _left_ has no size.
     def self.size: (untyped left) -> Integer
+    
+    # Return the subsequence of _left_ starting at _start_ up to _length_.
+    def self.slice: (untyped left, untyped start, ?untyped length) -> untyped
+
+    # Return _left_ with all characters converted to uppercase.
+    # Coerce _left_ to a string if it is not one already.
+    def self.upcase: (untyped left) -> String
+
+    class Sort
+      def call: (untyped left, ?untyped? key, context: RenderContext) -> Array[untyped]
+
+      def parameters: () -> untyped
+
+      def fetch: (untyped obj, untyped key, ?untyped? default) -> untyped
+
+      # XXX: copied from Shopify/liquid
+      def nil_safe_compare: (untyped a, untyped b) -> Integer
+                          
+      # XXX: copied from Shopify/liquid
+      def nil_safe_casecmp: (untyped a, untyped b) -> Integer
+    end
+
+    # The _sort_natural_ filter.
+    class SortNatural < Sort
+      def call: (untyped left, ?untyped? key, context: RenderContext) -> Array[untyped]
+    end
+
+    # Split _left_ on every occurrence of _pattern_.
+    def self.split: (untyped left, untyped pattern) -> Array[String]
   end
 end
