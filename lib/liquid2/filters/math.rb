@@ -31,6 +31,11 @@ module Liquid2
       raise LiquidTypeError.new(e.message, nil)
     end
 
+    # Return the result of multiplying _left_ by _right_.
+    def self.times(left, right)
+      to_decimal(left) * to_decimal(right) # steep:ignore
+    end
+
     # Return _left_ rounded down to the next whole number.
     def self.floor(left)
       to_number(left).floor
@@ -59,6 +64,47 @@ module Liquid2
       return left.round if ndigits == 0 # steep:ignore
 
       left.round(to_decimal(ndigits)) # steep:ignore
+    end
+
+    # The _sum_ filter.
+    class Sum
+      def call(left, key = nil, context:)
+        left = Liquid2::Filters.to_enumerable(left)
+
+        case key
+        when Liquid2::Lambda
+          items = key.map(context, left).reject do |item|
+            Liquid2.undefined?(item)
+          end
+
+          items.sum { |item| Liquid2::Filters.to_decimal(item) }
+        when nil, Liquid2::Undefined
+          left.sum { |item| Liquid2::Filters.to_decimal(item) } # steep:ignore
+        else
+          k = Liquid2.to_s(key)
+          left.sum { |item| Liquid2::Filters.to_decimal(fetch(item, k)) } # steep:ignore
+        end
+      end
+
+      def parameters
+        method(:call).parameters
+      end
+
+      protected
+
+      def fetch(obj, key, default = nil)
+        case obj
+        when String
+          key.is_a?(String) && obj.include?(key) ? key : default
+        when Integer
+          key.is_a?(Integer) ? obj == key : default
+        else
+          item = obj.fetch(key, nil) if obj.respond_to?(:fetch)
+          item.nil? ? default : item
+        end
+      rescue ::ArgumentError
+        default
+      end
     end
   end
 end

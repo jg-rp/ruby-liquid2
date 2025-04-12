@@ -10,6 +10,7 @@ require "rubocop/rake_task"
 RuboCop::RakeTask.new do |task|
   task.requires << "rubocop-minitest"
   task.requires << "rubocop-rake"
+  task.plugins << "rubocop-performance"
 end
 
 require "steep/rake_task"

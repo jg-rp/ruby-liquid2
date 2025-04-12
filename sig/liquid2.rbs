@@ -75,6 +75,8 @@ module Liquid2
 
     @loader: TemplateLoader
 
+    @globals: _Namespace
+
     attr_reader mode: :lax | :strict
 
     attr_reader tags: Hash[String, _Tag]
@@ -97,7 +99,7 @@ module Liquid2
 
     attr_reader default_trim: :whitespace_control_plus | :whitespace_control_minus | :whitespace_control_tilde
 
-    def initialize: (?loader: TemplateLoader?, ?mode: (:lax | :strict)) -> void
+    def initialize: (?loader: TemplateLoader?, ?mode: (:lax | :strict), ?globals: _Namespace?) -> void
 
     # @param source [String] template source text.
     # @return [Template]
@@ -135,6 +137,9 @@ module Liquid2
     #   space.
     # @return [Template]
     def get_template: (String name, ?globals: _Namespace?, ?context: RenderContext?, **untyped) -> Template
+                    
+    # Merge environment globals with another namespace.
+    def make_globals: ((_Namespace | nil) namespace) -> _Namespace
   end
 
   class Parser
@@ -2158,6 +2163,10 @@ module Liquid2
     # Return _left_ with trailing whitespace removed.
     # Coerce _left_ to a string if it is not one already.
     def self.rstrip: (untyped left) -> String
+                   
+    # Return _left_ with leading and trailing whitespace removed.
+    # Coerce _left_ to a string if it is not one already.
+    def self.strip: (untyped left) -> String
 
     # The _map_ filter.
     class Map
@@ -2262,5 +2271,27 @@ module Liquid2
 
     # Split _left_ on every occurrence of _pattern_.
     def self.split: (untyped left, untyped pattern) -> Array[String]
+                  
+    RE_HTML_BLOCKS: ::Regexp
+
+    RE_HTML_TAGS: ::Regexp
+
+    # Return _left_ with HTML tags removed.
+    def self.strip_html: (untyped left) -> String?
+
+    # Return _left_ with CR and LF removed.
+    def self.strip_newlines: (untyped left) -> String
+                           
+    # The _sum_ filter.
+    class Sum
+      def call: (untyped left, ?untyped? key, context: RenderContext) -> Integer
+
+      def parameters: () -> untyped
+
+      def fetch: (untyped obj, untyped key, ?untyped? default) -> untyped
+    end
+
+    # Return the result of multiplying _left_ by _right_.
+    def self.times: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
   end
 end

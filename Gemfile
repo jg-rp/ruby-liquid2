@@ -20,3 +20,7 @@ gem "rubocop-rake", "~> 0.7.1"
 gem "minitest-fail-fast", "~> 0.1.0"
 
 gem "bigdecimal", "~> 3.1"
+
+gem "benchmark-ips", "~> 2.14"
+
+gem "rubocop-performance", "~> 1.24"

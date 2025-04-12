@@ -36,6 +36,8 @@ module Liquid2
       end.join
       auto_escape ? Markup.new(s) : s
     when BigDecimal
+      # TODO: test capture
+      # TODO: are there any scenarios where we need to cast to_f before output?
       obj.to_f.to_s
     else
       auto_escape ? Markup.escape(obj) : Liquid2.to_s(obj)

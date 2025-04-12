@@ -55,6 +55,12 @@ module Liquid2
       Liquid2.to_s(left).rstrip
     end
 
+    # Return _left_ with leading and trailing whitespace removed.
+    # Coerce _left_ to a string if it is not one already.
+    def self.strip(left)
+      Liquid2.to_s(left).strip
+    end
+
     # Return _left_ with LF or CRLF replaced with `<br />\n`.
     def self.newline_to_br(left)
       Liquid2.to_s(left).gsub(/\r?\n/, "<br />\n")
@@ -115,6 +121,24 @@ module Liquid2
     # Split _left_ on every occurrence of _pattern_.
     def self.split(left, pattern)
       Liquid2.to_s(left).split(Liquid2.to_s(pattern))
+    end
+
+    RE_HTML_BLOCKS = Regexp.union(
+      %r{<script.*?</script>}m,
+      /<!--.*?-->/m,
+      %r{<style.*?</style>}m
+    )
+
+    RE_HTML_TAGS = /<.*?>/m
+
+    # Return _left_ with HTML tags removed.
+    def self.strip_html(left)
+      Liquid2.to_s(left).gsub(RE_HTML_BLOCKS, "").gsub(RE_HTML_TAGS, "")
+    end
+
+    # Return _left_ with CR and LF removed.
+    def self.strip_newlines(left)
+      Liquid2.to_s(left).gsub(/\r?\n/, "")
     end
   end
 end

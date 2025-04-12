@@ -41,7 +41,7 @@ module Liquid2
                 :output_stream_limit, :filters, :auto_escape, :suppress_blank_control_flow_blocks,
                 :default_trim, :validate_filter_arguments
 
-    def initialize(loader: nil, mode: :lax)
+    def initialize(loader: nil, mode: :lax, globals: nil)
       # A mapping of tag names to objects responding to `parse`.
       @tags = {
         "assign" => AssignTag,
@@ -88,6 +88,8 @@ module Liquid2
 
       @loader = loader || HashLoader.new({})
 
+      @globals = globals || {} # steep:ignore
+
       setup_tags_and_filters
     end
 
@@ -97,7 +99,7 @@ module Liquid2
       Template.new(self,
                    @parser.parse(source),
                    name: name, path: path, up_to_date: up_to_date,
-                   globals: globals, overlay: overlay)
+                   globals: make_globals(globals), overlay: overlay)
     end
 
     # Add or replace a filter. The same callable can be registered multiple times with
@@ -125,11 +127,10 @@ module Liquid2
     end
 
     def setup_tags_and_filters
-      register_filter("join", Liquid2::Filters.method(:join))
       register_filter("abs", Liquid2::Filters.method(:abs))
+      register_filter("append", Liquid2::Filters.method(:append))
       register_filter("at_least", Liquid2::Filters.method(:at_least))
       register_filter("at_most", Liquid2::Filters.method(:at_most))
-      register_filter("append", Liquid2::Filters.method(:append))
       register_filter("capitalize", Liquid2::Filters.method(:capitalize))
       register_filter("ceil", Liquid2::Filters.method(:ceil))
       register_filter("compact", Liquid2::Filters::Compact.new)
@@ -138,13 +139,14 @@ module Liquid2
       register_filter("default", Liquid2::Filters.method(:default))
       register_filter("divided_by", Liquid2::Filters.method(:divided_by))
       register_filter("downcase", Liquid2::Filters.method(:downcase))
-      register_filter("escape", Liquid2::Filters.method(:escape))
       register_filter("escape_once", Liquid2::Filters.method(:escape_once))
-      register_filter("find", Liquid2::Filters::Find.new)
+      register_filter("escape", Liquid2::Filters.method(:escape))
       register_filter("find_index", Liquid2::Filters::FindIndex.new)
-      register_filter("has", Liquid2::Filters::Has.new)
+      register_filter("find", Liquid2::Filters::Find.new)
       register_filter("first", Liquid2::Filters.method(:first))
       register_filter("floor", Liquid2::Filters.method(:floor))
+      register_filter("has", Liquid2::Filters::Has.new)
+      register_filter("join", Liquid2::Filters.method(:join))
       register_filter("last", Liquid2::Filters.method(:last))
       register_filter("lstrip", Liquid2::Filters.method(:lstrip))
       register_filter("map", Liquid2::Filters::Map.new)
@@ -154,20 +156,25 @@ module Liquid2
       register_filter("plus", Liquid2::Filters.method(:plus))
       register_filter("prepend", Liquid2::Filters.method(:prepend))
       register_filter("reject", Liquid2::Filters::Reject.new)
-      register_filter("replace", Liquid2::Filters.method(:replace))
-      register_filter("replace_first", Liquid2::Filters.method(:replace_first))
-      register_filter("replace_last", Liquid2::Filters.method(:replace_last))
-      register_filter("remove", Liquid2::Filters.method(:remove))
       register_filter("remove_first", Liquid2::Filters.method(:remove_first))
       register_filter("remove_last", Liquid2::Filters.method(:remove_last))
+      register_filter("remove", Liquid2::Filters.method(:remove))
+      register_filter("replace_first", Liquid2::Filters.method(:replace_first))
+      register_filter("replace_last", Liquid2::Filters.method(:replace_last))
+      register_filter("replace", Liquid2::Filters.method(:replace))
       register_filter("reverse", Liquid2::Filters.method(:reverse))
       register_filter("round", Liquid2::Filters.method(:round))
       register_filter("rstrip", Liquid2::Filters.method(:rstrip))
       register_filter("size", Liquid2::Filters.method(:size))
       register_filter("slice", Liquid2::Filters.method(:slice))
-      register_filter("sort", Liquid2::Filters::Sort.new)
       register_filter("sort_natural", Liquid2::Filters::SortNatural.new)
+      register_filter("sort", Liquid2::Filters::Sort.new)
       register_filter("split", Liquid2::Filters.method(:split))
+      register_filter("strip_html", Liquid2::Filters.method(:strip_html))
+      register_filter("strip_newlines", Liquid2::Filters.method(:strip_newlines))
+      register_filter("strip", Liquid2::Filters.method(:strip))
+      register_filter("sum", Liquid2::Filters::Sum.new)
+      register_filter("times", Liquid2::Filters.method(:times))
       register_filter("upcase", Liquid2::Filters.method(:upcase))
       register_filter("where", Liquid2::Filters::Where.new)
     end
@@ -215,6 +222,11 @@ module Liquid2
     rescue LiquidError => e
       e.template_name = name unless e.template_name
       raise e
+    end
+
+    # Merge environment globals with another namespace.
+    def make_globals(namespace)
+      namespace.nil? ? @globals : @globals.merge(namespace || raise) # steep:ignore
     end
   end
 end
