@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require "benchmark/ips"
-require "json"
+require "stackprof"
 require "optparse"
 require "pathname"
+require "json"
 require "liquid2"
 
 # A benchmark fixture
@@ -46,24 +46,22 @@ env = fixture.env
 source = fixture.templates["index.liquid"]
 template = env.get_template("index.liquid")
 
-Benchmark.ips do |x|
-  # Configure the number of seconds used during
-  # the warmup phase (default 2) and calculation phase (default 5)
-  x.config(warmup: 2, time: 5)
+n = 1000
 
-  x.report("scan:") do
+StackProf.run(mode: :cpu, raw: true, out: ".stackprof-cpu-scan.dump") do
+  n.times do
     Liquid2.tokenize(source)
   end
+end
 
-  x.report("parse:") do
+StackProf.run(mode: :cpu, raw: true, out: ".stackprof-cpu-parse.dump") do
+  n.times do
     env.parse(source)
   end
+end
 
-  x.report("render:") do
+StackProf.run(mode: :cpu, raw: true, out: ".stackprof-cpu-render.dump") do
+  n.times do
     template.render
-  end
-
-  x.report("both:") do
-    env.parse(source).render
   end
 end

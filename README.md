@@ -28,7 +28,15 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/liquid2.
+### Profiling
+
+#### CPU profile
+
+Dump profile data with `bundle exec ruby performance/profile.rb`, then generate an HTML flame graph with, changing the file names appropriately:
+
+```
+bundle exec stackprof --d3-flamegraph .stackprof-cpu-parse.dump > flamegraph-cpu-parse.html
+```
 
 ## License
 

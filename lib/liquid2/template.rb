@@ -35,7 +35,7 @@ module Liquid2
 
     def render(globals = nil)
       buf = @env.output_stream_limit ? LimitedStringIO.new(@env.output_stream_limit || raise) : StringIO.new
-      context = RenderContext.new(self, globals: globals)
+      context = RenderContext.new(self, globals: make_globals(globals))
       render_with_context(context, buf)
       buf.string
     end
@@ -59,6 +59,11 @@ module Liquid2
       end
 
       bytes
+    end
+
+    # Merge templates globals with another namespace.
+    def make_globals(namespace)
+      namespace.nil? ? @globals : @globals.merge(namespace)
     end
   end
 end

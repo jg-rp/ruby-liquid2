@@ -84,6 +84,7 @@ GEM
       rubocop (>= 1.72.1)
     ruby-progressbar (1.13.0)
     securerandom (0.4.1)
+    stackprof (0.2.27)
     steep (1.10.0)
       activesupport (>= 5.1)
       concurrent-ruby (>= 1.1.10)
@@ -126,6 +127,7 @@ DEPENDENCIES
   rubocop-minitest (~> 0.37.1)
   rubocop-performance (~> 1.24)
   rubocop-rake (~> 0.7.1)
+  stackprof (~> 0.2.27)
   steep (~> 1.10)
 
 BUNDLED WITH

@@ -226,7 +226,7 @@ module Liquid2
 
     # Merge environment globals with another namespace.
     def make_globals(namespace)
-      namespace.nil? ? @globals : @globals.merge(namespace || raise) # steep:ignore
+      namespace.nil? ? @globals : @globals.merge(namespace)
     end
   end
 end

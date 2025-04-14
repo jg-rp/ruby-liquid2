@@ -75,7 +75,7 @@ module Liquid2
 
     @loader: TemplateLoader
 
-    @globals: _Namespace
+    @globals: Hash[String, untyped]
 
     attr_reader mode: :lax | :strict
 
@@ -99,11 +99,11 @@ module Liquid2
 
     attr_reader default_trim: :whitespace_control_plus | :whitespace_control_minus | :whitespace_control_tilde
 
-    def initialize: (?loader: TemplateLoader?, ?mode: (:lax | :strict), ?globals: _Namespace?) -> void
+    def initialize: (?loader: TemplateLoader?, ?mode: (:lax | :strict), ?globals: Hash[String, untyped]?) -> void
 
     # @param source [String] template source text.
     # @return [Template]
-    def parse: (String source, ?name: String, ?path: String?, ?up_to_date: Proc::_Callable?, ?globals: _Namespace?, ?overlay: _Namespace?) -> Template
+    def parse: (String source, ?name: String, ?path: String?, ?up_to_date: Proc::_Callable?, ?globals: Hash[String, untyped]?, ?overlay: Hash[String, untyped]?) -> Template
 
     # Add or replace a filter. The same callable can be registered multiple times with
     # different names.
@@ -130,16 +130,16 @@ module Liquid2
             
     # Load and parse a template using the configured template loader.
     # @param name [String] The template's name.
-    # @param globals [_Namespace?] Render context variables to attach to the template.
+    # @param globals [Hash[String, untyped]?] Render context variables to attach to the template.
     # @param context [RenderContext?] An optional render context that can be used to
     #   narrow the template search space.
     # @param kwargs Arbitrary arguments that can be used to narrow the template search
     #   space.
     # @return [Template]
-    def get_template: (String name, ?globals: _Namespace?, ?context: RenderContext?, **untyped) -> Template
+    def get_template: (String name, ?globals: Hash[String, untyped]?, ?context: RenderContext?, **untyped) -> Template
                     
     # Merge environment globals with another namespace.
-    def make_globals: ((_Namespace | nil) namespace) -> _Namespace
+    def make_globals: ((Hash[String, untyped] | nil) namespace) -> Hash[String, untyped]
   end
 
   class Parser
@@ -318,9 +318,9 @@ module Liquid2
 
     @path: String?
 
-    @globals: _Namespace
+    @globals: Hash[String, untyped]
 
-    @overlay: _Namespace
+    @overlay: Hash[String, untyped]
 
     @up_to_date: Proc::_Callable?
 
@@ -332,9 +332,9 @@ module Liquid2
 
     attr_reader path: String?
 
-    attr_reader globals: _Namespace
+    attr_reader globals: Hash[String, untyped]
 
-    attr_reader overlay: _Namespace
+    attr_reader overlay: Hash[String, untyped]
 
     attr_reader up_to_date: Proc::_Callable?
 
@@ -344,10 +344,10 @@ module Liquid2
     # @param path [String?] The path or other qualifying data to _name_.
     # @param up_to_date [_Callable] A proc that returns `false` if the template has been
     #   modified and need to be reloaded.
-    # @param globals [_Namespace] Global template variables.
-    # @param overlay [_Namespace] Additional template variables. Could be from front matter
+    # @param globals [Hash[String, untyped]] Global template variables.
+    # @param overlay [Hash[String, untyped]] Additional template variables. Could be from front matter
     #   or other meta data store, for example.
-    def initialize: (Environment env, RootNode ast, ?name: String, ?path: String?, ?up_to_date: Proc::_Callable?, ?globals: _Namespace?, ?overlay: _Namespace?) -> void
+    def initialize: (Environment env, RootNode ast, ?name: String, ?path: String?, ?up_to_date: Proc::_Callable?, ?globals: Hash[String, untyped]?, ?overlay: Hash[String, untyped]?) -> void
 
     def to_s: () -> String
             
@@ -358,6 +358,9 @@ module Liquid2
     def render: (?Hash[String, untyped]? globals) -> String
 
     def render_with_context: (RenderContext context, _Buffer buffer, ?partial: bool, ?block_scope: bool, ?namespace: Hash[String, untyped]?) -> Integer
+                           
+    # Merge templates globals with another namespace.
+    def make_globals: (Hash[String, untyped]? namespace) -> Hash[String, untyped]
   end
 
   # Liquid template source text and meta data.
@@ -368,7 +371,7 @@ module Liquid2
 
     @up_to_date: Proc::_Callable?
 
-    @matter: _Namespace?
+    @matter: Hash[String, untyped]?
 
     attr_reader source: String
 
@@ -376,9 +379,9 @@ module Liquid2
 
     attr_reader up_to_date: Proc::_Callable?
 
-    attr_reader matter: _Namespace?
+    attr_reader matter: Hash[String, untyped]?
 
-    def initialize: (source: String, name: String, ?up_to_date: Proc::_Callable?, ?matter: _Namespace?) -> void
+    def initialize: (source: String, name: String, ?up_to_date: Proc::_Callable?, ?matter: Hash[String, untyped]?) -> void
   end
 
   # The base class for all template loaders.
@@ -392,7 +395,7 @@ module Liquid2
     # @return [TemplateSource]
     def get_source: (Environment env, String name, ?context: RenderContext?, **untyped kwargs) -> TemplateSource
 
-    def load: (Environment env, String name, ?globals: _Namespace?, ?context: RenderContext?, **untyped kwargs) -> Template
+    def load: (Environment env, String name, ?globals: Hash[String, untyped]?, ?context: RenderContext?, **untyped kwargs) -> Template
   end
 
   # A template loader that reads templates from a hash.

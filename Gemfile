@@ -24,3 +24,5 @@ gem "bigdecimal", "~> 3.1"
 gem "benchmark-ips", "~> 2.14"
 
 gem "rubocop-performance", "~> 1.24"
+
+gem "stackprof", "~> 0.2.27"
