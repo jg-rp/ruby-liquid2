@@ -3,34 +3,34 @@
 require "json"
 require "liquid2"
 
-templates = {
-  "foo" => "Hello, {{ you }}!"
-}
-
-env = Liquid2::Environment.new(loader: Liquid2::HashLoader.new(templates))
 source = <<~LIQUID
   START
-  {% unless false %}
+  {% unless 'fo'o' %}
   foo
   {% endunless %}
   END
 LIQUID
 
-data = JSON.parse <<~DATA
-  {
-        "a": ["b", "a"]
-      }
-DATA
+# data = JSON.parse <<~DATA
+#   {
+#         "a": ["b", "a"]
+#       }
+# DATA
 
-Liquid2.tokenize(source).each do |token|
-  puts "#{token.full_start.to_s.ljust(3)}:#{token.kind.to_s.ljust(50)} -> #{token.text.inspect}"
+scanner = StringScanner.new("")
+Liquid2::Scanner.tokenize(source, scanner).each do |token|
+  p token
 end
 
-t = env.parse(source)
+# Liquid2.tokenize(source).each do |token|
+#   puts "#{token.full_start.to_s.ljust(3)}:#{token.kind.to_s.ljust(50)} -> #{token.text.inspect}"
+# end
 
-# puts JSON.pretty_generate(t.ast.dump)
+# t = env.parse(source)
 
-puts t.render(data)
+# # puts JSON.pretty_generate(t.ast.dump)
+
+# puts t.render(data)
 
 # TODO: document the drop interface
 #   - #to_liquid(context)

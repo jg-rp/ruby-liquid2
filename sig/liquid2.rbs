@@ -2298,3 +2298,65 @@ module Liquid2
     def self.times: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
   end
 end
+
+module Liquid2
+  # Liquid template source text lexical scanner.
+  #
+  # This is a single pass tokenizer. We support tag and output delimiters inside string
+  # literals, so we must scan expressions as we go.
+  #
+  # We give comment and raw tags special consideration here.
+  class Scanner
+    @source: String
+
+    @scanner: StringScanner
+
+    # A pointer to the start of the current token.
+    @start: Integer
+
+    # Tokens are arrays of (kind, value, start index)
+    @tokens: Array[[Symbol, String?, Integer]]
+
+    attr_reader tokens: Array[[Symbol, String?, Integer]]
+
+    RE_WHITESPACE: ::Regexp
+
+    RE_LINE_SPACE: ::Regexp
+
+    RE_WORD: ::Regexp
+
+    RE_INT: ::Regexp
+
+    RE_FLOAT: ::Regexp
+
+    RE_PUNCTUATION: ::Regexp
+
+    # Keywords and symbols that get their own token kind.
+    TOKEN_MAP: Hash[String, Symbol]
+
+    def self.tokenize: (String source, StringScanner scanner) -> Array[[Symbol, String?, Integer]]
+
+    # @param source [String]
+    # @param scanner [StringScanner]
+    def initialize: (String source, StringScanner scanner) -> void
+
+    def run: () -> void
+
+    # @param kind [Symbol]
+    # @param value [String?]
+    # @return void
+    def emit: (Symbol kind, String? value) -> void
+
+    def skip_trivia: () -> void
+
+    def accept_whitespace_control: () -> bool
+
+    def lex_markup: () -> Symbol?
+
+    def lex_expression: () -> Symbol?
+
+    # Scan a string literal surrounded by _quote_.
+    # Assumes the opening quote has already been consumed and emitted.
+    def scan_string: (("'" | "\"") quote) -> void
+  end
+end

@@ -167,8 +167,12 @@ module Liquid2
     def accept_whitespace_control
       raise "must emit before accepting whitespace control" if @scanner.pos != @start
 
-      if (value = @scanner.scan(RE_WHITESPACE_CONTROL))
-        emit(:token_whitespace_control, value)
+      ch = @scanner.peek(1)
+
+      case ch
+      when "-", "+", "~"
+        @scanner.pos += 1
+        emit(:token_whitespace_control, ch)
         true
       else
         false
@@ -251,49 +255,53 @@ module Liquid2
     end
 
     def lex_markup
-      accept_comment
+      head = @scanner.peek(2)
 
-      if (value = accept(/\{\{/))
-        emit(:token_output_start, value)
+      case head
+      when "{#"
+        accept_comment
+        :lex_markup
+      when "{{"
+        @scanner.pos += 2
+        emit(:token_output_start, "{{")
         accept_whitespace_control
-        return :lex_expression
-      end
-
-      if (value = accept(/\{%/))
-        emit(:token_tag_start, value)
+        :lex_expression
+      when "{%"
+        @scanner.pos += 2
+        emit(:token_tag_start, "{%")
         accept_whitespace_control
 
         accept_trivia
         if (tag_name = accept(/(?:[a-z][a-z_0-9]*|#)/))
           emit(:token_tag_name, tag_name)
 
-          return case tag_name
-                 when "#"
-                   :lex_inside_inline_comment
-                 when "comment"
-                   :lex_block_comment
-                 when "raw"
-                   :lex_raw
-                 when "liquid"
-                   :lex_line_statements
-                 else
-                   :lex_expression
-                 end
+          case tag_name
+          when "#"
+            :lex_inside_inline_comment
+          when "comment"
+            :lex_block_comment
+          when "raw"
+            :lex_raw
+          when "liquid"
+            :lex_line_statements
+          else
+            :lex_expression
+          end
         else
           # Missing or malformed tag name
           # Try to parse expr anyway
-          return :lex_expression
+          :lex_expression
+        end
+      else
+        if (text = @scanner.scan_until(/\{[\{%#]/))
+          @scanner.pos -= 2
+          emit(:token_other, text[...-2] || raise)
+          :lex_markup
+        elsif (text = @scanner.scan_until(/\Z/))
+          emit(:token_other, text) unless text.empty?
+          nil
         end
       end
-
-      # TODO: check that newlines arn't breaking up tokens more than necessary
-      if (text = accept(/.+?(?=(\{\{|\{%|\{#+|\Z))/m))
-        emit(:token_other, text)
-        return :lex_markup
-      end
-
-      # End of input
-      nil
     end
 
     def lex_expression
@@ -307,28 +315,32 @@ module Liquid2
           scan_string(value) if S_QUOTES.member?(value)
         else
           accept_whitespace_control
-          if accept(/%\}/)
+
+          head = @scanner.peek(2)
+
+          case head
+          when "%}"
+            @scanner.pos += 2
             emit(:token_tag_end, "%}")
             return :lex_markup
-          end
-
-          if accept(/\}\}/)
+          when "}}"
+            @scanner.pos += 2
             emit(:token_output_end, "}}")
             return :lex_markup
+          else
+            # Not the end of an expression
+
+            # Two unknown tokens in a row?
+            # Assume we're no longer inside a tag or output statement.
+            return :lex_markup if unknown
+
+            unknown_ch = self.next
+            # End of input?
+            return nil if unknown_ch == ""
+
+            emit(:token_unknown, unknown_ch)
+            unknown = true
           end
-
-          # Not the end of an expression
-
-          # Two unknown tokens in a row?
-          # Assume we're no longer inside a tag or output statement.
-          return :lex_markup if unknown
-
-          unknown_ch = self.next
-          # End of input?
-          return nil if unknown_ch == ""
-
-          emit(:token_unknown, unknown_ch)
-          unknown = true
         end
       end
     end
