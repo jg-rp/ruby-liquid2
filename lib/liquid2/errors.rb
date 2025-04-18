@@ -3,11 +3,11 @@
 module Liquid2
   # The base class for all Liquid errors.
   class LiquidError < StandardError
-    attr_accessor :node_or_token, :template_name
+    attr_accessor :node, :template_name
 
-    def initialize(message, node_or_token = nil)
+    def initialize(message, node = nil)
       super(message)
-      @node_or_token = node_or_token
+      @node = node
       @template_name = nil
     end
 

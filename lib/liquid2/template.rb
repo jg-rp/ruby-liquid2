@@ -31,8 +31,6 @@ module Liquid2
       @name + @path.to_s
     end
 
-    def dump = @ast.dump
-
     def render(globals = nil)
       buf = @env.output_stream_limit ? LimitedStringIO.new(@env.output_stream_limit || raise) : StringIO.new
       context = RenderContext.new(self, globals: make_globals(globals))

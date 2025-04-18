@@ -1,4 +1,155 @@
 module Liquid2
+  interface _HasToken
+    def token: () -> [Symbol, String?, Integer]
+  end
+
+  interface _Tag
+    # TODO: for some reason a singleton with a self.parse method does not type check.
+    def parse: (Parser) -> Tag
+  end
+
+  # TODO: Revisit this. I can't find a way to define a callable interface with arbitrary
+  # arguments that type checks against lambda literals.
+  interface _Filter
+    # def call: (untyped left, *untyped, **untyped) -> untyped
+    def parameters: () -> untyped
+    def respond_to?: (Symbol) -> bool
+  end
+
+  interface _Undefined
+    def new: (String name, ?node: (_HasToken | nil)) -> Undefined
+  end
+
+  VERSION: String
+  # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+  
+  DEFAULT_ENVIRONMENT: Environment
+
+  def self.to_liquid_string: (untyped obj) -> String
+                           
+  def self.to_output_string: (untyped obj, ?auto_escape: bool) -> String
+
+  def self.to_liquid_int: (untyped obj, ?default: ::Integer) -> Integer
+
+  # Return `true` if _obj_ is Liquid truthy.
+  # @param context [RenderContext]
+  # @param obj [Object]
+  # @return [bool]
+  def self.truthy?: (RenderContext context, untyped obj) -> bool
+
+  # Return `true` if _obj_ is undefined.
+  def self.undefined?: (untyped obj) -> bool
+
+  alias self.to_s self.to_liquid_string
+
+  alias self.to_output_s self.to_output_string
+
+  alias self.to_i self.to_liquid_int
+
+  # Template parsing and rendering configuration.
+  #
+  # A Liquid::Environment is where you might register custom tags and filters,
+  # or store global context data that should be available to all templates.
+  class Environment
+    # A mapping of tag names to objects responding to `parse`.
+    @tags: Hash[String, _Tag]
+
+    # A mapping of filter names to objects responding to `#call(left, ...)`,
+    # along with a flag to indicate if the callable accepts a `context`
+    # keyword argument.
+    @filters: Hash[String, [_Filter, (Integer | nil)]]
+
+    @mode: :lax | :strict
+
+    @auto_escape: bool
+
+    @local_namespace_limit: Integer?
+
+    @context_depth_limit: Integer
+
+    @loop_iteration_limit: Integer?
+
+    @output_stream_limit: Integer?
+
+    @suppress_blank_control_flow_blocks: bool
+
+    @validate_filter_arguments: bool
+
+    @default_trim: :whitespace_control_plus | :whitespace_control_minus | :whitespace_control_tilde
+
+    @undefined: _Undefined
+
+    @loader: TemplateLoader
+
+    @globals: Hash[String, untyped]
+
+    attr_reader mode: :lax | :strict
+
+    attr_reader tags: Hash[String, _Tag]
+
+    attr_reader local_namespace_limit: Integer?
+
+    attr_reader context_depth_limit: Integer
+
+    attr_reader loop_iteration_limit: Integer?
+
+    attr_reader output_stream_limit: Integer?
+
+    attr_reader filters: Hash[String, [_Filter, (Integer | nil)]]
+
+    attr_reader auto_escape: bool
+
+    attr_reader suppress_blank_control_flow_blocks: bool
+
+    attr_reader validate_filter_arguments: bool
+
+    attr_reader default_trim: :whitespace_control_plus | :whitespace_control_minus | :whitespace_control_tilde
+
+    def initialize: (?loader: TemplateLoader?, ?mode: (:lax | :strict), ?globals: Hash[String, untyped]?) -> void
+
+    # @param source [String] template source text.
+    # @return [Template]
+    def parse: (String source, ?name: String, ?path: String?, ?up_to_date: Proc::_Callable?, ?globals: Hash[String, untyped]?, ?overlay: Hash[String, untyped]?) -> Template
+
+    # Add or replace a filter. The same callable can be registered multiple times with
+    # different names.
+    #
+    # If _callable_ accepts a keyword parameter called `context`, the active render
+    # context will be passed to `#call`.
+    #
+    # @param name [String] The name of the filter, as used by template authors.
+    # @param callable [responds to call] An object that responds to `#call(left, ...)`
+    #   and `#parameters`. Like a Proc or Method.
+    def register_filter: (String name, _Filter callable) -> void
+
+    # Remove a filter from the filter register.
+    # @param name [String] The name of the filter.
+    # @return [callable | nil] The callable implementing the removed filter, or nil
+    #    if _name_ did not exist in the filter register.
+    def delete_filter: (String name) -> ([_Filter, (Integer | nil)] | nil)
+
+    def setup_tags_and_filters: () -> void
+
+    def undefined: (String name, ?node: _HasToken?) -> Undefined
+
+    def trim: (String text, Symbol left_trim, Symbol right_trim) -> String
+            
+    # Load and parse a template using the configured template loader.
+    # @param name [String] The template's name.
+    # @param globals [Hash[String, untyped]?] Render context variables to attach to the template.
+    # @param context [RenderContext?] An optional render context that can be used to
+    #   narrow the template search space.
+    # @param kwargs Arbitrary arguments that can be used to narrow the template search
+    #   space.
+    # @return [Template]
+    def get_template: (String name, ?globals: Hash[String, untyped]?, ?context: RenderContext?, **untyped) -> Template
+                    
+    # Merge environment globals with another namespace.
+    def make_globals: ((Hash[String, untyped] | nil) namespace) -> Hash[String, untyped]
+  end
+end
+
+module Liquid2
   # Liquid template source text lexical scanner.
   #
   # This is a single pass tokenizer. We support tag and output delimiters inside string
@@ -64,5 +215,1501 @@ module Liquid2
     # Assumes the opening quote has already been consumed and emitted.
     def scan_single_quote_string: () -> void
     def scan_double_quote_string: () -> void
+  end
+end
+
+module Liquid2
+  # Liquid template parser.
+  class Parser
+    @env: Environment
+
+    @tokens: Array[[Symbol, String?, Integer]]
+
+    @pos: Integer
+
+    @eof: [Symbol, String?, Integer]
+
+    @whitespace_carry: Symbol?
+
+    # Parse Liquid template text into a syntax tree.
+    # @param source [String]
+    # @return [Array[Node | String]]
+    def self.parse: (Environment env, String source, ?scanner: StringScanner?) -> Array[Node | String]
+
+    # @param env [Environment]
+    # @param tokens [Array[[Symbol, String?, Integer]]]
+    def initialize: (Environment env, Array[[Symbol, String?, Integer]] tokens) -> void
+
+    # Return the current token without advancing the pointer.
+    # An EOF token is returned if there are no tokens left.
+    def current: () -> [Symbol, String?, Integer]
+
+    # Return the kind of the current token without advancing the pointer.
+    def current_kind: () -> Symbol
+
+    # Return the next token and advance the pointer.
+    def next: () -> [Symbol, String?, Integer]
+
+    # Return the kind of the next token and advance the pointer
+    def next_kind: () -> Symbol
+
+    def peek: (?::Integer offset) -> [Symbol, String?, Integer]
+
+    def peek_kind: (?::Integer offset) -> Symbol
+
+    def previous: () -> [Symbol, String?, Integer]
+
+    # Consume the next token if its kind matches _kind_, raise an error if it does not.
+    # @param kind [Symbol]
+    # @return [Token] The consumed token.
+    def eat: (Symbol kind) -> [Symbol, String?, Integer]
+
+    # Consume the next token if its kind is in _kinds_, raise an error if it does not.
+    # @param kind [Symbol]
+    # @return [Token] The consumed token.
+    def eat_one_of: (*Symbol kinds) -> [Symbol, String?, Integer]
+
+    # @param name [String]
+    # @return The :token_tag_name token.
+    def eat_empty_tag: (String name) -> [Symbol, String?, Integer]
+
+    # Return `true` if we're at the start of a tag named _name_.
+    # @param name [String]
+    # @return [bool]
+    def tag?: (String name) -> bool
+
+    # Return `true` if the current token is a word matching _text_.
+    # @param text [String]
+    # @return [bool]
+    def word?: (String text) -> bool
+
+    # Return the next tag name without advancing the pointer.
+    # Assumes the current token is :token_tag_start.
+    # @return [String]
+    def peek_tag_name: () -> String
+
+    # Advance the pointer if the current token is a whitespace control token.
+    def skip_whitespace_control: () -> void
+
+    # Advance the pointer if the current token is a whitespace control token, and
+    # remember the token's value for the next text node.
+    def carry_whitespace_control: () -> void
+
+    # @return [Array[Node | String]]
+    def parse: () -> Array[Node | String]
+
+    # Parse Liquid markup until we find a tag token in _end_block_.
+    # @param end_block [responds to include?] An array or set of tag names that will
+    #   indicate the end of the block.
+    # @return [Block]
+    def parse_block: (Set[String] end_block) -> Block
+
+    # @return [FilteredExpression|TernaryExpression]
+    def parse_filtered_expression: () -> (FilteredExpression | TernaryExpression)
+
+    # @return [LoopExpression]
+    def parse_loop_expression: () -> LoopExpression
+
+    # Parse a _primary_ expression.
+    # A primary expression is a literal, a path (to a variable), or a logical
+    # expression composed of other primary expressions.
+    # @return [Node]
+    def parse_primary: (?precedence: Integer) -> untyped
+
+    # Parse a string literal without interpolation..
+    # @return [String]
+    # @raises [LiquidTypeError].
+    def parse_string: () -> String
+
+    def parse_identifier: (?trailing_question: bool) -> Identifier
+
+    # Parse comma separated expression.
+    # Leading commas should be consumed by the caller.
+    # @return [Array<PositionalArgument>]
+    def parse_positional_arguments: () -> Array[PositionalArgument]
+
+    # Parse comma name/value pairs.
+    # Leading commas should be consumed by the caller.
+    # @return [Array<KeywordArgument>]
+    def parse_keyword_arguments: () -> Array[KeywordArgument]
+
+    class Precedence
+      LOWEST: 1
+
+      LOGICAL_RIGHT: 2
+
+      LOGICAL_OR: 3
+
+      LOGICAL_AND: 4
+
+      RELATIONAL: 5
+
+      MEMBERSHIP: 6
+
+      PREFIX: 7
+    end
+
+    PRECEDENCES: Hash[Symbol, Integer]
+
+    BINARY_OPERATORS: Set[Symbol]
+
+    TERMINATE_OUTPUT: Set[Symbol]
+
+    TERMINATE_FILTER: Set[Symbol]
+
+    TERMINATE_GROUPED_EXPRESSION: Set[Symbol]
+
+    TERMINATE_LAMBDA_PARAM: Set[Symbol]
+
+    KEYWORD_ARGUMENT_DELIMITERS: Set[Symbol]
+
+    PRIMITIVE_TOKENS: Set[Symbol]
+
+    RESERVED_WORDS: Set[Symbol]
+
+    LOOP_KEYWORDS: Set[String]
+
+    WC_TOKENS: Set[Symbol]
+
+    # @return [Output]
+    def parse_output: () -> Output
+
+    # @return [Node]
+    def parse_tag: () -> Tag
+
+    # @return [Node]
+    def parse_path: () -> Path
+
+    # @return [Node]
+    def parse_bracketed_path_selector: () -> (String | Integer | Path)
+
+    # @return [Node]
+    def parse_shorthand_path_selector: () -> (String | Integer)
+
+    # @return [Node]
+    def parse_range_lambda_or_grouped_expression: () -> untyped
+
+    # @return [Node]
+    def parse_prefix_expression: () -> untyped
+
+    # @param left [Expression]
+    # @return [Node]
+    def parse_infix_expression: (untyped left) -> untyped
+
+    # @return [Array<Filter>]
+    def parse_filters: () -> Array[Filter]
+
+    # @return [Filter]
+    def parse_filter: () -> Filter
+
+    # @return [Node]
+    def parse_arrow_function: () -> untyped
+
+    # @param expr [Expression] The first parameter already passed by the caller.
+    # @return [Expression]
+    def parse_partial_arrow_function: (untyped expr) -> untyped
+
+    # @param left [Expression]
+    # @return [Node]
+    def parse_ternary_expression: (FilteredExpression left) -> TernaryExpression
+  end
+end
+
+module Liquid2
+  # A compiled template bound to a Liquid environment and ready to be rendered.
+  class Template
+    @env: Environment
+
+    @ast: Array[Node | String]
+
+    @name: String
+
+    @path: String?
+
+    @globals: Hash[String, untyped]
+
+    @overlay: Hash[String, untyped]
+
+    @up_to_date: Proc::_Callable?
+
+    attr_reader env: Environment
+
+    attr_reader ast: Array[Node | String]
+
+    attr_reader name: String
+
+    attr_reader path: String?
+
+    attr_reader globals: Hash[String, untyped]
+
+    attr_reader overlay: Hash[String, untyped]
+
+    attr_reader up_to_date: Proc::_Callable?
+
+    # @param env [Environment]
+    # @param ast [RootNode]
+    # @param name [String] The template's name.
+    # @param path [String?] The path or other qualifying data to _name_.
+    # @param up_to_date [_Callable] A proc that returns `false` if the template has been
+    #   modified and need to be reloaded.
+    # @param globals [Hash[String, untyped]] Global template variables.
+    # @param overlay [Hash[String, untyped]] Additional template variables. Could be from front matter
+    #   or other meta data store, for example.
+    def initialize: (Environment env, Array[Node | String] ast, ?name: String, ?path: String?, ?up_to_date: Proc::_Callable?, ?globals: Hash[String, untyped]?, ?overlay: Hash[String, untyped]?) -> void
+
+    def to_s: () -> String
+            
+    def full_name: () -> String
+
+    def render: (?Hash[String, untyped]? globals) -> String
+
+    def render_with_context: (RenderContext context, _Buffer buffer, ?partial: bool, ?block_scope: bool, ?namespace: Hash[String, untyped]?) -> Integer
+                           
+    # Merge templates globals with another namespace.
+    def make_globals: (Hash[String, untyped]? namespace) -> Hash[String, untyped]
+  end
+
+  # Liquid template source text and meta data.
+  class TemplateSource
+    @source: String
+
+    @name: String
+
+    @up_to_date: Proc::_Callable?
+
+    @matter: Hash[String, untyped]?
+
+    attr_reader source: String
+
+    attr_reader name: String
+
+    attr_reader up_to_date: Proc::_Callable?
+
+    attr_reader matter: Hash[String, untyped]?
+
+    def initialize: (source: String, name: String, ?up_to_date: Proc::_Callable?, ?matter: Hash[String, untyped]?) -> void
+  end
+
+  # The base class for all template loaders.
+  class TemplateLoader
+    # Load and return template source text and any associated data.
+    # @param env [Environment] The current Liquid environment.
+    # @param name [String] A name or identifier for the target template source text.
+    # @param context [RenderContext?] The current render context, if one is available.
+    # @param *kwargs Arbitrary arguments that can be used to narrow the template source
+    #   search space.
+    # @return [TemplateSource]
+    def get_source: (Environment env, String name, ?context: RenderContext?, **untyped kwargs) -> TemplateSource
+
+    def load: (Environment env, String name, ?globals: Hash[String, untyped]?, ?context: RenderContext?, **untyped kwargs) -> Template
+  end
+
+  # A template loader that reads templates from a hash.
+  class HashLoader < TemplateLoader
+    @templates: Hash[String, String]
+
+    # @param templates [Hash<String, String>] A mapping of template names to template source text.
+    def initialize: (Hash[String, String] templates) -> void
+
+    def get_source: (Environment env, String name, ?context: RenderContext?, **untyped kwargs) -> TemplateSource
+  end
+
+  # The default undefined type. Can be iterated over an indexed without error.
+  class Undefined
+    @name: untyped
+
+    @node: untyped
+
+    @force_default: bool
+
+    attr_reader force_default: bool
+
+    def initialize: (String name, ?node: Node?) -> void
+
+    def []: (*untyped) ?{ (?) -> untyped } -> self
+
+    def key?: (*untyped) ?{ (?) -> untyped } -> false
+
+    def include?: (*untyped) ?{ (?) -> untyped } -> false
+
+    def member?: (*untyped) ?{ (?) -> untyped } -> false
+
+    def fetch: (*untyped) ?{ (?) -> untyped } -> self
+
+    def !: () -> true
+
+    def ==: (untyped other) -> untyped
+
+    alias eql? ==
+
+    def size: () -> 0
+
+    def length: () -> 0
+
+    def to_s: () -> ""
+
+    def to_i: () -> 0
+
+    def to_f: () -> ::Float
+
+    def each: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def each_with_index: (*untyped) ?{ (?) -> untyped } -> untyped
+                       
+    def join: (*untyped) -> ""
+
+    def to_liquid: (RenderContext _context) -> nil
+
+    def poke: () -> true
+  end
+
+  # An undefined type that always raises an exception.
+  class StrictUndefined < Undefined
+    @message: String
+
+    def initialize: (String name, ?node: Node?) -> void
+
+    def respond_to_missing?: () -> true
+
+    def method_missing: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def []: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def key?: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def include?: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def member?: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def fetch: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def !: () -> untyped
+
+    def ==: (untyped _other) -> untyped
+
+    def !=: (untyped _other) -> untyped
+
+    alias eql? ==
+
+    def size: () -> untyped
+
+    def length: () -> untyped
+
+    def to_s: () -> untyped
+
+    def to_i: () -> untyped
+
+    def to_f: () -> untyped
+
+    def each: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def each_with_index: (*untyped) ?{ (?) -> untyped } -> untyped
+                       
+    def join: (*untyped) -> untyped
+
+    def to_liquid: (RenderContext _context) -> untyped
+
+    def poke: () -> bool
+  end
+
+  # A strict undefined type that plays nicely with the _default_ filter.
+  class StrictDefaultUndefined < StrictUndefined
+    @force_default: bool
+
+    def initialize: (String name, ?node: Node?) -> void
+  end
+end
+
+module Liquid2
+  interface _Buffer
+    def write: (String) -> Integer
+    def string: () -> String
+  end
+
+  # The base class for all nodes in a Liquid syntax tree.
+  class Node
+    @token: [Symbol, String?, Integer]
+
+    @blank: bool
+
+    attr_reader blank: bool
+
+    attr_reader token: [Symbol, String?, Integer]
+
+    # @param token [[Symbol, String?, Integer]]
+    def initialize: ([Symbol, String?, Integer] token) -> void
+
+    def render: (RenderContext context, _Buffer buffer) -> Integer
+  end
+
+  # An node representing a block of Liquid markup.
+  # Essentially an array of other nodes and strings.
+  # @param token [[Symbol, String?, Integer]]
+  # @param nodes [Array[Node | String]]
+  class Block < Node
+    @nodes: Array[Node | String]
+
+    def initialize: ([Symbol, String?, Integer] token, Array[Node | String] nodes) -> void
+
+    def render: (RenderContext context, _Buffer buffer) -> Integer
+  end
+
+  # A Liquid block guarded by an expression.
+  # Only if the expression evaluates to a truthy value will the block be rendered.
+  class ConditionalBlock < Node
+    @expression: untyped
+
+    @block: Block
+
+    @blank: bool
+
+    attr_reader expression: untyped
+
+    attr_reader block: Block
+
+    def initialize: ([Symbol, String?, Integer] token, untyped expression, Block block) -> void
+
+    def render: (RenderContext context, _Buffer buffer) -> Integer
+  end
+
+  # Base class for all Liquid tags.
+  class Tag < Node
+    # Render this node to the output buffer.
+    # @param context [RenderContext]
+    # @param buffer [StringIO]
+    # @return [Integer] The number of bytes written to _buffer_.
+    def render: (RenderContext context, _Buffer buffer) -> Integer
+  end
+end
+
+module Liquid2
+  
+  # Hash-like object for resolving built-in dynamic objects.
+  class BuiltIn
+    def key?: (String key) -> bool
+
+    def fetch: (String key, ?::Symbol default) -> untyped
+  end
+
+  # Per render contextual information. A new RenderContext is created automatically
+  # every time `Template#render` is called.
+  class RenderContext
+    @env: Environment
+
+    @template: Template
+
+    @globals: _Namespace
+
+    @disabled_tags: (Array[String] | Set[String])
+
+    @copy_depth: Integer
+
+    @parent: RenderContext?
+
+    @loop_carry: Integer
+
+    # The current size of the local namespace. _size_ is a non-specific measure of the
+    # amount of memory used to store template local variables.
+    @assign_score: Integer
+
+    # A namespace for template local variables (those bound with `assign` or `capture`).
+    @locals:  Hash[String, untyped]
+
+    # A namespace for `increment` and `decrement` counters.
+    @counters: Hash[String, Integer]
+
+    # Namespaces are searched from right to left. When a RenderContext is extended, the
+    # temporary namespace is pushed to the end of this queue.
+    @scope: ReadOnlyChainHash
+
+    # A namespace supporting stateful tags, such as `cycle` and `increment`.
+    # It's OK to use this hash for storing custom tag state.
+    @tag_namespace: Hash[Symbol, untyped]
+
+    # A stack of forloop objects used for populating forloop.parentloop.
+    @loops: Array[ForLoop]
+
+    # A stack of interrupts used to signal breaking and continuing `for` loops.
+    @interrupts: Array[:break | :continue]
+
+    attr_reader env: Environment
+
+    attr_reader template: Template
+
+    attr_accessor interrupts: Array[:break | :continue]
+
+    BUILT_IN: BuiltIn
+
+    # @param template [Template]
+    # @param globals [Hash<String, Object>?]
+    # @param disabled_tags [Array<String>?]
+    # @param copy_depth [Integer?]
+    # @param parent [RenderContext?]
+    # @param loop_carry [Integer?]
+    # @param local_namespace_carry [Integer?]
+    def initialize: (Template template, ?globals: _Namespace?, ?disabled_tags: (Array[String] | Set[String])?, ?copy_depth: ::Integer, ?parent: RenderContext?, ?loop_carry: ::Integer, ?local_namespace_carry: ::Integer) -> void
+
+    def evaluate: (untyped obj) -> untyped
+
+    # Add _key_ to the local scope with value _value_.
+    # @param key [String]
+    # @param value [Object]
+    def assign: (String key, untyped value) -> void
+
+    alias []= assign
+
+    # Resolve _path_ to variable/data in the current scope.
+    # @param path [Array<String|Integer>] Path segments.
+    # @param node [Node?] An associated token to use for error context.
+    # @param default [Object?] A default value to return if the path can no be resolved.
+    # @return [Object]
+    def fetch: (Array[untyped] path, node: _HasToken, ?default: untyped) -> untyped
+
+    # Resolve variable _name_ in the current scope.
+    # @param name [String]
+    # @param default [Object?]
+    # @return [Object?]
+    def resolve: (untyped name, ?default: ::Symbol) -> (untyped | nil)
+
+    alias [] resolve
+
+    # Extend the scope of this context with the given namespace. Expects a block.
+    # @param namespace [Hash<String, Object>]
+    # @param template [Template?] Replace the current template for the duration of the block.
+    def extend: (untyped namespace, ?template: untyped?) { () -> untyped } -> untyped
+
+    # Copy this render context and add _namespace_ to the new scope.
+    # @param namespace [Hash<String, Object>]
+    # @param template [Template?] The template object bound to the new context.
+    # @param disabled_tags [Set<String>] Names of tags to disallow in the new context.
+    # @param carry_loop_iterations [bool] If true, pass the current loop iteration count to the
+    #   new context.
+    # @param block_scope [bool] It true, retain the current scope in the new context. Otherwise
+    #   only global variables will be included in the new context's scope.
+    def copy: (untyped namespace, ?template: untyped?, ?disabled_tags: untyped?, ?carry_loop_iterations: bool, ?block_scope: bool) -> untyped
+
+    # Push a new namespace and forloop for the duration of a block.
+    # @param namespace [Hash<String, Object>]
+    # @param forloop [ForLoop]
+    def loop: (untyped namespace, untyped forloop) { () -> untyped } -> untyped
+
+    # Return the last ForLoop object if one is available, or an instance of Undefined otherwise.
+    def parent_loop: (untyped node) -> untyped
+
+    # Get or set the stop index of a for loop.
+    def stop_index: (untyped key, ?index: untyped?) -> untyped
+
+    def raise_for_loop_limit: (?length: ::Integer) -> (nil | untyped)
+
+    def get_output_buffer: (untyped parent_buffer) -> untyped
+
+    # Mark _string_ as "safe" if auto escape is enabled.
+    def markup: (untyped string) -> untyped
+
+    def cycle: (untyped key, untyped length) -> untyped
+
+    def increment: (untyped name) -> untyped
+
+    def decrement: (untyped name) -> untyped
+
+    def assign_score: (untyped value) -> untyped
+
+    # Lookup _key_ in _obj_.
+    # @param obj [Object]
+    # @param key [untyped]
+    # @return [untyped]
+    def get_item: (untyped obj, untyped key) -> (untyped | :undefined)
+  end
+end
+
+module Liquid2
+  # The base class for all Liquid errors.
+  class LiquidError < StandardError
+    @node: ([Symbol, String?, Integer] | nil)
+
+    @template_name: String?
+
+    attr_accessor node: ([Symbol, String?, Integer] | nil)
+
+    attr_accessor template_name: (String | nil)
+
+    def initialize: (String message, ?[Symbol, String?, Integer]? node) -> void
+  end
+
+  class LiquidSyntaxError < LiquidError
+  end
+
+  class LiquidArgumentError < LiquidError
+  end
+
+  class LiquidTypeError < LiquidError
+  end
+
+  class LiquidTemplateNotFoundError < LiquidError
+  end
+
+  class LiquidFilterNotFoundError < LiquidError
+  end
+
+  class LiquidResourceLimitError < LiquidError
+  end
+
+  class UndefinedError < LiquidError
+  end
+
+  # The standard _for_ tag.
+  class ForTag < Tag
+    @expression: LoopExpression
+
+    @block: Block
+
+    @default: Block?
+
+    @blank: bool
+
+    END_BLOCK: Set[String]
+
+    def self.parse: (Parser parser) -> ForTag
+
+    # @param expression [LoopExpression]
+    # @param block [Block]
+    # @param default [Block?]
+    def initialize: ([Symbol, String?, Integer] token, LoopExpression expression, Block block, Block? default) -> void
+
+    def render: (RenderContext context, _Buffer buffer) -> untyped
+  end
+
+  # The standard _break_ tag.
+  class BreakTag < Tag
+    def self.parse: (Parser _parser) -> BreakTag
+
+    def render: (RenderContext context, _Buffer _buffer) -> 0
+  end
+
+  # The standard _continue_ tag.
+  class ContinueTag < Tag
+    def self.parse: (Parser _parser) -> ContinueTag
+
+    def render: (RenderContext context, _Buffer _buffer) -> 0
+  end
+
+  # `for` loop helper variables.
+  class ForLoop
+    @name: String
+
+    @enum: Enumerable[untyped]
+
+    @length: Integer
+
+    @parentloop: ForLoop?
+
+    @index: Integer
+
+    attr_reader name: String
+
+    attr_reader length: Integer
+
+    attr_reader parentloop: ForLoop?
+
+    KEYS: Set[String]
+
+    def initialize: (String name, Enumerable[untyped] enum, Integer length, (ForLoop | Undefined) parent_loop) -> void
+
+    def key?: (String key) -> bool
+
+    def fetch: (String key, ?::Symbol default) -> untyped
+
+    def each: () { (untyped) -> untyped } -> untyped
+
+    def index: () -> Integer
+
+    def index0: () -> Integer
+
+    def rindex: () -> Integer
+
+    def rindex0: () -> Integer
+
+    def first: () -> bool
+
+    def last: () -> bool
+  end
+
+  interface _Namespace
+    def key?: (String) -> bool
+    def fetch: (String, ?::Symbol default) -> untyped
+  end
+
+  # Combine multiple hashes for sequential lookup.
+  class ReadOnlyChainHash
+    @hashes: Array[_Namespace]
+
+    # @param hashes
+    def initialize: (*_Namespace hashes) -> void
+
+    def []: (String key) -> untyped
+
+    def size: () -> Integer
+
+    def key?: (String key) -> bool
+
+    def fetch: (String key, ?::Symbol default) -> untyped
+
+    def push: (_Namespace hash) -> untyped
+
+    alias << push
+
+    def pop: () -> (_Namespace | nil)
+  end
+end
+
+module Liquid2
+  # Base class for all expressions.
+  class Expression
+    @token: [Symbol, String?, Integer]
+
+    attr_reader token: [Symbol, String?, Integer]
+
+    # @param token [[Symbol, String?, Integer]]
+    def initialize: ([Symbol, String?, Integer] token) -> void
+  end
+end
+
+module Liquid2
+  class PositionalArgument < Expression
+    @value: untyped
+
+    attr_reader value: untyped
+
+    # @param value [Expression]
+    def initialize: ([Symbol, String?, Integer] token, untyped value) -> void
+
+    def evaluate: (RenderContext context) -> [nil, untyped]
+  end
+
+  class KeywordArgument < Expression
+    @name: String
+
+    @value: untyped
+
+    attr_reader name: String
+
+    attr_reader value: untyped
+
+    # @param name [Token]
+    # @param value [Expression]
+    def initialize: ([Symbol, String?, Integer] token, String name, untyped value) -> void
+
+    def evaluate: (RenderContext context) -> [String, untyped]
+  end
+end
+
+module Liquid2
+  # An array literal.
+  class ArrayLiteral < Expression
+    @items: Array[untyped]
+
+    # @param items [Array<Expression>]
+    def initialize: ([Symbol, String?, Integer] token, Array[untyped] items) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+end
+
+module Liquid2
+  class Blank < Expression
+    # @param token [Token]
+    def initialize: ([Symbol, String?, Integer] token) -> void
+
+    def evaluate: (RenderContext _context) -> self
+
+    def ==: (untyped other) -> bool
+
+    alias eql? ==
+  end
+
+  class Empty < Expression
+    # @param token [Token]
+    def initialize: ([Symbol, String?, Integer] token) -> void
+
+    def evaluate: (RenderContext _context) -> self
+
+    def ==: (untyped other) -> bool
+
+    alias eql? ==
+  end
+end
+
+module Liquid2
+  class BooleanExpression < Expression
+    @expr: untyped
+
+    # @param expr [Expression]
+    def initialize: ([Symbol, String?, Integer] token, untyped expr) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+end
+
+module Liquid2
+  class FilteredExpression < Expression
+    @left: Expression
+
+    @filters: Array[Filter]
+
+    def initialize: ([Symbol, String?, Integer] token, untyped left, Array[Filter] filters) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class TernaryExpression < Expression
+    @left: FilteredExpression
+
+    @condition: BooleanExpression
+
+    @alternative: untyped?
+
+    @filters: Array[Filter]
+
+    @tail_filters: Array[Filter]
+
+    # @param left [FilteredExpression]
+    # @param condition [BooleanExpression]
+    # @param alternative [Expression | nil]
+    # @param filters [Array<Filter>]
+    # @param tail_filters [Array<Filter>]
+    def initialize: ([Symbol, String?, Integer] token, FilteredExpression left, BooleanExpression condition, untyped? alternative, Array[Filter] filters, Array[Filter] tail_filters) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class Filter < Node
+    @name: String
+
+    @args: Array[PositionalArgument | KeywordArgument]
+
+    attr_reader name: String 
+
+    attr_reader args: Array[PositionalArgument | KeywordArgument] 
+
+    # @param name [Token]
+    # @param args [Array<PositionalArgument | KeywordArgument>]
+    def initialize: ([Symbol, String?, Integer] token, String name, Array[PositionalArgument | KeywordArgument] args) -> void
+
+    def evaluate: (untyped left, RenderContext context) -> untyped
+
+    private
+
+    # @param context [RenderContext]
+    # @return [positional arguments, keyword arguments] An array with two elements.
+    #   The first is an array of evaluates positional arguments. The second is a hash
+    #   of keyword names to evaluated keyword values.
+    def evaluate_args: (RenderContext context) -> [Array[PositionalArgument], Hash[Symbol, untyped]]
+  end
+end
+
+module Liquid2
+  class Identifier < Expression
+    # TODO: make identifier behave like a string?
+    @name: String
+
+    attr_reader name: String
+
+    # Try to cast _expr_ to an Identifier.
+    # @param expr [Expression]
+    def self.from: (untyped expr, ?trailing_question: bool) -> Identifier
+
+    def initialize: ([Symbol, String?, Integer] name) -> void
+
+    def evaluate: (RenderContext _context) -> untyped
+  end
+end
+
+module Liquid2
+  class LogicalNot < Expression
+    @expr: untyped
+
+    # @param expr [Expression]
+    def initialize: ([Symbol, String?, Integer] token, untyped expr) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class LogicalAnd < Expression
+    @left: untyped
+
+    @right: untyped
+
+    # @param left [Expression]
+    # @param right [Expression]
+    def initialize: ([Symbol, String?, Integer] token, untyped left, untyped right) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class LogicalOr < Expression
+    @left: untyped
+
+    @right: untyped
+
+    # @param left [Expression]
+    # @param right [Expression]
+    def initialize: ([Symbol, String?, Integer] token, untyped left, untyped right) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  # A logical expression with explicit parentheses.
+  class GroupedExpression < Expression
+    @expr: untyped
+
+    # @param expr [Expression]
+    def initialize: ([Symbol, String?, Integer] token, untyped expr) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+end
+
+module Liquid2
+  class LoopExpression < Expression
+    @identifier: Identifier
+
+    @enum: untyped
+
+    @limit: untyped?
+
+    @offset: untyped?
+
+    @reversed: bool
+
+    @cols: untyped?
+
+    attr_reader identifier: Identifier
+
+    attr_reader enum: untyped
+
+    attr_reader limit: untyped?
+
+    attr_reader offset: untyped?
+
+    attr_reader reversed: bool
+
+    attr_reader cols: untyped?
+
+    def initialize: ([Symbol, String?, Integer] token, Identifier identifier, untyped enum, ?limit: untyped?, ?offset: untyped?, ?reversed: bool, ?cols: untyped?) -> void
+
+    # @return [[Enumerator, Integer]] An enumerator and its length.
+    def evaluate: (RenderContext context) -> [Enumerable[untyped], Integer]
+
+    def lazy_slice: (Enumerator[untyped] enum, Integer start_index, ?Integer? stop_index) -> Enumerable[untyped]
+  end
+end
+
+module Liquid2
+  # A path to some variable data.
+  # If the path has just one segment, it is often just called a "variable".
+  class Path < Expression
+    @segments: Array[String | Integer | Path]
+
+    attr_reader segments: Array[String | Integer | Path]
+
+    # @param segments [Array[String | Integer | Path]]
+    def initialize: ([Symbol, String?, Integer] token, Array[String | Integer | Path] segments) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+end
+
+module Liquid2
+  # Base for comparison expressions.
+  class ComparisonExpression < Expression
+    @left: untyped
+
+    @right: untyped
+
+    # @param left [Expression]
+    # @param right [Expression]
+    def initialize: ([Symbol, String?, Integer] token, untyped left, untyped right) -> void
+
+    def inner_evaluate: (RenderContext context) -> [untyped, untyped]
+  end
+
+  class Eq < ComparisonExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class Ne < ComparisonExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class Le < ComparisonExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class Ge < ComparisonExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class Lt < ComparisonExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class Gt < ComparisonExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class Contains < ComparisonExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  # Test _left_ and _right_ for Liquid equality.
+  def self.eq: (untyped left, untyped right) -> bool
+
+  # Return `true` if _left_ is considered less than _right_.
+  def self.lt: (untyped left, untyped right) -> bool
+
+  def self.contains: (untyped left, untyped right) -> bool
+end
+
+module Liquid2
+  # The standard _assign_ tag.
+  class AssignTag < Tag
+    @name: String
+
+    @expression: untyped
+
+    # @param parser [Parser]
+    # @return [AssignTag]
+    def self.parse: (Parser parser) -> AssignTag
+
+    # @param name [Identifier]
+    # @param expression [Expression]
+    def initialize: ([Symbol, String?, Integer] token, Identifier name, untyped expression) -> void
+
+    def render: (RenderContext context, _Buffer _buffer) -> 0
+  end
+end
+
+module Liquid2
+  # The AST node representing output statements.
+  class Output < Node
+    @expression: (FilteredExpression | TernaryExpression)
+
+    @blank: bool
+
+    @wc: Array[Symbol]
+
+    attr_reader expression: (FilteredExpression | TernaryExpression)
+
+    attr_reader wc: Array[Symbol]
+
+    # @param expression [FilteredExpression]
+    def initialize: ([Symbol, String?, Integer] token, (FilteredExpression | TernaryExpression) expression) -> void
+
+    def render: (RenderContext context, _Buffer buffer) -> Integer
+  end
+end
+
+module Liquid2
+  # A string that is safe to be inserted into HTML or XML, either because it is already
+  # escaped or because it was explicitly marked as safe.
+  #
+  # TODO: finish me
+  # TODO: test me
+  #
+  class Markup < String
+    RE_ESCAPE: untyped
+
+    ESCAPE_MAP: { "&" => "&amp;", ">" => "&gt;", "<" => "&lt;", "'" => "&39;", "\"" => "&34;" }
+
+    def self.escape: (untyped object) -> Markup
+
+    def self.soft_to_s: (untyped object) -> String
+
+    def self.try_convert: (untyped object) -> String
+
+    def self.join: (Enumerable[untyped] enum, ?String separator) -> String
+
+    def to_html: () -> self
+
+    def inspect: () -> ::String
+
+    def %: (untyped _other) -> untyped
+
+    def *: (untyped other) -> untyped
+
+    def +: (untyped other) -> untyped
+
+    def -: (untyped _other) -> untyped
+
+    def []: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def slice: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def []=: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def split: (?untyped field_sep, ?::Integer limit) -> untyped
+
+    def capitalize: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def downcase: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def each_line: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def gsub: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def gsub!: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def insert: (untyped index, untyped other_string) -> untyped
+
+    def lines: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def prepend: (*untyped other_strings) -> untyped
+
+    def sub: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def sub!: (*untyped) ?{ (?) -> untyped } -> untyped
+
+    def strip: () -> untyped
+
+    def lstrip: () -> untyped
+
+    def rstrip: () -> untyped
+
+    def ljust: (untyped size, ?::String pad_string) -> untyped
+
+    def rjust: (untyped size, ?::String pad_string) -> untyped
+
+    def center: (untyped size, ?::String pad_string) -> untyped
+
+    def partition: (untyped string_or_regexp) -> untyped
+
+    def rpartition: (untyped string_or_regexp) -> untyped
+
+    def reverse: () -> untyped
+
+    def unescape: () -> untyped
+
+    def upcase: (*untyped) ?{ (?) -> untyped } -> untyped
+  end
+end
+
+module Liquid2
+  # A StringIO subclass that raises an exception when the buffer reaches a limit.
+  class LimitedStringIO < StringIO
+    @limit: Integer
+
+    def initialize: (Integer limit, ?::String string) ?{ (?) -> untyped } -> void
+
+    def write: (*untyped) ?{ (?) -> untyped } -> Integer
+  end
+
+  # A StringIO subclass with a _write_ method that is a no op.
+  class NullIO < StringIO
+    def write: (*untyped) ?{ (?) -> untyped } -> 0
+  end
+end
+
+module Liquid2
+  # The standard _if_ tag
+  class IfTag < Node
+    @expression: untyped
+
+    @block: Block
+
+    @alternatives: Array[ConditionalBlock]
+
+    @default: Block
+
+    END_TAG: String
+
+    END_BLOCK: Set[String]
+
+    def self.parse: (Parser parser) -> IfTag
+
+    # @return [ConditionalBlock]
+    def self.parse_elsif: (Parser parser) -> ConditionalBlock
+
+    # @param expression [Expression]
+    # @param block [Block]
+    # @param alternatives [Array<[ConditionalBlock]>]
+    # @param default [Block?]
+    def initialize: ([Symbol, String?, Integer] token, untyped expression, Block block, Array[ConditionalBlock] alternatives, Block? default) -> void
+
+    def render: (RenderContext context, _Buffer buffer) -> Integer
+  end
+end
+
+module Liquid2
+  # Replace escape sequences with their equivalent Unicode code point.
+  # @param value [String]
+  # @param quote [String] one of '"' or "'".
+  # @param token [Node | Token]
+  # @return [String] A new string without escape sequences.
+  def self.unescape_string: (String value, String quote, [Symbol, String?, Integer] token) -> String
+
+  def self.decode_hex_char: (String value, Integer index, [Symbol, String?, Integer] token) -> [Integer, Integer]
+
+  def self.parse_hex_digits: (String digits, [Symbol, String?, Integer] token) -> Integer
+
+  def self.high_surrogate?: (Integer code_point) -> bool
+
+  def self.low_surrogate?: (Integer code_point) -> bool
+
+  def self.code_point_to_string: (Integer code_point, [Symbol, String?, Integer] token) -> String
+end
+
+module Liquid2
+  module Filters
+    # Cast _obj_ to an enumerable for use in a Liquid filter.
+    # @param obj [Object]
+    # @return [Enumerable]
+    def self.to_enumerable: (untyped obj) -> Enumerable[untyped]
+    
+    # Cast _obj_ to a number.
+    def self.to_number: (untyped obj, ?default: ::Integer) -> (Integer | Float | Numeric | BigDecimal)
+
+    # Case _obj_ to an Integer.
+    def self.to_integer: (untyped obj) -> Integer
+
+    # Cast _obj_ to a number, favouring BigDecimal over Float.
+    def self.to_decimal: (untyped obj, ?default: ::Integer) -> (Integer | BigDecimal | Numeric)
+
+    # Cast _obj_ to a  date and time. Return `nil` if casting fails.
+    def self.to_date: (untyped obj) -> untyped
+
+    # Return the concatenation of items in _left_ separated by _sep_.
+    def self.join: (untyped left, ?::String sep, context: RenderContext) -> untyped
+
+    # Return the absolute value of _left_.
+    def self.abs: (untyped left) -> (Integer | Float | Numeric | BigDecimal)
+
+    # Return the maximum of _left_ and _right_.
+    def self.at_least: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
+
+    # Return the minimum of _left_ and _right_.
+    def self.at_most: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
+
+    # Return _left_ concatenated with _right_.
+    # Coerce _left_ and _right_ to strings if they aren't strings already.
+    def self.append: (untyped left, untyped right) -> String
+
+    # Return _left_ with the first character in uppercase and the rest lowercase.
+    # Coerce _left_ to a string if it is not one already.
+    def self.capitalize: (untyped left) -> String
+
+    # Return _left_ rounded up to the next whole number.
+    def self.ceil: (untyped left) -> Integer
+
+    class Compact
+      def validate: (Liquid2::Environment _env, Liquid2::Filter node) -> void
+
+      # Return a copy of _left_ with nil items removed.
+      # Coerce _left_ to an array-like object if it is not one already.
+      #
+      # If _key_ is given, assume items in _left_ are hash-like and remove items from _left_
+      # where `item.fetch(key, nil)` is nil.
+      #
+      # If key is not `:undefined`, coerce it to a string before calling `fetch` on items in
+      # _left_.
+      def call: (untyped left, ?untyped? key, context: Liquid2::RenderContext) -> Array[untyped]
+
+      def parameters: () -> untyped
+    end
+
+    # Return _left_ concatenated with _right_, or nil if _right_ is not an array.
+    # Coerce _left_ to an arrays if it isn't an array already..
+    def self.concat: (untyped left, untyped right) -> Array[untyped]
+                   
+    # Format date and time object _left_ with _format_.
+    # Coerce _left_ to a `Time` if it is not a time-like object already.
+    # Coerce _format_ to a string if it is not a string already.
+    def self.date: (untyped left, untyped format) -> (Time | nil)
+                 
+    # Return _left_, or _default_ if _obj_ is `nil`, `false` or empty.
+    # If _allow_false_ is `true`, _left_ is returned if _left_ is `false`.
+    def self.default: (untyped left, ?untyped default, context: RenderContext, ?allow_false: bool) -> untyped
+                    
+    # Return the result of dividing _left_ by _right_.
+    # If both _left_ and _right_ are integers, integer division is performed.
+    def self.divided_by: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
+                       
+    # Return _left_ with all characters converted to lowercase.
+    # Coerce _left_ to a string if it is not one already.
+    def self.downcase: (untyped left) -> String
+                     
+    # Return _left_ with special HTML characters replaced with their HTML-safe escape sequences.
+    # Coerce _left_ to a string if it is not one already.
+    def self.escape: (untyped left) -> (String | nil)
+
+    # Return _left_ with special HTML characters replaced with their HTML-safe escape sequences.
+    # Coerce _left_ to a string if it is not one already.
+    #
+    # It is safe to use `escape_once` on string values that already contain HTML-escape sequences.
+    def self.escape_once: (untyped left) -> String
+                        
+    class Find
+      def validate: (Liquid2::Environment _env, Liquid2::Filter node) -> void
+
+      def call: (untyped left, untyped key, ?untyped? value, context: Liquid2::RenderContext) -> untyped
+
+      def parameters: () -> untyped
+
+      def fetch: (untyped obj, untyped key, ?untyped default) -> untyped
+    end
+
+    class FindIndex < Find
+      def call: (untyped left, untyped key, ?untyped? value, context: RenderContext) -> (Integer | nil)
+    end
+
+    class Has < Find
+      def call: (untyped left, untyped key, ?untyped? value, context: RenderContext) -> bool
+    end
+
+    # Return the first item in _left_, or `nil` if _left_ does not have a first item.
+    def self.first: (untyped left) -> untyped
+
+    # Return _left_ rounded down to the next whole number.
+    def self.floor: (untyped left) -> Integer
+
+    # Return the last item in _left_, or `nil` if _left_ does not have a last item.
+    def self.last: (untyped left) -> untyped
+                 
+    # Return _left_ with leading whitespace removed.
+    # Coerce _left_ to a string if it is not one already.
+    def self.lstrip: (untyped left) -> String
+                   
+    # Return _left_ with trailing whitespace removed.
+    # Coerce _left_ to a string if it is not one already.
+    def self.rstrip: (untyped left) -> String
+                   
+    # Return _left_ with leading and trailing whitespace removed.
+    # Coerce _left_ to a string if it is not one already.
+    def self.strip: (untyped left) -> String
+
+    # The _map_ filter.
+    class Map
+      def validate: (Liquid2::Environment _env, Liquid2::Filter node) -> void
+
+      def call: (untyped left, untyped key, context: RenderContext) -> Array[untyped]
+
+      def parameters: () -> untyped
+                    
+      def fetch: (untyped obj, String key) -> untyped
+    end
+
+    # Return _right_ subtracted from _left_.
+    def self.minus: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
+
+    # Return the remainder of dividing _left_ by _right_.
+    def self.modulo: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
+                   
+    # Return _left_ with LF or CRLF replaced with `<br />\n`.
+    def self.newline_to_br: (untyped left) -> String
+
+    # Return _right_ added to _left_.
+    def self.plus: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
+                 
+     # Return _right_ concatenated with _left_.
+    # Coerce _left_ and _right_ to strings if they aren't strings already.
+    def self.prepend: (untyped left, untyped right) -> String
+                    
+    class FilteringFilter
+      def fetch: (untyped obj, untyped key, ?untyped? default) -> untyped
+
+      def parameters: () -> untyped
+    end
+
+    class Reject < FilteringFilter
+      def call: (untyped left, untyped key, ?untyped? value, context: RenderContext) -> Array[untyped]
+    end
+
+    class Where < FilteringFilter
+      def call: (untyped left, untyped key, ?untyped? value, context: untyped) -> untyped
+    end
+
+    # Return _left_ with all occurrences of _pattern_ replaced with _replacement_.
+    # All arguments are coerced to strings if they aren't strings already.
+    def self.replace: (untyped left, untyped pattern, ?untyped replacement) -> String
+
+    # Return _left_ with the first occurrence of _pattern_ replaced with _replacement_.
+    # All arguments are coerced to strings if they aren't strings already.
+    def self.replace_first: (untyped left, untyped pattern, ?untyped replacement) -> String
+                          
+    # Return _left_ with the last occurrence of _pattern_ replaced with _replacement_.
+    # All arguments are coerced to strings if they aren't strings already.
+    def self.replace_last: (untyped left, untyped pattern, untyped replacement) -> String
+                         
+    # Return _left_ with all occurrences of _pattern_ removed.
+    # All arguments are coerced to strings if they aren't strings already.
+    def self.remove: (untyped left, untyped pattern) -> String
+
+    # Return _left_ with the first occurrence of _pattern_ removed.
+    # All arguments are coerced to strings if they aren't strings already.
+    def self.remove_first: (untyped left, untyped pattern) -> String
+
+    # Return _left_ with the last occurrence of _pattern_ removed.
+    # All arguments are coerced to strings if they aren't strings already.
+    def self.remove_last: (untyped left, untyped pattern) -> String
+                        
+    # Return _left_ with all items in reverse order.
+    # Coerce _left_ to an array if it isn't an array already.
+    def self.reverse: (untyped left) -> Array[untyped]
+                    
+    # Return _left_ rounded to _ndigits_ decimal digits.
+    def self.round: (untyped left, ?::Integer ndigits) -> untyped
+                  
+    # Return the size of _left_, or zero if _left_ has no size.
+    def self.size: (untyped left) -> Integer
+    
+    # Return the subsequence of _left_ starting at _start_ up to _length_.
+    def self.slice: (untyped left, untyped start, ?untyped length) -> untyped
+
+    # Return _left_ with all characters converted to uppercase.
+    # Coerce _left_ to a string if it is not one already.
+    def self.upcase: (untyped left) -> String
+
+    class Sort
+      def call: (untyped left, ?untyped? key, context: RenderContext) -> Array[untyped]
+
+      def parameters: () -> untyped
+
+      def fetch: (untyped obj, untyped key, ?untyped? default) -> untyped
+
+      # XXX: copied from Shopify/liquid
+      def nil_safe_compare: (untyped a, untyped b) -> Integer
+                          
+      # XXX: copied from Shopify/liquid
+      def nil_safe_casecmp: (untyped a, untyped b) -> Integer
+    end
+
+    # The _sort_natural_ filter.
+    class SortNatural < Sort
+      def call: (untyped left, ?untyped? key, context: RenderContext) -> Array[untyped]
+    end
+
+    # Split _left_ on every occurrence of _pattern_.
+    def self.split: (untyped left, untyped pattern) -> Array[String]
+                  
+    RE_HTML_BLOCKS: ::Regexp
+
+    RE_HTML_TAGS: ::Regexp
+
+    # Return _left_ with HTML tags removed.
+    def self.strip_html: (untyped left) -> String?
+
+    # Return _left_ with CR and LF removed.
+    def self.strip_newlines: (untyped left) -> String
+                           
+    # The _sum_ filter.
+    class Sum
+      def call: (untyped left, ?untyped? key, context: RenderContext) -> Integer
+
+      def parameters: () -> untyped
+
+      def fetch: (untyped obj, untyped key, ?untyped? default) -> untyped
+    end
+
+    # Return the result of multiplying _left_ by _right_.
+    def self.times: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
   end
 end

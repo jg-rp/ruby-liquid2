@@ -83,6 +83,7 @@ module Liquid2
       @interrupts = [] # : Array[Symbol]
     end
 
+    # Evaluate _obj_ as an expression in the render current context.
     def evaluate(obj)
       obj.respond_to?(:evaluate) ? obj.evaluate(self) : obj
     end

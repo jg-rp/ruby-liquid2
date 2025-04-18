@@ -8,7 +8,7 @@ module Liquid2
     # @param stream [TokenStream]
     # @param parser [Parser]
     # @return [AssignTag]
-    def self.parse(stream, parser)
+    def self.parse(parser)
       # @type var children: Array[Token | Node]
       children = [stream.eat(:token_tag_start),
                   stream.eat_whitespace_control,

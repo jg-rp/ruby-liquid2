@@ -10,18 +10,7 @@ module Liquid2
     # @param expr [Expression]
     def self.from(expr, trailing_question: true)
       # XXX:
-      unless expr.is_a?(Path) && expr.segments.length == 1
-        raise LiquidSyntaxError.new("expected an identifier, found #{expr}", expr)
-      end
-
-      val = expr.segments.first.selector
-
-      unless val.to_s.match?(/[\u0080-\uFFFFa-zA-Z_][\u0080-\uFFFFa-zA-Z0-9_-]*/)
-        raise LiquidSyntaxError.new("invalid identifier", expr)
-      end
-
-      token = expr.children.first
-      new(token)
+      raise "TODO"
     end
 
     # @param token [[Symbol, String?, Integer]]

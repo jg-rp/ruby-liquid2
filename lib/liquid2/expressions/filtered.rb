@@ -62,13 +62,13 @@ module Liquid2
     def evaluate(left, context)
       filter, with_context = context.env.filters[@name]
 
-      raise LiquidFilterNotFoundError.new("unknown filter #{@name.inspect}", self) unless filter
+      raise LiquidFilterNotFoundError.new("unknown filter #{@name.inspect}", @token) unless filter
 
       positional_args, keyword_args = evaluate_args(context)
       keyword_args[:context] = context if with_context
       filter.call(left, *positional_args, **keyword_args) # steep:ignore
     rescue ArgumentError => e
-      raise LiquidArgumentError.new(e.message, self)
+      raise LiquidArgumentError.new(e.message, @token)
     end
 
     private

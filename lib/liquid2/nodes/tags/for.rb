@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "../../node"
+require_relative "../../tag"
 
 module Liquid2
   # The standard _for_ tag.
-  class ForTag < Node
+  class ForTag < Tag
     END_BLOCK = Set["endfor", "else"]
 
     def self.parse(stream, parser)
@@ -79,7 +79,7 @@ module Liquid2
   end
 
   # The standard _break_ tag.
-  class BreakTag < Node
+  class BreakTag < Tag
     def self.parse(stream, _parser)
       new(stream.eat_empty_tag("break"))
     end
@@ -91,7 +91,7 @@ module Liquid2
   end
 
   # The standard _continue_ tag.
-  class ContinueTag < Node
+  class ContinueTag < Tag
     def self.parse(stream, _parser)
       new(stream.eat_empty_tag("continue"))
     end

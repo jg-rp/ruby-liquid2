@@ -3,6 +3,7 @@
 require_relative "../expression"
 
 module Liquid2
+  # An expression that evaluates to true or false.
   class BooleanExpression < Expression
     # @param expr [Expression]
     def initialize(token, expr)

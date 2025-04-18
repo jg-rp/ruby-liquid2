@@ -11,13 +11,10 @@ require_relative "expressions/boolean"
 require_relative "expressions/filtered"
 require_relative "expressions/path"
 
-# TODO: Combine Parser and TokenStream into a single interface.
-# TODO: A new Parser will be allocated for each parse. It can hold state, like WC carry.
-# TODO: Define current_kind, peek_kind helpers
-
 module Liquid2
   # Liquid template parser.
   class Parser
+    # Parse Liquid template text into a syntax tree.
     # @param source [String]
     # @return [Array[Node | String]]
     def self.parse(env, source, scanner: nil)
@@ -25,6 +22,7 @@ module Liquid2
     end
 
     # @param env [Environment]
+    # @param tokens [Array[[Symbol, String?, Integer]]]
     def initialize(env, tokens)
       @env = env
       @tokens = tokens
@@ -33,11 +31,11 @@ module Liquid2
       @whitespace_carry = nil
     end
 
-    # Get the current token without advancing the pointer.
-    # Returns an EOF token if there are no tokens left.
+    # Return the current token without advancing the pointer.
+    # An EOF token is returned if there are no tokens left.
     def current = @tokens[@pos] || @eof
 
-    # Get the kind of the current token without advancing the pointer.
+    # Return the kind of the current token without advancing the pointer.
     def current_kind = current.first
 
     # Return the next token and advance the pointer.
@@ -128,20 +126,22 @@ module Liquid2
                                     token)
       end
 
-      token[1]
+      token[1] || raise
     end
 
+    # Advance the pointer if the current token is a whitespace control token.
     def skip_whitespace_control
       @pos += 1 if current_kind == :token_whitespace_control
     end
 
+    # Advance the pointer if the current token is a whitespace control token, and
+    # remember the token's value for the next text node.
     def carry_whitespace_control
       return unless current_kind == :token_whitespace_control
 
       @whitespace_carry = self.next[0]
     end
 
-    # Parse Liquid template text into an AST.
     # @return [Array[Node | String]]
     def parse
       nodes = [] # : Array[Node | String]
@@ -153,17 +153,18 @@ module Liquid2
 
         case kind
         when :token_other
-          nodes << value
+          nodes << (value || raise)
         when :token_output_start
           nodes << parse_output
         when :token_tag_start
           nodes << parse_tag
         when :token_comment_start
-          nodes << parse_comment
+          raise "TODO"
+          # nodes << parse_comment
         when :token_eof
           return nodes
         else
-          raise LiquidSyntaxError.new("unexpected token: #{token.inspect}", previous)
+          raise LiquidSyntaxError.new("unexpected token", previous)
         end
       end
     end
@@ -183,7 +184,7 @@ module Liquid2
 
         case kind
         when :token_other
-          nodes << value
+          nodes << (value || raise)
         when :token_output_start
           nodes << parse_output
         when :token_tag_start
@@ -233,7 +234,7 @@ module Liquid2
       cols = nil # : (Expression | nil)
 
       if current_kind == :token_comma
-        unless LOOP_KEYWORDS.member?(peek[1])
+        unless LOOP_KEYWORDS.member?(peek[1] || raise)
           enum = parse_array_literal(enum)
           return LoopExpression.new(identifier.token, identifier, enum,
                                     limit: limit, offset: offset, reversed: reversed, cols: cols)
@@ -259,11 +260,11 @@ module Liquid2
           when "offset"
             eat_one_of(:token_colon, :token_assign)
             offset_token = current
-            offset << if offset_token.first == :token_word && offset_token[1] == "continue"
-                        Identifier.new(self.next)
-                      else
-                        parse_primary
-                      end
+            offset = if offset_token.first == :token_word && offset_token[1] == "continue"
+                       Identifier.new(self.next)
+                     else
+                       parse_primary
+                     end
           else
             raise LiquidSyntaxError.new("expected 'reversed', 'offset' or 'limit'", token)
           end
@@ -331,7 +332,7 @@ module Liquid2
     end
 
     # Parse a string literal without interpolation..
-    # @return [StringLiteral]
+    # @return [String]
     # @raises [LiquidTypeError].
     def parse_string
       node = parse_primary
@@ -374,7 +375,7 @@ module Liquid2
         word = self.next
         @pos += 1
         val = parse_primary
-        args << KeywordArgument.new(word.token, word, val)
+        args << KeywordArgument.new(word, word[1] || raise, val)
       end
 
       args
@@ -514,7 +515,7 @@ module Liquid2
     def parse_tag
       token = eat(:token_tag_name)
 
-      if (tag = @env.tags[token[1]])
+      if (tag = @env.tags[token[1] || raise])
         tag.parse(self)
       else
         raise LiquidSyntaxError.new("unknown tag #{token[0]}", token)
@@ -524,9 +525,9 @@ module Liquid2
     # @return [Node]
     def parse_path
       token = current
-      segments = [] # : Array[String, Integer, Path]
+      segments = [] # : Array[String | Integer | Path]
 
-      segments << self.next[1] unless current_kind == :token_lbracket
+      segments << (self.next[1] || raise) unless current_kind == :token_lbracket
 
       loop do
         case self.next.first
@@ -553,7 +554,7 @@ module Liquid2
         parse_path
       when :token_double_quote_string, :token_single_quote_string
         # TODO: unescape
-        value
+        value || raise
       else
         raise LiquidSyntaxError.new(
           "unexpected token in bracketed selector, #{current_kind}", current
@@ -568,14 +569,13 @@ module Liquid2
       when :token_int
         value.to_i
       when :token_word
-        value
+        value || raise
       else
-        unless RESERVED_WORDS.member?(token.first)
-          raise LiquidSyntaxError.new("unexpected token in shorthand selector, #{token.first}",
-                                      token)
+        unless RESERVED_WORDS.member?(kind)
+          raise LiquidSyntaxError.new("unexpected token in shorthand selector, #{kind}", previous)
         end
 
-        value
+        value || raise
       end
     end
 
@@ -595,11 +595,11 @@ module Liquid2
       end
 
       # An arrow function, but we've already consumed lparen and the first parameter.
-      return parse_partial_arrow_function(children, expr) if token.first == :token_comma
+      return parse_partial_arrow_function(expr) if token.first == :token_comma
 
       # An arrow function with a single parameter surrounded by parens.
       if token.first == :token_rparen && peek_kind == :token_arrow
-        return parse_partial_arrow_function(children, expr)
+        return parse_partial_arrow_function(expr)
       end
 
       loop do
@@ -619,10 +619,9 @@ module Liquid2
 
     # @return [Node]
     def parse_prefix_expression
-      # @type var children: Array[Token | Node]
-      children = [eat(:token_not)]
+      token = eat(:token_not)
       expr = parse_primary
-      LogicalNot.new(children << expr, expr)
+      LogicalNot.new(token, expr)
     end
 
     # @param left [Expression]
@@ -671,39 +670,40 @@ module Liquid2
 
       unless current_kind == :token_colon || !TERMINATE_FILTER.member?(current_kind)
         # No arguments
-        return Filter.new(name, name[1], []) # TODO: optimize
+        return Filter.new(name, name[1] || raise, []) # TODO: optimize
       end
 
-      @pos += 1 # :token_colon
+      @pos += 1 # token_colon
       args = [] # : Array[PositionalArgument | KeywordArgument]
 
       loop do
-        case current_kind
+        token = current
+        case token.first
         when :token_word
           if KEYWORD_ARGUMENT_DELIMITERS.member?(peek_kind)
             # A keyword argument
             word = self.next
             @pos += 1 # sep
             val = parse_primary
-            args << KeywordArgument.new(word, word[1], val)
+            args << KeywordArgument.new(word, word[1] || raise, val)
           elsif peek_kind == :token_arrow
             # A positional argument that is an arrow function with a single parameter.
             node = parse_arrow_function
-            args << PositionalArgument.new(node, node[1])
+            args << PositionalArgument.new(token, node[1])
           else
             # A positional argument that is a path.
             node = parse_path
-            args << PositionalArgument.new(node, node[1])
+            args << PositionalArgument.new(token, node)
           end
         when :token_lparen
-          # A a grouped expression or range or arrow function
+          # A grouped expression or range or arrow function
           node = parse_primary
-          args << PositionalArgument.new(node, node[1])
+          args << PositionalArgument.new(token, node[1])
         else
           break if TERMINATE_FILTER.member?(current_kind)
 
           node = parse_primary
-          args << PositionalArgument.new(node, node[1])
+          args << PositionalArgument.new(token, node[1])
         end
 
         break if TERMINATE_FILTER.member?(current_kind)
@@ -711,12 +711,11 @@ module Liquid2
         eat(:token_comma)
       end
 
-      Filter.new(name, args)
+      Filter.new(name, name[1] || raise, args)
     end
 
     # @return [Node]
     def parse_arrow_function
-      children = [] # : Array[Token | Node]
       params = [] # : Array[Identifier]
 
       case current_kind

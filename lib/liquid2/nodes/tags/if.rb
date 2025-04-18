@@ -1,17 +1,17 @@
 # frozen_string_literal: true
 
 require "set"
-require_relative "../../node"
+require_relative "../../tag"
 
 module Liquid2
   # The standard _if_ tag
-  class IfTag < Node
+  class IfTag < Tag
     END_TAG = "endif"
     END_BLOCK = Set["else", "elsif", "endif"].freeze
 
     def self.parse(parser)
-      token = parser.previous # :token_tag_name
-      expression = BooleanExpression.new(token, parser.parse_primary)
+      token = parser.previous # token_tag_name
+      expression = BooleanExpression.new(parser.current, parser.parse_primary)
       parser.carry_whitespace_control
       parser.eat(:token_tag_end)
 
@@ -36,7 +36,7 @@ module Liquid2
       parser.skip_whitespace_control
       token = parser.eat(:token_tag_name)
 
-      expression = BooleanExpression.new(parser.parse_primary)
+      expression = BooleanExpression.new(parser.current, parser.parse_primary)
       parser.carry_whitespace_control
       parser.eat(:token_tag_end)
 
