@@ -10,12 +10,15 @@ module Liquid2
   class Scanner
     attr_reader :tokens
 
+    RE_MARKUP_START = /\{[\{%]/
     RE_WHITESPACE = /[ \n\r\t]+/
     RE_LINE_SPACE = /[ \t]+/
     RE_WORD = /[\u0080-\uFFFFa-zA-Z_][\u0080-\uFFFFa-zA-Z0-9_-]*/
     RE_INT  = /-?\d+(?:[eE]\+?\d+)?/
     RE_FLOAT = /((?:-?\d+\.\d+(?:[eE][+-]?\d+)?)|(-?\d+[eE]-\d+))/
     RE_PUNCTUATION = /\?|\[|\]|\|{1,2}|\.{1,2}|,|:|\(|\)|<[=>]?|>=?|=[=>]?|!=?/
+    RE_SINGLE_QUOTE_STRING_SPECIAL = /[\\'\$]/
+    RE_DOUBLE_QUOTE_STRING_SPECIAL = /[\\"\$]/
 
     # Keywords and symbols that get their own token kind.
     TOKEN_MAP = {
@@ -121,7 +124,7 @@ module Liquid2
     end
 
     def lex_markup
-      case @scanner.scan(/\{[\{%]/)
+      case @scanner.scan(RE_MARKUP_START)
       # TODO: {# comments
       when "{{"
         @tokens << [:token_output_start, nil, @start]
@@ -159,6 +162,7 @@ module Liquid2
       else
         if @scanner.skip_until(/\{[\{%#]/)
           @scanner.pos -= 2
+          # TODO: benchmark byteslice range vs length
           @tokens << [:token_other, @source.byteslice(@start...@scanner.pos), @start]
           @start = @scanner.pos
           :lex_markup
@@ -179,23 +183,19 @@ module Liquid2
 
       loop do
         skip_trivia
-        ch = @scanner.get_byte
 
-        case ch
+        case @scanner.get_byte
         when "'"
-          @tokens << [:token_single_quote, nil, @start]
           @start = @scanner.pos
-          scan_string(ch)
+          scan_single_quote_string
         when "\""
-          @tokens << [:token_double_quote, nil, @start]
           @start = @scanner.pos
-          scan_string(ch)
+          scan_double_quote_string
         when nil
           # End of scanner. Unclosed expression or string literal.
           break
         else
           @scanner.pos -= 1
-          # TODO: optimize by combining these regexes into one and tagging their kind?
           if (value = @scanner.scan(RE_FLOAT))
             @tokens << [:token_float, value, @start]
             @start = @scanner.pos
@@ -216,36 +216,38 @@ module Liquid2
 
       accept_whitespace_control
 
-      # TODO: optimize this by reading bytes instead of creating a new string?
+      # Miro benchmarks show no performance gain using scan_byte and peek_byte over scan here.
       case @scanner.scan(/[\}%]\}/)
       when "}}"
         @tokens << [:token_output_end, nil, @start]
-        @start = @scanner.pos
       when "%}"
         @tokens << [:token_tag_end, nil, @start]
-        @start = @scanner.pos
       else
         # Unexpected token
         return nil if @scanner.eos?
 
         @tokens << [:token_unknown, @scanner.getch, @start]
-        @start = @scanner.pos
       end
 
+      @start = @scanner.pos
       :lex_markup
     end
 
+    # TODO: scan string factory instead of code duplication?
+
     # Scan a string literal surrounded by _quote_.
     # Assumes the opening quote has already been consumed and emitted.
-    def scan_string(quote)
+    def scan_single_quote_string
       loop do
+        @scanner.pos -= 1 if @scanner.skip_until(RE_SINGLE_QUOTE_STRING_SPECIAL)
         case @scanner.get_byte
-        when quote
+        when "'"
           if @start != @scanner.pos - 1
-            @tokens << [:token_string, @source.byteslice(@start...@scanner.pos - 1), @start]
+            @tokens << [:token_single_quote_string,
+                        @source.byteslice(@start...@scanner.pos - 1),
+                        @start]
             @start = @scanner.pos - 1
           end
-          @tokens << [quote == "'" ? :token_single_quote : :token_double_quote, nil, @start]
           @start = @scanner.pos
           return
         when "\\"
@@ -255,7 +257,34 @@ module Liquid2
           # TODO: Possibly the start of a `${` expression.
         when nil
           # End of scanner. Unclosed string literal.
-          @tokens << [:token_string, @source.byteslice(@start...@scanner.pos), @start]
+          @tokens << [:token_single_quote_string, @source.byteslice(@start...@scanner.pos), @start]
+          @start = @scanner.pos
+          return
+        end
+      end
+    end
+
+    def scan_double_quote_string
+      loop do
+        @scanner.pos -= 1 if @scanner.skip_until(RE_DOUBLE_QUOTE_STRING_SPECIAL)
+        case @scanner.get_byte
+        when "\""
+          if @start != @scanner.pos - 1
+            @tokens << [:token_double_quote_string,
+                        @source.byteslice(@start...@scanner.pos - 1),
+                        @start]
+            @start = @scanner.pos - 1
+          end
+          @start = @scanner.pos
+          return
+        when "\\"
+          # An escape sequence. Move past the next character.
+          @scanner.get_byte
+        when "$"
+          # TODO: Possibly the start of a `${` expression.
+        when nil
+          # End of scanner. Unclosed string literal.
+          @tokens << [:token_double_quote_string, @source.byteslice(@start...@scanner.pos), @start]
           @start = @scanner.pos
           return
         end

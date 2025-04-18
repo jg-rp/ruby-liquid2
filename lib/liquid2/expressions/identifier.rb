@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "../../node"
+require_relative "../expression"
 
 module Liquid2
   class Identifier < Expression
@@ -24,11 +24,10 @@ module Liquid2
       new(token)
     end
 
-    # @param name [Token]
-    def initialize(name)
-      super([name])
-      # TODO: make identifier behave like a string?
-      @name = name.text
+    # @param token [[Symbol, String?, Integer]]
+    def initialize(token)
+      super
+      @name = token[1]
     end
 
     def evaluate(_context)

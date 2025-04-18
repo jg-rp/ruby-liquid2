@@ -1,15 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "../../node"
+require_relative "../expression"
 
 module Liquid2
   # The special value _blank_.
   class Blank < Expression
-    # @param token [Token]
-    def initialize(token)
-      super([token])
-    end
-
     def evaluate(_context)
       self
     end
@@ -29,11 +24,6 @@ module Liquid2
 
   # The special value _empty_.
   class Empty < Expression
-    # @param token [Token]
-    def initialize(token)
-      super([token])
-    end
-
     def evaluate(_context)
       self
     end

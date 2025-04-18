@@ -4,7 +4,7 @@ require_relative "../../node"
 
 module Liquid2
   # The standard _echo_ tag.
-  class EchoTag < Tag
+  class EchoTag < Node
     # @param stream [TokenStream]
     # @param parser [Parser]
     # @return [EchoTag]

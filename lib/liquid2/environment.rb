@@ -69,7 +69,6 @@ module Liquid2
       # keyword argument.
       @filters = {}
 
-      @parser = Parser.new(self)
       @mode = mode
       @auto_escape = false
 
@@ -90,6 +89,8 @@ module Liquid2
 
       @globals = globals || {} # steep:ignore
 
+      @scanner = StringScanner.new("")
+
       setup_tags_and_filters
     end
 
@@ -97,7 +98,7 @@ module Liquid2
     # @return [Template]
     def parse(source, name: "", path: nil, up_to_date: nil, globals: nil, overlay: nil)
       Template.new(self,
-                   @parser.parse(source),
+                   Parser.parse(self, source, scanner: @scanner),
                    name: name, path: path, up_to_date: up_to_date,
                    globals: make_globals(globals), overlay: overlay)
     end

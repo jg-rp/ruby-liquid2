@@ -4,7 +4,7 @@ require_relative "../../node"
 
 module Liquid2
   # The standard _decrement_ tag.
-  class DecrementTag < Tag
+  class DecrementTag < Node
     # @param stream [TokenStream]
     # @param parser [Parser]
     # @return [DecrementTag]

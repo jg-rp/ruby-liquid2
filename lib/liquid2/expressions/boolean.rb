@@ -1,17 +1,17 @@
 # frozen_string_literal: true
 
-require_relative "../../node"
+require_relative "../expression"
 
 module Liquid2
   class BooleanExpression < Expression
     # @param expr [Expression]
-    def initialize(expr)
-      super([expr])
+    def initialize(token, expr)
+      super(token)
       @expr = expr
     end
 
     def evaluate(context)
-      Liquid2.truthy?(context, @expr.evaluate(context))
+      Liquid2.truthy?(context, context.evaluate(@expr))
     end
   end
 end

@@ -4,7 +4,7 @@ require_relative "../../node"
 
 module Liquid2
   # The standard _comment_ tag.
-  class BlockComment < Tag
+  class BlockComment < Node
     def self.parse(stream, _parser)
       # @type var children: Array[Token | Node]
       children = stream.eat_empty_tag("comment")

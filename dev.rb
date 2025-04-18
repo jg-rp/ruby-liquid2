@@ -5,32 +5,33 @@ require "liquid2"
 
 source = <<~LIQUID
   START
-  {% unless 'fo'o' %}
-  foo
-  {% endunless %}
+  {{ a[0] | upcase }}
+  {% if true %}
+    Hello
+  {% endif %}
   END
 LIQUID
 
-# data = JSON.parse <<~DATA
-#   {
-#         "a": ["b", "a"]
-#       }
-# DATA
+data = JSON.parse <<~DATA
+  {
+        "a": ["b", "a"]
+      }
+DATA
 
 scanner = StringScanner.new("")
 Liquid2::Scanner.tokenize(source, scanner).each do |token|
   p token
 end
 
-# Liquid2.tokenize(source).each do |token|
-#   puts "#{token.full_start.to_s.ljust(3)}:#{token.kind.to_s.ljust(50)} -> #{token.text.inspect}"
-# end
+env = Liquid2::Environment.new
 
-# t = env.parse(source)
+t = env.parse(source)
+
+pp t.ast
 
 # # puts JSON.pretty_generate(t.ast.dump)
 
-# puts t.render(data)
+puts t.render(data)
 
 # TODO: document the drop interface
 #   - #to_liquid(context)

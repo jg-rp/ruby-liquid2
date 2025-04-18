@@ -4,7 +4,7 @@ require_relative "../../node"
 
 module Liquid2
   # `{% # comment %}` style comments.
-  class InlineComment < Tag
+  class InlineComment < Node
     def self.parse(stream, _parser)
       children = [
         stream.eat(:token_tag_start),

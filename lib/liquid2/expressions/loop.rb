@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-require_relative "../../node"
+require_relative "../expression"
 
 module Liquid2
   class LoopExpression < Expression
     attr_reader :identifier, :enum, :limit, :offset, :reversed, :cols
 
-    def initialize(children, identifier, enum, limit: nil, offset: nil, reversed: false, cols: nil)
-      super(children)
+    def initialize(token, identifier, enum, limit: nil, offset: nil, reversed: false, cols: nil)
+      super(token)
       @identifier = identifier
       @enum = enum
       @limit = limit

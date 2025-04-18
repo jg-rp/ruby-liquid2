@@ -4,7 +4,7 @@ require_relative "../../node"
 
 module Liquid2
   # The standard _liquid_ tag.
-  class LiquidTag < Tag
+  class LiquidTag < Node
     # @param stream [TokenStream]
     # @param parser [Parser]
     # @return [LiquidTag]

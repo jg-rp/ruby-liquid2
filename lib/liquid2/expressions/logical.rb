@@ -1,13 +1,12 @@
 # frozen_string_literal: true
 
-require_relative "../../node"
+require_relative "../expression"
 
 module Liquid2
   class LogicalNot < Expression
-    # @param children [Array<Token, Node>]
     # @param expr [Expression]
-    def initialize(children, expr)
-      super(children)
+    def initialize(token, expr)
+      super(token)
       @expr = expr
     end
 
@@ -17,11 +16,10 @@ module Liquid2
   end
 
   class LogicalAnd < Expression
-    # @param children [Array<Token, Node>]
     # @param left [Expression]
     # @param right [Expression]
-    def initialize(children, left, right)
-      super(children)
+    def initialize(token, left, right)
+      super(token)
       @left = left
       @right = right
     end
@@ -33,11 +31,10 @@ module Liquid2
   end
 
   class LogicalOr < Expression
-    # @param children [Array<Token, Node>]
     # @param left [Expression]
     # @param right [Expression]
-    def initialize(children, left, right)
-      super(children)
+    def initialize(token, left, right)
+      super(token)
       @left = left
       @right = right
     end
@@ -50,10 +47,9 @@ module Liquid2
 
   # A logical expression with explicit parentheses.
   class GroupedExpression < Expression
-    # @param children [Array<Token, Node>]
     # @param expr [Expression]
-    def initialize(children, expr)
-      super(children)
+    def initialize(token, expr)
+      super(token)
       @expr = expr
     end
 

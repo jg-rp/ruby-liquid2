@@ -1,37 +1,35 @@
 # frozen_string_literal: true
 
-require_relative "../../node"
+require_relative "../expression"
 
 module Liquid2
   class PositionalArgument < Expression
     attr_reader :value
 
-    # @param children [Array<Token | Node>]
     # @param value [Expression]
-    def initialize(children, value)
-      super(children)
+    def initialize(token, value)
+      super(token)
       @value = value
     end
 
     def evaluate(context)
-      [nil, @value.evaluate(context)]
+      [nil, context.evaluate(@value)]
     end
   end
 
   class KeywordArgument < Expression
     attr_reader :value, :name
 
-    # @param children [Array<Token | Node>]
-    # @param name [Token]
+    # @param name [String]
     # @param value [Expression]
-    def initialize(children, name, value)
-      super(children)
-      @name = name.text
+    def initialize(token, name, value)
+      super(token)
+      @name = name
       @value = value
     end
 
     def evaluate(context)
-      [@name, @value.evaluate(context)]
+      [@name, context.evaluate(@value)]
     end
   end
 end

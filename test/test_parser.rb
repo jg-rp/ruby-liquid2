@@ -26,7 +26,7 @@ def tags(node)
 
     node.children.each do |child|
       tags(child).each do |tag|
-        yielder << tag
+        yielder << Node
       end
     end
   end

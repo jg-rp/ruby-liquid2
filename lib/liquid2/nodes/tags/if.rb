@@ -9,58 +9,48 @@ module Liquid2
     END_TAG = "endif"
     END_BLOCK = Set["else", "elsif", "endif"].freeze
 
-    def self.parse(stream, parser)
-      # @type var children: Array[Token | Node]
-      children = [stream.eat(:token_tag_start),
-                  stream.eat_whitespace_control,
-                  stream.eat(:token_tag_name)]
+    def self.parse(parser)
+      token = parser.previous # :token_tag_name
+      expression = BooleanExpression.new(token, parser.parse_primary)
+      parser.carry_whitespace_control
+      parser.eat(:token_tag_end)
 
-      expression = BooleanExpression.new(parser.parse_primary(stream))
-
-      # TODO: skip until ..
-      children << expression << stream.eat_whitespace_control << stream.eat(:token_tag_end)
-      block = parser.parse_block(stream, self::END_BLOCK)
-      children << block
-
+      block = parser.parse_block(self::END_BLOCK)
       alternatives = [] # : Array[ConditionalBlock]
-      alternatives << parse_elsif(stream, parser) while stream.tag?("elsif")
-      children.push(*alternatives)
+      alternatives << parse_elsif(parser) while parser.tag?("elsif")
 
-      if stream.tag?("else")
-        children.push(*stream.eat_empty_tag("else"))
-        default = parser.parse_block(stream, self::END_BLOCK)
-        children << default
+      if parser.tag?("else")
+        parser.eat_empty_tag("else")
+        default = parser.parse_block(self::END_BLOCK)
       else
         default = nil
       end
 
-      children.push(*stream.eat_empty_tag(self::END_TAG))
-      new(children, expression, block, alternatives, default)
+      parser.eat_empty_tag(self::END_TAG)
+      new(token, expression, block, alternatives, default)
     end
 
     # @return [ConditionalBlock]
-    def self.parse_elsif(stream, parser)
-      # @type var children: Array[Token | Node]
-      children = [stream.eat(:token_tag_start),
-                  stream.eat_whitespace_control,
-                  stream.eat(:token_tag_name)]
+    def self.parse_elsif(parser)
+      parser.eat(:token_tag_start)
+      parser.skip_whitespace_control
+      token = parser.eat(:token_tag_name)
 
-      expression = BooleanExpression.new(parser.parse_primary(stream))
+      expression = BooleanExpression.new(parser.parse_primary)
+      parser.carry_whitespace_control
+      parser.eat(:token_tag_end)
 
-      # TODO: skip until ..
-      children << expression << stream.eat_whitespace_control << stream.eat(:token_tag_end)
-      block = parser.parse_block(stream, self::END_BLOCK)
-      children << block
-      ConditionalBlock.new(children, expression, block)
+      block = parser.parse_block(self::END_BLOCK)
+      ConditionalBlock.new(token, expression, block)
     end
 
-    # @param children [Array<Token|Node>]
+    # @param token [[Symbol, String?, Integer]]
     # @param expression [Expression]
     # @param block [Block]
     # @param alternatives [Array<[ConditionalBlock]>]
     # @param default [Block?]
-    def initialize(children, expression, block, alternatives, default)
-      super(children)
+    def initialize(token, expression, block, alternatives, default)
+      super(token)
       @expression = expression
       @block = block
       @alternatives = alternatives
@@ -69,10 +59,10 @@ module Liquid2
     end
 
     def render(context, buffer)
-      return @block.render(context, buffer) if @expression.evaluate(context)
+      return @block.render(context, buffer) if context.evaluate(@expression)
 
       @alternatives.each do |alt|
-        return alt.block.render(context, buffer) if alt.expression.evaluate(context)
+        return alt.block.render(context, buffer) if context.evaluate(alt.expression)
       end
 
       return @default.render(context, buffer) if @default

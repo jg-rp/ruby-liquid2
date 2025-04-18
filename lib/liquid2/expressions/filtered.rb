@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "../../node"
+require_relative "../expression"
 
 module Liquid2
   class FilteredExpression < Expression
@@ -11,7 +11,7 @@ module Liquid2
     end
 
     def evaluate(context)
-      left = @left.evaluate(context)
+      left = context.evaluate(@left)
       @filters.each { |f| left = f.evaluate(left, context) }
       left
     end
@@ -48,15 +48,14 @@ module Liquid2
     end
   end
 
-  class Filter < Node
+  class Filter < Expression
     attr_reader :name, :args
 
-    # @param children [Array<Token | Node>]
-    # @param name [Token]
+    # @param name [String]
     # @param args [Array<PositionalArgument | KeywordArgument>]
-    def initialize(children, name, args)
-      super(children)
-      @name = name.text
+    def initialize(token, name, args)
+      super(token)
+      @name = name
       @args = args
     end
 

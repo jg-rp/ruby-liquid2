@@ -4,7 +4,7 @@ require_relative "../../node"
 
 module Liquid2
   # The standard _case_ tag.
-  class CaseTag < Tag
+  class CaseTag < Node
     END_BLOCK = Set["endcase", "when", "else"]
 
     def self.parse(stream, parser)

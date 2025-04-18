@@ -80,10 +80,28 @@ class TestTokenize < Minitest::Spec
         [:token_pipe, nil, 10],
         [:token_word, "join", 12],
         [:token_colon, nil, 16],
-        [:token_single_quote, nil, 18],
-        [:token_string, ", ", 19],
-        [:token_single_quote, nil, 21],
+        [:token_single_quote_string, ", ", 19],
         [:token_output_end, nil, 23]
+      ]
+    },
+    {
+      name: "string, single quote, escape sequence",
+      source: "{{ 'Hello\\\n, world' }}",
+      want: [
+        [:token_output_start, nil, 0],
+        [:token_single_quote_string, "Hello\\\n, world", 4],
+        [:token_output_end, nil, 20]
+
+      ]
+    },
+    {
+      name: "string, double quote, escape sequence",
+      source: "{{ \"Hello\\\n, world\" }}",
+      want: [
+        [:token_output_start, nil, 0],
+        [:token_double_quote_string, "Hello\\\n, world", 4],
+        [:token_output_end, nil, 20]
+
       ]
     }
   ].freeze

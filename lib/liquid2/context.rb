@@ -83,6 +83,10 @@ module Liquid2
       @interrupts = [] # : Array[Symbol]
     end
 
+    def evaluate(obj)
+      obj.respond_to?(:evaluate) ? obj.evaluate(self) : obj
+    end
+
     # Add _key_ to the local scope with value _value_.
     # @param key [String]
     # @param value [Object]

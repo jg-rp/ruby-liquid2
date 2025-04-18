@@ -7,7 +7,7 @@ module Liquid2
   DISABLED_TAGS = Set["include"]
 
   # The standard _render_ tag.
-  class RenderTag < Tag
+  class RenderTag < Node
     # @param stream [TokenStream]
     # @param parser [Parser]
     # @return [RenderTag]

@@ -4,7 +4,7 @@ require_relative "../../node"
 
 module Liquid2
   # The standard _increment_ tag.
-  class IncrementTag < Tag
+  class IncrementTag < Node
     # @param stream [TokenStream]
     # @param parser [Parser]
     # @return [IncrementTag]

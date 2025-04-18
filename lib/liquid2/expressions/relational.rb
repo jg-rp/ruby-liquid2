@@ -1,16 +1,15 @@
 # frozen_string_literal: true
 
 require_relative "blank"
-require_relative "../../node"
+require_relative "../expression"
 
 module Liquid2
   # Base for comparison expressions.
   class ComparisonExpression < Expression
-    # @param children [Array<Token, Node>]
     # @param left [Expression]
     # @param right [Expression]
-    def initialize(children, left, right)
-      super(children)
+    def initialize(token, left, right)
+      super(token)
       @left = left
       @right = right
     end

@@ -4,7 +4,7 @@ require_relative "../../node"
 
 module Liquid2
   # The standard _assign_ tag.
-  class AssignTag < Tag
+  class AssignTag < Node
     # @param stream [TokenStream]
     # @param parser [Parser]
     # @return [AssignTag]
@@ -21,11 +21,11 @@ module Liquid2
       new(children, name, expression)
     end
 
-    # @param children [Array<Token | Node>]
+    # @param token [[Symbol, String?, Integer]]
     # @param name [Identifier]
     # @param expression [Expression]
-    def initialize(children, name, expression)
-      super(children)
+    def initialize(token, name, expression)
+      super(token)
       @name = name.name
       @expression = expression
     end

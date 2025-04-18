@@ -4,7 +4,7 @@ require_relative "../../node"
 
 module Liquid2
   # The standard _capture_ tag.
-  class CaptureTag < Tag
+  class CaptureTag < Node
     END_BLOCK = Set["endcapture"]
 
     # @param stream [TokenStream]

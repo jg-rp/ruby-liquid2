@@ -8,7 +8,7 @@ module Liquid2
     attr_reader :env, :ast, :name, :path, :globals, :overlay, :up_to_date
 
     # @param env [Environment]
-    # @param ast [RootNode]
+    # @param ast [Array[Node | String]]
     # @param name [String] The template's name.
     # @param path [String?] The path or other qualifying data to _name_.
     # @param globals [_Namespace] Global template variables.
@@ -45,7 +45,7 @@ module Liquid2
 
       # TODO: don't extend if namespace is nil
       context.extend(namespace || {}) do
-        @ast.children.each do |node|
+        @ast.each do |node|
           if (interrupt = context.interrupts.pop)
             # steep:ignore:start
             raise LiquidSyntaxError.new("unexpected #{interrupt}", node) if !partial && block_scope
@@ -54,14 +54,19 @@ module Liquid2
 
             context.interrupts << interrupt
           end
-          bytes += node.render(context, buffer) # steep:ignore
+          bytes += case node
+                   when String
+                     buffer.write(node)
+                   else
+                     node.render(context, buffer)
+                   end
         end
       end
 
       bytes
     end
 
-    # Merge templates globals with another namespace.
+    # Merge template globals with another namespace.
     def make_globals(namespace)
       namespace.nil? ? @globals : @globals.merge(namespace)
     end

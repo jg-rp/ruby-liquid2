@@ -5,65 +5,52 @@ require_relative "utils/string_io"
 module Liquid2
   # The base class for all nodes in a Liquid syntax tree.
   class Node
-    attr_reader :children, :blank
+    attr_reader :blank
 
-    WC_MAP = {
-      "" => :whitespace_control_default,
-      "-" => :whitespace_control_minus,
-      "+" => :whitespace_control_plus,
-      "~" => :whitespace_control_tilde
-    }.freeze
-
-    # @param children [Array<Node | Token>]
-    def initialize(children)
-      @children = children
+    # @param token [[Symbol, String?, Integer]]
+    def initialize(token)
+      @token = token
       @blank = true
     end
 
-    # The index of the start of this node in template source text.
-    def start = @children.first.start
-
-    # The index of the start of this node in template source text, including leading whitespace.
-    def full_start = @children.first.full_start
-
-    # The index of the end of this node in template source text.
-    def end = @children.last.end
-
-    # Liquid markup for this node.
-    def text = @children.first.text + @children.to_enum.drop(1).map(&:full_text).join
-
-    # Liquid markup for this node, including leading whitespace.
-    def full_text = @children.map(&:full_text).join
-
-    alias to_s full_text
-
-    # For debugging.
-    def dump = { kind: self.class, children: @children.map(&:dump) }
+    def render(_context, _buffer)
+      raise "nodes must implement `render: (RenderContext, _Buffer) -> Integer`"
+    end
   end
 
-  class RootNode < Node; end
-
-  class Skipped < Node; end
-
-  # An node representing a block of Liquid markup. Essentially an array of other nodes.
+  # An node representing a block of Liquid markup.
+  # Essentially an array of other nodes and strings.
+  # @param token [[Symbol, String?, Integer]]
+  # @param nodes [Array[Node | String]]
   class Block < Node
-    def initialize(children)
-      super
-      @blank = children.all?(&:blank)
+    def initialize(token, nodes)
+      super(token)
+      @nodes = nodes
+      # TODO: @blank = nodes.all?(&:blank)
     end
 
     def render(context, buffer)
       if context.env.suppress_blank_control_flow_blocks && @blank
         buf = NullIO.new
-        @children.each do |node|
-          node.render(context, buf) # steep:ignore
+        @nodes.each do |node|
+          case node
+          when String
+            buf.write(node)
+          else
+            node.render(context, buf)
+          end
           return 0 unless context.interrupts.empty?
         end
         0
       else
         count = 0
-        @children.map do |node|
-          count += node.render(context, buffer) # steep:ignore
+        @nodes.each do |node|
+          count += case node
+                   when String
+                     buffer.write(node)
+                   else
+                     node.render(context, buffer)
+                   end
           return count unless context.interrupts.empty?
         end
         count
@@ -71,11 +58,13 @@ module Liquid2
     end
   end
 
+  # A Liquid block guarded by an expression.
+  # Only if the expression evaluates to a truthy value will the block be rendered.
   class ConditionalBlock < Node
     attr_reader :expression, :block
 
-    def initialize(children, expression, block)
-      super(children)
+    def initialize(token, expression, block)
+      super(token)
       @expression = expression
       @block = block
       @blank = block.blank
@@ -83,47 +72,6 @@ module Liquid2
 
     def render(context, buffer)
       @expression.evaluate(context) ? @block.render(context, buffer) : 0
-    end
-  end
-
-  # Base class for all tags.
-  class Tag < Node
-    attr_reader :wc
-
-    def initialize(children)
-      super
-      @wc = @children.map do |child|
-        WC_MAP.fetch(child.text) if child.is_a?(Token) && child.kind == :token_whitespace_control
-      end.compact
-    end
-
-    # Render this node to the output buffer.
-    # @param context [RenderContext]
-    # @param buffer [StringIO]
-    # @return [Integer] The number of bytes written to _buffer_.
-    def render(_context, _buffer)
-      raise "nodes must implement `render(context, buffer)`."
-    end
-  end
-
-  # The base class for all expressions.
-  class Expression < Node
-    # Evaluate this expression.
-    # @return [untyped] The result of evaluating this expression.
-    def evaluate(_context)
-      raise "expressions must implement `evaluate(context)` (#{self.class})."
-    end
-  end
-
-  # Syntax missing from a Liquid expression.
-  class Missing < Expression
-    def initialize(children, reason)
-      super(children)
-      @reason = reason
-    end
-
-    def evaluate(_context)
-      raise LiquidSyntaxError.new(@reason, self)
     end
   end
 end

@@ -4,7 +4,7 @@ require_relative "../../node"
 
 module Liquid2
   # The standard _include_ tag.
-  class IncludeTag < Tag
+  class IncludeTag < Node
     # @param stream [TokenStream]
     # @param parser [Parser]
     # @return [IncludeTag]

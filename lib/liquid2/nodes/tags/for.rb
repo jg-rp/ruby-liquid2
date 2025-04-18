@@ -31,12 +31,12 @@ module Liquid2
       new(children, expression, block, default)
     end
 
-    # @param children [Array<Token|Node>]
+    # @param token [[Symbol, String?, Integer]]
     # @param expression [LoopExpression]
     # @param block [Block]
     # @param default [Block?]
-    def initialize(children, expression, block, default)
-      super(children)
+    def initialize(token, expression, block, default)
+      super(token)
       @expression = expression
       @block = block
       @default = default
@@ -79,7 +79,7 @@ module Liquid2
   end
 
   # The standard _break_ tag.
-  class BreakTag < Tag
+  class BreakTag < Node
     def self.parse(stream, _parser)
       new(stream.eat_empty_tag("break"))
     end
@@ -91,7 +91,7 @@ module Liquid2
   end
 
   # The standard _continue_ tag.
-  class ContinueTag < Tag
+  class ContinueTag < Node
     def self.parse(stream, _parser)
       new(stream.eat_empty_tag("continue"))
     end
