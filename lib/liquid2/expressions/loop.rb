@@ -29,7 +29,7 @@ module Liquid2
                        [Enumerator.new {}, 0]
                      end
 
-      offset_key = "#{@identifier.name}-#{@enum.text}"
+      offset_key = "#{@identifier.name}-#{@enum}"
 
       start = if @offset
                 offset = (@offset || raise).evaluate(context)

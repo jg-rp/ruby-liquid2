@@ -9,8 +9,24 @@ module Liquid2
     # Try to cast _expr_ to an Identifier.
     # @param expr [Expression]
     def self.from(expr, trailing_question: true)
-      # XXX:
-      raise "TODO"
+      # TODO: trailing question
+      # TODO: expr might not have a token if its not a path.
+      unless expr.is_a?(Path) && expr.segments.length == 1
+        raise LiquidSyntaxError.new("expected an identifier, found #{expr}", expr.token)
+      end
+
+      val = expr.segments.first
+
+      unless val.is_a?(String)
+        raise LiquidSyntaxError.new("expected an identifier, found #{val}", expr.token)
+      end
+
+      # TODO: optimize
+      unless val.to_s.match?(/[\u0080-\uFFFFa-zA-Z_][\u0080-\uFFFFa-zA-Z0-9_-]*/)
+        raise LiquidSyntaxError.new("invalid identifier", expr.token)
+      end
+
+      new(expr.token)
     end
 
     # @param token [[Symbol, String?, Integer]]

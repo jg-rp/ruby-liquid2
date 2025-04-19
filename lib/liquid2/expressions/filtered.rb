@@ -39,7 +39,7 @@ module Liquid2
       if @condition.evaluate(context)
         rv = @left.evaluate(context)
       elsif @alternative
-        rv = (@alternative || raise).evaluate(context)
+        rv = context.evaluate(@alternative)
         @filters.each { |f| rv = f.evaluate(rv, context) }
       end
 
@@ -82,7 +82,7 @@ module Liquid2
       keyword_args = {} # @type var keyword_args: Hash[Symbol, untyped]
 
       @args.each do |arg|
-        name, value = arg.evaluate(context)
+        name, value = context.evaluate(arg)
         if name
           keyword_args[name.to_sym] = value
         else

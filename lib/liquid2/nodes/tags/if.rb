@@ -9,6 +9,8 @@ module Liquid2
     END_TAG = "endif"
     END_BLOCK = Set["else", "elsif", "endif"].freeze
 
+    # @param parser [Parser]
+    # @return [IfTag]
     def self.parse(parser)
       token = parser.previous # token_tag_name
       expression = BooleanExpression.new(parser.current, parser.parse_primary)

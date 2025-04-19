@@ -5,10 +5,7 @@ require "liquid2"
 
 source = <<~LIQUID
   START
-  {{ a[0] | upcase }}
-  {% if true %}
-    Hello
-  {% endif %}
+  {{ "foobar" | slice: 0, 4 }}
   END
 LIQUID
 

@@ -313,7 +313,6 @@ module Liquid2
     # Parse a _primary_ expression.
     # A primary expression is a literal, a path (to a variable), or a logical
     # expression composed of other primary expressions.
-    # @return [Node]
     def parse_primary: (?precedence: Integer) -> untyped
 
     # Parse a string literal without interpolation..
@@ -374,26 +373,21 @@ module Liquid2
     # @return [Output]
     def parse_output: () -> Output
 
-    # @return [Node]
     def parse_tag: () -> Tag
+                 
+    def parse_comment: () -> Comment
 
-    # @return [Node]
     def parse_path: () -> Path
 
-    # @return [Node]
     def parse_bracketed_path_selector: () -> (String | Integer | Path)
 
-    # @return [Node]
     def parse_shorthand_path_selector: () -> (String | Integer)
 
-    # @return [Node]
     def parse_range_lambda_or_grouped_expression: () -> untyped
 
-    # @return [Node]
     def parse_prefix_expression: () -> untyped
 
     # @param left [Expression]
-    # @return [Node]
     def parse_infix_expression: (untyped left) -> untyped
 
     # @return [Array<Filter>]
@@ -401,8 +395,9 @@ module Liquid2
 
     # @return [Filter]
     def parse_filter: () -> Filter
+                    
+    def parse_array_literal: (untyped left) -> ArrayLiteral
 
-    # @return [Node]
     def parse_arrow_function: () -> untyped
 
     # @param expr [Expression] The first parameter already passed by the caller.
@@ -410,7 +405,6 @@ module Liquid2
     def parse_partial_arrow_function: (untyped expr) -> untyped
 
     # @param left [Expression]
-    # @return [Node]
     def parse_ternary_expression: (FilteredExpression left) -> TernaryExpression
   end
 end
@@ -1296,16 +1290,22 @@ module Liquid2
 
     @blank: bool
 
-    @wc: Array[Symbol]
-
     attr_reader expression: (FilteredExpression | TernaryExpression)
-
-    attr_reader wc: Array[Symbol]
 
     # @param expression [FilteredExpression]
     def initialize: ([Symbol, String?, Integer] token, (FilteredExpression | TernaryExpression) expression) -> void
 
     def render: (RenderContext context, _Buffer buffer) -> Integer
+  end
+
+  # `{# comment #}` style comments.
+  class Comment < Node
+    @text: String
+
+    # @param text [String]
+    def initialize: ([Symbol, String?, Integer] token, String text) -> void
+
+    def render: (RenderContext _context, _Buffer _buffer) -> 0
   end
 end
 

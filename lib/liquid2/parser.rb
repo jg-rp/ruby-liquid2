@@ -4,12 +4,18 @@ require "set"
 require "strscan"
 require_relative "expression"
 require_relative "node"
+require_relative "nodes/comment"
 require_relative "nodes/output"
 require_relative "expressions/arguments"
+require_relative "expressions/array"
 require_relative "expressions/blank"
 require_relative "expressions/boolean"
 require_relative "expressions/filtered"
+require_relative "expressions/identifier"
+require_relative "expressions/logical"
+require_relative "expressions/loop"
 require_relative "expressions/path"
+require_relative "expressions/relational"
 
 module Liquid2
   # Liquid template parser.
@@ -271,6 +277,7 @@ module Liquid2
         when :token_comma
           @pos += 1
         else
+          @pos -= 1
           break
         end
       end
@@ -523,6 +530,15 @@ module Liquid2
     end
 
     # @return [Node]
+    def parse_comment
+      skip_whitespace_control
+      token = eat(:token_comment)
+      carry_whitespace_control
+      eat(:token_comment_end)
+      Comment.new(token, token[1] || raise)
+    end
+
+    # @return [Node]
     def parse_path
       token = current
       segments = [] # : Array[String | Integer | Path]
@@ -579,42 +595,28 @@ module Liquid2
       end
     end
 
-    # @return [Node]
-    def parse_range_lambda_or_grouped_expression
-      # @type var children: Array[Token | Node]
-      children = [eat(:token_lparen)]
-      expr = parse_primary
-
+    # Parse a comma separated list of expressions. Assumes the next token is a comma.
+    # @param left [Expression] The first item in the array.
+    # @return [ArrayLiteral]
+    def parse_array_literal(left)
       token = current
-
-      if token.first == :token_double_dot
-        self.next
-        stop = parse_primary
-        children << expr << token << stop << eat(:token_rparen)
-        return RangeExpression.new(children, expr, stop)
-      end
-
-      # An arrow function, but we've already consumed lparen and the first parameter.
-      return parse_partial_arrow_function(expr) if token.first == :token_comma
-
-      # An arrow function with a single parameter surrounded by parens.
-      if token.first == :token_rparen && peek_kind == :token_arrow
-        return parse_partial_arrow_function(expr)
-      end
+      items = [left] # : Array[untyped]
 
       loop do
-        break if TERMINATE_GROUPED_EXPRESSION.member?(token.first)
+        break unless current_kind == :token_comma
 
-        unless BINARY_OPERATORS.member?(token.first)
-          # TODO: or missing
-          raise LiquidSyntaxError.new("expected an infix operator, found #{token.first}", token)
-        end
+        break if TERMINATE_FILTER.member?(current_kind)
 
-        expr = parse_infix_expression(expr)
+        items << parse_primary
       end
 
-      children << eat(:token_rparen)
-      GroupedExpression.new(children, expr)
+      # TODO: incorrect token
+      ArrayLiteral.new(token, items)
+    end
+
+    # @return [Node]
+    def parse_range_lambda_or_grouped_expression
+      raise "TODO"
     end
 
     # @return [Node]
@@ -651,7 +653,7 @@ module Liquid2
       when :token_or
         LogicalOr.new(left.token, left, right)
       else
-        raise LiquidSyntaxError.new("unexpected infix operator, #{op_token.text}", op_token)
+        raise LiquidSyntaxError.new("unexpected infix operator, #{op_token[1]}", op_token)
       end
     end
 
@@ -688,8 +690,7 @@ module Liquid2
             args << KeywordArgument.new(word, word[1] || raise, val)
           elsif peek_kind == :token_arrow
             # A positional argument that is an arrow function with a single parameter.
-            node = parse_arrow_function
-            args << PositionalArgument.new(token, node[1])
+            args << PositionalArgument.new(token, parse_arrow_function)
           else
             # A positional argument that is a path.
             node = parse_path
@@ -697,13 +698,11 @@ module Liquid2
           end
         when :token_lparen
           # A grouped expression or range or arrow function
-          node = parse_primary
-          args << PositionalArgument.new(token, node[1])
+          args << PositionalArgument.new(token, parse_primary)
         else
           break if TERMINATE_FILTER.member?(current_kind)
 
-          node = parse_primary
-          args << PositionalArgument.new(token, node[1])
+          args << PositionalArgument.new(token, parse_primary)
         end
 
         break if TERMINATE_FILTER.member?(current_kind)
@@ -716,76 +715,21 @@ module Liquid2
 
     # @return [Node]
     def parse_arrow_function
-      params = [] # : Array[Identifier]
-
-      case current_kind
-      when :token_word
-        # A single parameter without parens
-        token = self.next
-        param = Identifier.new(token)
-        children << param
-        params << param
-      when :token_lparen
-        # One or move parameters separated by commas and surrounded by parentheses.
-        children << self.next
-        while current_kind != :token_rparen
-          token = eat(:token_word)
-          param = Identifier.new(token)
-          children << param
-          params << param
-
-          children << self.next if current_kind == :token_comma
-
-          children << Skipped.new([self.next]) unless TERMINATE_LAMBDA_PARAM.member?(current_kind)
-        end
-
-        children << eat(:token_rparen)
-      end
-
-      children << eat(:token_arrow)
-      expr = parse_primary
-      children << expr
-      Lambda.new(children, params, expr)
+      raise "TODO"
     end
 
     # @param children [Array<Token | Node>] Child tokens already consumed by the caller.
     # @param expr [Expression] The first parameter already passed by the caller.
     # @return [Expression]
-    def parse_partial_arrow_function(children, expr)
-      params = [] # : Array[Identifier]
-
-      # expr should be a single segment path, we need an Identifier.
-      param = Identifier.from(expr)
-      params << param
-      children << param
-      children << self.next if current_kind == :token_comma
-
-      while current_kind != :token_rparen
-        token = eat(:token_word)
-        param = Identifier.new(token)
-        children << param
-        params << param
-
-        children << self.next if current_kind == :token_comma
-
-        unless TERMINATE_LAMBDA_PARAM.member?(current_kind)
-          children << Skipped.new([self.next])
-          break
-        end
-      end
-
-      children << eat(:token_rparen)
-      children << eat(:token_arrow)
-      expr = parse_primary
-      children << expr
-      Lambda.new(children, params, expr)
+    def parse_partial_arrow_function(expr)
+      raise "TODO"
     end
 
     # @param left [Expression]
     # @return [Node]
     def parse_ternary_expression(left)
       eat(:token_if)
-      condition = BooleanExpression.new(parse_primary)
+      condition = BooleanExpression.new(current, parse_primary)
       alternative = nil # : Expression?
       filters = [] # : Array[Filter]
       tail_filters = [] # : Array[Filter]

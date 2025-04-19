@@ -53,23 +53,19 @@ Benchmark.ips do |x|
   # the warmup phase (default 2) and calculation phase (default 5)
   x.config(warmup: 2, time: 5)
 
-  x.report("scan:") do
-    Liquid2.tokenize(source)
-  end
-
-  x.report("scanner:") do
+  x.report("tokenize:") do
     Liquid2::Scanner.tokenize(source, scanner)
   end
 
-  # x.report("parse:") do
-  #   env.parse(source)
-  # end
+  x.report("parse:") do
+    env.parse(source)
+  end
 
-  # x.report("render:") do
-  #   template.render
-  # end
+  x.report("render:") do
+    template.render
+  end
 
-  # x.report("both:") do
-  #   env.parse(source).render
-  # end
+  x.report("both:") do
+    env.parse(source).render
+  end
 end

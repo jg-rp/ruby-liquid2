@@ -17,8 +17,8 @@ module Liquid2
     protected
 
     def inner_evaluate(context)
-      left = @left.evaluate(context)
-      right = @right.evaluate(context)
+      left = context.evaluate(@left)
+      right = context.evaluate(@right)
       left = left.to_liquid(context) if left.respond_to?(:to_liquid)
       right = right.to_liquid(context) if right.respond_to?(:to_liquid)
       [left, right]
@@ -66,8 +66,8 @@ module Liquid2
 
   class Contains < ComparisonExpression
     def evaluate(context)
-      left = @left.evaluate(context)
-      right = @right.evaluate(context)
+      left = context.evaluate(@left)
+      right = context.evaluate(@right)
       Liquid2.contains(left, right)
     end
   end

@@ -7,28 +7,23 @@ module Liquid2
   class ForTag < Tag
     END_BLOCK = Set["endfor", "else"]
 
-    def self.parse(stream, parser)
-      # @type var children: Array[Token | Node]
-      children = [stream.eat(:token_tag_start),
-                  stream.eat_whitespace_control,
-                  stream.eat(:token_tag_name)]
+    def self.parse(parser)
+      token = parser.previous # token_tag_name
+      expression = parser.parse_loop_expression
+      parser.carry_whitespace_control
+      parser.eat(:token_tag_end)
 
-      expression = parser.parse_loop_expression(stream)
-      # TODO: skip until ..
-      children << expression << stream.eat_whitespace_control << stream.eat(:token_tag_end)
-      block = parser.parse_block(stream, END_BLOCK)
-      children << block
+      block = parser.parse_block(END_BLOCK)
 
-      if stream.tag?("else")
-        children.push(*stream.eat_empty_tag("else"))
-        default = parser.parse_block(stream, END_BLOCK)
-        children << default
+      if parser.tag?("else")
+        parser.eat_empty_tag("else")
+        default = parser.parse_block(END_BLOCK)
       else
         default = nil
       end
 
-      children.push(*stream.eat_empty_tag("endfor"))
-      new(children, expression, block, default)
+      parser.eat_empty_tag("endfor")
+      new(token, expression, block, default)
     end
 
     # @param token [[Symbol, String?, Integer]]
@@ -53,7 +48,7 @@ module Liquid2
       char_count = 0
       name = @expression.identifier.name
 
-      forloop = ForLoop.new("#{name}-#{@expression.enum.text}",
+      forloop = ForLoop.new("#{name}-#{@expression.enum}",
                             enum,
                             length,
                             context.parent_loop(self))
@@ -80,8 +75,8 @@ module Liquid2
 
   # The standard _break_ tag.
   class BreakTag < Tag
-    def self.parse(stream, _parser)
-      new(stream.eat_empty_tag("break"))
+    def self.parse(parser)
+      new(parser.eat_empty_tag("break"))
     end
 
     def render(context, _buffer)
@@ -92,8 +87,8 @@ module Liquid2
 
   # The standard _continue_ tag.
   class ContinueTag < Tag
-    def self.parse(stream, _parser)
-      new(stream.eat_empty_tag("continue"))
+    def self.parse(parser)
+      new(parser.eat_empty_tag("continue"))
     end
 
     def render(context, _buffer)
