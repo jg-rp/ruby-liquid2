@@ -10,7 +10,6 @@ require_relative "liquid2/parser"
 require_relative "liquid2/version"
 require_relative "liquid2/undefined"
 require_relative "liquid2/utils/chain_hash"
-require_relative "liquid2/utils/markup"
 require_relative "liquid2/utils/unescape"
 
 module Liquid2
@@ -22,7 +21,7 @@ module Liquid2
     when Hash, Array
       JSON.generate(obj)
     else
-      Markup.soft_to_s(obj)
+      obj.to_s
     end
   end
 

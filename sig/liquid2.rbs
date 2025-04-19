@@ -324,8 +324,8 @@ module Liquid2
 
     # Parse comma separated expression.
     # Leading commas should be consumed by the caller.
-    # @return [Array<PositionalArgument>]
-    def parse_positional_arguments: () -> Array[PositionalArgument]
+    # @return [Array[Expression]]
+    def parse_positional_arguments: () -> Array[untyped]
 
     # Parse comma name/value pairs.
     # Leading commas should be consumed by the caller.
@@ -969,23 +969,12 @@ module Liquid2
 end
 
 module Liquid2
-  class PositionalArgument < Expression
-    @value: untyped
-
-    attr_reader value: untyped
-
-    # @param value [Expression]
-    def initialize: ([Symbol, String?, Integer] token, untyped value) -> void
-
-    def evaluate: (RenderContext context) -> [nil, untyped]
-  end
-
   class KeywordArgument < Expression
-    @name: String
+    @name: Symbol
 
     @value: untyped
 
-    attr_reader name: String
+    attr_reader name: Symbol
 
     attr_reader value: untyped
 
@@ -993,7 +982,7 @@ module Liquid2
     # @param value [Expression]
     def initialize: ([Symbol, String?, Integer] token, String name, untyped value) -> void
 
-    def evaluate: (RenderContext context) -> [String, untyped]
+    def evaluate: (RenderContext context) -> [Symbol, untyped]
   end
 end
 
@@ -1079,15 +1068,15 @@ module Liquid2
   class Filter < Node
     @name: String
 
-    @args: Array[PositionalArgument | KeywordArgument]
+    @args: Array[untyped]
 
     attr_reader name: String 
 
-    attr_reader args: Array[PositionalArgument | KeywordArgument] 
+    attr_reader args: Array[untyped] 
 
     # @param name [Token]
-    # @param args [Array<PositionalArgument | KeywordArgument>]
-    def initialize: ([Symbol, String?, Integer] token, String name, Array[PositionalArgument | KeywordArgument] args) -> void
+    # @param args [Array[Expression]]
+    def initialize: ([Symbol, String?, Integer] token, String name, Array[untyped] args) -> void
 
     def evaluate: (untyped left, RenderContext context) -> untyped
 
@@ -1097,7 +1086,7 @@ module Liquid2
     # @return [positional arguments, keyword arguments] An array with two elements.
     #   The first is an array of evaluates positional arguments. The second is a hash
     #   of keyword names to evaluated keyword values.
-    def evaluate_args: (RenderContext context) -> [Array[PositionalArgument], Hash[Symbol, untyped]]
+    def evaluate_args: (RenderContext context) -> [Array[untyped], Hash[Symbol, untyped]]
   end
 end
 
@@ -1188,6 +1177,8 @@ module Liquid2
     attr_reader reversed: bool
 
     attr_reader cols: untyped?
+
+    EMPTY_ENUM: untyped
 
     def initialize: ([Symbol, String?, Integer] token, Identifier identifier, untyped enum, ?limit: untyped?, ?offset: untyped?, ?reversed: bool, ?cols: untyped?) -> void
 

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative "utils/chain_hash"
-require_relative "utils/markup"
 require_relative "utils/string_io"
 
 module Liquid2
@@ -247,11 +246,6 @@ module Liquid2
 
       carry = parent_buffer.is_a?(LimitedStringIO) ? parent_buffer.size : 0
       LimitedStringIO.new((@env.output_stream_limit || raise) - carry)
-    end
-
-    # Mark _string_ as "safe" if auto escape is enabled.
-    def markup(string)
-      @env.auto_escape ? Markup.new(string) : string
     end
 
     def cycle(key, length)

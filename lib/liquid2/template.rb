@@ -45,13 +45,14 @@ module Liquid2
       context.extend(namespace || {}) do
         @ast.each do |node|
           if (interrupt = context.interrupts.pop)
-            # steep:ignore:start
-            raise LiquidSyntaxError.new("unexpected #{interrupt}", node) if !partial && block_scope
-
-            # steep:ignore:end
+            if !partial && block_scope
+              raise LiquidSyntaxError.new("unexpected #{interrupt}",
+                                          node.token) # steep:ignore
+            end
 
             context.interrupts << interrupt
           end
+
           bytes += case node
                    when String
                      buffer.write(node)

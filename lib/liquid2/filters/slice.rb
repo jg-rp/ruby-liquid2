@@ -7,9 +7,9 @@ module Liquid2
     def self.slice(left, start, length = 1)
       case left
       when Array
-        left.slice(start, to_integer(length)) || []
+        left.slice(to_integer(start), to_integer(length)) || []
       else
-        Liquid2.to_s(left).slice(start, to_integer(length)) || ""
+        Liquid2.to_s(left).slice(to_integer(start), to_integer(length)) || ""
       end
     end
   end

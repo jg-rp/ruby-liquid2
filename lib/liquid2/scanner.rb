@@ -129,11 +129,13 @@ module Liquid2
       when "{{"
         @tokens << [:token_output_start, nil, @start]
         @start = @scanner.pos
+        accept_whitespace_control
         skip_trivia
         :lex_expression
       when "{%"
         @tokens << [:token_tag_start, nil, @start]
         @start = @scanner.pos
+        accept_whitespace_control
         skip_trivia
 
         if (tag_name = @scanner.scan(/(?:[a-z][a-z_0-9]*|#)/))

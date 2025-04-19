@@ -4,8 +4,8 @@ require_relative "../expression"
 
 module Liquid2
   class FilteredExpression < Expression
-    def initialize(children, left, filters)
-      super(children)
+    def initialize(token, left, filters)
+      super(token)
       @left = left
       @filters = filters
     end
@@ -18,14 +18,13 @@ module Liquid2
   end
 
   class TernaryExpression < Expression
-    # @param children [Array<Token | Node>]
     # @param left [FilteredExpression]
     # @param condition [BooleanExpression]
     # @param alternative [Expression | nil]
     # @param filters [Array<Filter>]
     # @param tail_filters [Array<Filter>]
-    def initialize(children, left, condition, alternative, filters, tail_filters)
-      super(children)
+    def initialize(token, left, condition, alternative, filters, tail_filters)
+      super(token)
       @left = left
       @condition = condition
       @alternative = alternative
@@ -52,7 +51,7 @@ module Liquid2
     attr_reader :name, :args
 
     # @param name [String]
-    # @param args [Array<PositionalArgument | KeywordArgument>]
+    # @param args [Array[Expression]]
     def initialize(token, name, args)
       super(token)
       @name = name
@@ -61,7 +60,6 @@ module Liquid2
 
     def evaluate(left, context)
       filter, with_context = context.env.filters[@name]
-
       raise LiquidFilterNotFoundError.new("unknown filter #{@name.inspect}", @token) unless filter
 
       positional_args, keyword_args = evaluate_args(context)
@@ -82,11 +80,10 @@ module Liquid2
       keyword_args = {} # @type var keyword_args: Hash[Symbol, untyped]
 
       @args.each do |arg|
-        name, value = context.evaluate(arg)
-        if name
-          keyword_args[name.to_sym] = value
+        if arg.respond_to?(:name)
+          keyword_args[arg.name] = context.evaluate(arg.value)
         else
-          positional_args << value
+          positional_args << context.evaluate(arg)
         end
       end
 

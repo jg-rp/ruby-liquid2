@@ -3,20 +3,6 @@
 require_relative "../expression"
 
 module Liquid2
-  class PositionalArgument < Expression
-    attr_reader :value
-
-    # @param value [Expression]
-    def initialize(token, value)
-      super(token)
-      @value = value
-    end
-
-    def evaluate(context)
-      [nil, context.evaluate(@value)]
-    end
-  end
-
   class KeywordArgument < Expression
     attr_reader :value, :name
 
@@ -24,7 +10,7 @@ module Liquid2
     # @param value [Expression]
     def initialize(token, name, value)
       super(token)
-      @name = name
+      @name = name.to_sym
       @value = value
     end
 

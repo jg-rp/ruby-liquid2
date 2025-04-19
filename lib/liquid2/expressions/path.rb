@@ -19,5 +19,8 @@ module Liquid2
         segment.is_a?(Path) ? segment.evaluate(context) : segment
       end, node: self)
     end
+
+    # TODO: fix and optimize
+    def to_s = @segments.map(&:to_s).join
   end
 end

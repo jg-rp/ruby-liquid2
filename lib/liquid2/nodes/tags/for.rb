@@ -10,6 +10,7 @@ module Liquid2
     def self.parse(parser)
       token = parser.previous # token_tag_name
       expression = parser.parse_loop_expression
+      # TODO: replace these two with `parser.expect_end_of_tag`
       parser.carry_whitespace_control
       parser.eat(:token_tag_end)
 

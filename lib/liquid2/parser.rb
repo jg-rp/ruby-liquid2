@@ -100,6 +100,7 @@ module Liquid2
         )
       end
 
+      carry_whitespace_control
       eat(:token_tag_end)
       name_token
     end
@@ -154,11 +155,13 @@ module Liquid2
 
       loop do
         kind, value = self.next
-        # TODO: handle whitespace control
         @pos += 1 if current_kind == :token_whitespace_control
 
         case kind
         when :token_other
+          # TODO: handle `~` and `+`?
+          value&.lstrip! if @whitespace_carry
+          value&.rstrip! if peek_kind == :token_whitespace_control
           nodes << (value || raise)
         when :token_output_start
           nodes << parse_output
@@ -185,13 +188,15 @@ module Liquid2
 
       loop do
         kind, value = self.next
-        # TODO: handle whitespace control
-        @pos += 1 if current_kind == :token_whitespace_control
 
         case kind
         when :token_other
+          # TODO: handle `~` and `+`?
+          value&.lstrip! if @whitespace_carry
+          value&.rstrip! if peek_kind == :token_whitespace_control
           nodes << (value || raise)
         when :token_output_start
+          @pos += 1 if current_kind == :token_whitespace_control
           nodes << parse_output
         when :token_tag_start
           if end_block.include?(peek_tag_name)
@@ -199,6 +204,7 @@ module Liquid2
             break
           end
 
+          @pos += 1 if current_kind == :token_whitespace_control
           nodes << parse_tag
         when :token_comment_start
           nodes << parse_comment
@@ -354,14 +360,12 @@ module Liquid2
 
     # Parse comma separated expression.
     # Leading commas should be consumed by the caller.
-    # @return [Array<PositionalArgument>]
+    # @return [Array<Expression>]
     def parse_positional_arguments
-      args = [] # : Array[PositionalArgument]
+      args = [] # : Array[untyped]
 
       loop do
-        token = current
-        item = parse_primary
-        args << PositionalArgument.new(token, item)
+        args << parse_primary
         break unless current_kind == :token_comma
 
         @pos += 1
@@ -676,7 +680,7 @@ module Liquid2
       end
 
       @pos += 1 # token_colon
-      args = [] # : Array[PositionalArgument | KeywordArgument]
+      args = [] # : Array[untyped]
 
       loop do
         token = current
@@ -690,19 +694,18 @@ module Liquid2
             args << KeywordArgument.new(word, word[1] || raise, val)
           elsif peek_kind == :token_arrow
             # A positional argument that is an arrow function with a single parameter.
-            args << PositionalArgument.new(token, parse_arrow_function)
+            args << parse_arrow_function
           else
             # A positional argument that is a path.
-            node = parse_path
-            args << PositionalArgument.new(token, node)
+            args << parse_path
           end
         when :token_lparen
           # A grouped expression or range or arrow function
-          args << PositionalArgument.new(token, parse_primary)
+          args << parse_primary
         else
           break if TERMINATE_FILTER.member?(current_kind)
 
-          args << PositionalArgument.new(token, parse_primary)
+          args << parse_primary
         end
 
         break if TERMINATE_FILTER.member?(current_kind)

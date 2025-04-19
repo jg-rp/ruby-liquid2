@@ -48,9 +48,11 @@ template = env.get_template("index.liquid")
 
 n = 1000
 
+scanner = StringScanner.new("")
+
 StackProf.run(mode: :cpu, raw: true, out: ".stackprof-cpu-scan.dump") do
   n.times do
-    Liquid2.tokenize(source)
+    Liquid2::Scanner.tokenize(source, scanner)
   end
 end
 

@@ -6,6 +6,8 @@ module Liquid2
   class LoopExpression < Expression
     attr_reader :identifier, :enum, :limit, :offset, :reversed, :cols
 
+    EMPTY_ENUM = Enumerator.new {}
+
     def initialize(token, identifier, enum, limit: nil, offset: nil, reversed: false, cols: nil)
       super(token)
       @identifier = identifier
@@ -18,7 +20,7 @@ module Liquid2
 
     # @return [[Enumerator, Integer]] An enumerator and its length.
     def evaluate(context)
-      obj = @enum.evaluate(context)
+      obj = context.evaluate(@enum)
 
       # TODO: optionally enable string iteration
       enum, length = if obj.is_a?(String)
@@ -26,13 +28,13 @@ module Liquid2
                      elsif obj.respond_to?(:each)
                        [obj.each, obj.size]
                      else
-                       [Enumerator.new {}, 0]
+                       [EMPTY_ENUM, 0]
                      end
 
       offset_key = "#{@identifier.name}-#{@enum}"
 
       start = if @offset
-                offset = (@offset || raise).evaluate(context)
+                offset = context.evaluate(@offset)
                 if offset == "continue"
                   context.stop_index(offset_key)
                 else
@@ -42,7 +44,7 @@ module Liquid2
                 0
               end
 
-      stop = @limit ? Liquid2.to_i((@limit || raise).evaluate(context)) + start : length
+      stop = @limit ? Liquid2.to_i(context.evaluate(@limit)) + start : length
 
       context.stop_index(offset_key, index: stop)
 

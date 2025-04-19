@@ -4,14 +4,14 @@ require "json"
 require "liquid2"
 
 source = <<~LIQUID
-  START
-  {{ "foobar" | slice: 0, 4 }}
-  END
+  {{ false | default: 'bar', allow_false:true }}
 LIQUID
 
 data = JSON.parse <<~DATA
   {
-        "a": ["b", "a"]
+        "customer": {
+          "first_name": "Holly"
+        }
       }
 DATA
 
