@@ -224,6 +224,7 @@ module Liquid2
     def parse_filtered_expression
       token = current
       left = parse_primary
+      left = parse_array_literal(left) if current_kind == :token_comma
       filters = parse_filters if current_kind == :token_pipe
       filters ||= [] # : Array[Filter]
       expr = FilteredExpression.new(token, left, filters)
@@ -238,7 +239,7 @@ module Liquid2
     # @return [LoopExpression]
     def parse_loop_expression
       identifier = parse_identifier
-      @pos += 1 # in
+      eat(:token_in)
       enum = parse_primary
 
       reversed = false
@@ -258,19 +259,23 @@ module Liquid2
       end
 
       loop do
-        token = self.next
+        token = current
         case token.first
         when :token_word
           case token[1]
           when "reversed"
+            @pos += 1
             reversed = true
           when "limit"
+            @pos += 1
             eat_one_of(:token_colon, :token_assign)
             limit = parse_primary
           when "cols"
+            @pos += 1
             eat_one_of(:token_colon, :token_assign)
             cols = parse_primary
           when "offset"
+            @pos += 1
             eat_one_of(:token_colon, :token_assign)
             offset_token = current
             offset = if offset_token.first == :token_word && offset_token[1] == "continue"
@@ -284,7 +289,6 @@ module Liquid2
         when :token_comma
           @pos += 1
         else
-          @pos -= 1
           break
         end
       end
@@ -299,8 +303,9 @@ module Liquid2
     # @return [Node]
     def parse_primary(precedence: Precedence::LOWEST)
       # Keywords followed by a dot or square bracket are parsed as paths.
-      looks_like_a_path = %i[token_dot token_lbracket].include?(peek_kind)
+      looks_like_a_path = PATH_PUNCTUATION.include?(peek_kind)
 
+      # @type var kind: Symbol
       kind = current_kind
 
       left = case kind
@@ -356,7 +361,13 @@ module Liquid2
     end
 
     def parse_identifier(trailing_question: true)
-      Identifier.from(parse_primary, trailing_question: trailing_question)
+      token = eat(:token_word)
+
+      if PATH_PUNCTUATION.include?(current_kind)
+        raise LiquidSyntaxError.new("expected an identifier, found a path", current)
+      end
+
+      Identifier.new(token)
     end
 
     # Parse comma separated expression.
@@ -411,6 +422,7 @@ module Liquid2
       token_not: Precedence::PREFIX,
       token_rparen: Precedence::LOWEST,
       token_contains: Precedence::MEMBERSHIP,
+      token_in: Precedence::MEMBERSHIP,
       token_eq: Precedence::RELATIONAL,
       token_lt: Precedence::RELATIONAL,
       token_gt: Precedence::RELATIONAL,
@@ -429,6 +441,7 @@ module Liquid2
       :token_le,
       :token_ge,
       :token_contains,
+      :token_in,
       :token_and,
       :token_or
     ]
@@ -515,6 +528,11 @@ module Liquid2
       :token_tag_tags
     ]
 
+    PATH_PUNCTUATION = Set[
+      :token_dot,
+      :token_lbracket
+    ]
+
     # @return [Output]
     def parse_output
       expr = parse_filtered_expression
@@ -566,21 +584,24 @@ module Liquid2
     # @return [Node]
     def parse_bracketed_path_selector
       kind, value = self.next
-      eat(:token_rbracket)
 
-      case kind
-      when :token_int
-        value.to_i
-      when :token_word
-        parse_path
-      when :token_double_quote_string, :token_single_quote_string
-        # TODO: unescape
-        value || raise
-      else
-        raise LiquidSyntaxError.new(
-          "unexpected token in bracketed selector, #{current_kind}", current
-        )
-      end
+      segment = case kind
+                when :token_int
+                  value.to_i
+                when :token_word
+                  @pos -= 1
+                  parse_path
+                when :token_double_quote_string, :token_single_quote_string
+                  # TODO: unescape
+                  value || raise
+                else
+                  raise LiquidSyntaxError.new(
+                    "unexpected token in bracketed selector, #{current_kind}", current
+                  )
+                end
+
+      eat(:token_rbracket)
+      segment
     end
 
     # @return [Node]
@@ -610,6 +631,8 @@ module Liquid2
       loop do
         break unless current_kind == :token_comma
 
+        @pos += 1
+
         break if TERMINATE_FILTER.member?(current_kind)
 
         items << parse_primary
@@ -622,11 +645,27 @@ module Liquid2
     # @return [Node]
     def parse_range_lambda_or_grouped_expression
       token = eat(:token_lparen)
-      start = parse_primary
-      eat(:token_double_dot)
-      stop = parse_primary
+      expr = parse_primary
+
+      if current_kind == :token_double_dot
+        @pos += 1
+        stop = parse_primary
+        eat(:token_rparen)
+        return RangeExpression.new(token, expr, stop)
+      end
+
+      kind = current_kind
+
+      unless TERMINATE_GROUPED_EXPRESSION.member?(kind)
+        unless BINARY_OPERATORS.member?(kind)
+          raise LiquidSyntaxError.new("expected an infix operator, found #{kind}", current)
+        end
+
+        expr = parse_infix_expression(expr)
+      end
+
       eat(:token_rparen)
-      RangeExpression.new(token, start, stop)
+      GroupedExpression.new(token, expr)
     end
 
     # @return [Node]
@@ -645,23 +684,25 @@ module Liquid2
 
       case op_token.first
       when :token_eq
-        Eq.new(left.token, left, right)
+        Eq.new(op_token, left, right)
       when :token_lt
-        Lt.new(left.token, left, right)
+        Lt.new(op_token, left, right)
       when :token_gt
-        Gt.new(left.token, left, right)
+        Gt.new(op_token, left, right)
       when :token_ne, :token_lg
-        Ne.new(left.token, left, right)
+        Ne.new(op_token, left, right)
       when :token_le
-        Le.new(left.token, left, right)
+        Le.new(op_token, left, right)
       when :token_ge
-        Ge.new(left.token, left, right)
+        Ge.new(op_token, left, right)
       when :token_contains
-        Contains.new(left.token, left, right)
+        Contains.new(op_token, left, right)
+      when :token_in
+        In.new(op_token, left, right)
       when :token_and
-        LogicalAnd.new(left.token, left, right)
+        LogicalAnd.new(op_token, left, right)
       when :token_or
-        LogicalOr.new(left.token, left, right)
+        LogicalOr.new(op_token, left, right)
       else
         raise LiquidSyntaxError.new("unexpected infix operator, #{op_token[1]}", op_token)
       end

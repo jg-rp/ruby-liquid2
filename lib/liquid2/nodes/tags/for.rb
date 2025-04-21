@@ -54,12 +54,14 @@ module Liquid2
         index = 0
         while (item = array[index])
           namespace[name] = item
-          @block.render(context, buffer)
           index += 1
           forloop.next
-          if (interrupt = context.interrupts.pop)
-            index += 1 if interrupt == :continue
-            break if interrupt == :break
+          @block.render(context, buffer)
+          case context.interrupts.pop
+          when :continue
+            next
+          when :break
+            break
           end
         end
       end
@@ -69,7 +71,8 @@ module Liquid2
   # The standard _break_ tag.
   class BreakTag < Tag
     def self.parse(parser)
-      new(parser.eat_empty_tag("break"))
+      parser.carry_whitespace_control
+      new(parser.eat(:token_tag_end))
     end
 
     def render(context, _buffer)
@@ -80,7 +83,8 @@ module Liquid2
   # The standard _continue_ tag.
   class ContinueTag < Tag
     def self.parse(parser)
-      new(parser.eat_empty_tag("continue"))
+      parser.carry_whitespace_control
+      new(parser.eat(:token_tag_end))
     end
 
     def render(context, _buffer)

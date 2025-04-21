@@ -45,14 +45,14 @@ module Liquid2
         rv = context.evaluate(@alternative)
         index = 0
         while (filter = @filters[index])
-          left = filter.evaluate(left, context)
+          rv = filter.evaluate(rv, context)
           index += 1
         end
       end
 
       index = 0
       while (filter = @tail_filters[index])
-        left = filter.evaluate(left, context)
+        rv = filter.evaluate(rv, context)
         index += 1
       end
       rv
@@ -76,7 +76,12 @@ module Liquid2
 
       positional_args, keyword_args = evaluate_args(context)
       keyword_args[:context] = context if with_context
-      filter.call(left, *positional_args, **keyword_args) # steep:ignore
+
+      if keyword_args.empty?
+        filter.call(left, *positional_args) # steep:ignore
+      else
+        filter.call(left, *positional_args, **keyword_args) # steep:ignore
+      end
     rescue ArgumentError => e
       raise LiquidArgumentError.new(e.message, @token)
     end

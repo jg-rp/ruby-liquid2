@@ -16,5 +16,9 @@ module Liquid2
     def evaluate(context)
       (Liquid2.to_liquid_int(context.evaluate(@start))..Liquid2.to_liquid_int(context.evaluate(@stop)))
     end
+
+    def to_s
+      "(#{@start}..#{@stop})"
+    end
   end
 end

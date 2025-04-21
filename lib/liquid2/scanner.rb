@@ -244,16 +244,15 @@ module Liquid2
         @scanner.pos -= 1 if @scanner.skip_until(RE_SINGLE_QUOTE_STRING_SPECIAL)
         case @scanner.get_byte
         when "'"
-          if @start != @scanner.pos - 1
-            @tokens << [:token_single_quote_string,
-                        @source.byteslice(@start...@scanner.pos - 1),
-                        @start]
-            @start = @scanner.pos - 1
-          end
+          @tokens << [:token_single_quote_string,
+                      @source.byteslice(@start...@scanner.pos - 1),
+                      @start]
+
           @start = @scanner.pos
           return
         when "\\"
           # An escape sequence. Move past the next character.
+          # TODO: mark this string as needs unescaping?
           @scanner.get_byte
         when "$"
           # TODO: Possibly the start of a `${` expression.
@@ -271,12 +270,10 @@ module Liquid2
         @scanner.pos -= 1 if @scanner.skip_until(RE_DOUBLE_QUOTE_STRING_SPECIAL)
         case @scanner.get_byte
         when "\""
-          if @start != @scanner.pos - 1
-            @tokens << [:token_double_quote_string,
-                        @source.byteslice(@start...@scanner.pos - 1),
-                        @start]
-            @start = @scanner.pos - 1
-          end
+          @tokens << [:token_double_quote_string,
+                      @source.byteslice(@start...@scanner.pos - 1),
+                      @start]
+
           @start = @scanner.pos
           return
         when "\\"

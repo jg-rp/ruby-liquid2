@@ -370,6 +370,8 @@ module Liquid2
 
     WC_TOKENS: Set[Symbol]
 
+    PATH_PUNCTUATION: Set[Symbol]
+
     # @return [Output]
     def parse_output: () -> Output
 
@@ -1209,6 +1211,23 @@ module Liquid2
 end
 
 module Liquid2
+  # A range expression.
+  class RangeExpression < Expression
+    @start: untyped
+
+    @stop: untyped
+
+    # @param start [Expression]
+    # @param stop [Expression]
+    def initialize: ([Symbol, String?, Integer] token, untyped start, untyped stop) -> void
+
+    def evaluate: (RenderContext context) -> ::Range[Integer]
+
+    def to_s: () -> ::String
+  end
+end
+
+module Liquid2
   # Base for comparison expressions.
   class ComparisonExpression < Expression
     @left: untyped
@@ -1247,6 +1266,10 @@ module Liquid2
   end
 
   class Contains < ComparisonExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class In < ComparisonExpression
     def evaluate: (RenderContext context) -> untyped
   end
 
@@ -1301,90 +1324,6 @@ module Liquid2
     def initialize: ([Symbol, String?, Integer] token, String text) -> void
 
     def render: (RenderContext _context, String _buffer) -> void
-  end
-end
-
-module Liquid2
-  # A string that is safe to be inserted into HTML or XML, either because it is already
-  # escaped or because it was explicitly marked as safe.
-  #
-  # TODO: finish me
-  # TODO: test me
-  #
-  class Markup < String
-    RE_ESCAPE: untyped
-
-    ESCAPE_MAP: { "&" => "&amp;", ">" => "&gt;", "<" => "&lt;", "'" => "&39;", "\"" => "&34;" }
-
-    def self.escape: (untyped object) -> Markup
-
-    def self.soft_to_s: (untyped object) -> String
-
-    def self.try_convert: (untyped object) -> String
-
-    def self.join: (Enumerable[untyped] enum, ?String separator) -> String
-
-    def to_html: () -> self
-
-    def inspect: () -> ::String
-
-    def %: (untyped _other) -> untyped
-
-    def *: (untyped other) -> untyped
-
-    def +: (untyped other) -> untyped
-
-    def -: (untyped _other) -> untyped
-
-    def []: (*untyped) ?{ (?) -> untyped } -> untyped
-
-    def slice: (*untyped) ?{ (?) -> untyped } -> untyped
-
-    def []=: (*untyped) ?{ (?) -> untyped } -> untyped
-
-    def split: (?untyped field_sep, ?::Integer limit) -> untyped
-
-    def capitalize: (*untyped) ?{ (?) -> untyped } -> untyped
-
-    def downcase: (*untyped) ?{ (?) -> untyped } -> untyped
-
-    def each_line: (*untyped) ?{ (?) -> untyped } -> untyped
-
-    def gsub: (*untyped) ?{ (?) -> untyped } -> untyped
-
-    def gsub!: (*untyped) ?{ (?) -> untyped } -> untyped
-
-    def insert: (untyped index, untyped other_string) -> untyped
-
-    def lines: (*untyped) ?{ (?) -> untyped } -> untyped
-
-    def prepend: (*untyped other_strings) -> untyped
-
-    def sub: (*untyped) ?{ (?) -> untyped } -> untyped
-
-    def sub!: (*untyped) ?{ (?) -> untyped } -> untyped
-
-    def strip: () -> untyped
-
-    def lstrip: () -> untyped
-
-    def rstrip: () -> untyped
-
-    def ljust: (untyped size, ?::String pad_string) -> untyped
-
-    def rjust: (untyped size, ?::String pad_string) -> untyped
-
-    def center: (untyped size, ?::String pad_string) -> untyped
-
-    def partition: (untyped string_or_regexp) -> untyped
-
-    def rpartition: (untyped string_or_regexp) -> untyped
-
-    def reverse: () -> untyped
-
-    def unescape: () -> untyped
-
-    def upcase: (*untyped) ?{ (?) -> untyped } -> untyped
   end
 end
 
@@ -1473,7 +1412,7 @@ module Liquid2
     def self.to_date: (untyped obj) -> untyped
 
     # Return the concatenation of items in _left_ separated by _sep_.
-    def self.join: (untyped left, ?::String sep, context: RenderContext) -> untyped
+    def self.join: (untyped left, ?::String sep) -> untyped
 
     # Return the absolute value of _left_.
     def self.abs: (untyped left) -> (Integer | Float | Numeric | BigDecimal)

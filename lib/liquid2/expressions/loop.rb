@@ -20,7 +20,7 @@ module Liquid2
       @name = "#{@identifier.name}-#{@enum}"
     end
 
-    # @return [[Enumerable, Integer]] An enumerable and its length.
+    # @return [Array[untyped]]
     def evaluate(context)
       obj = context.evaluate(@enum)
 
@@ -33,11 +33,12 @@ module Liquid2
                 # TODO: special big range slicing
                 obj.to_a
               elsif obj.is_a?(String)
-                # TODO: optionally enable string iteration
+                # TODO: optionally enable/disable string iteration
                 obj.each_char.to_a
               elsif obj.respond_to?(:each)
                 # TODO: special lazy drop slicing
                 # #each and #slice is our enumerable drop interface
+                # TODO: or just #to_a
                 obj.each.to_a
               else
                 EMPTY_ENUM
@@ -46,7 +47,10 @@ module Liquid2
       length = array.length
 
       # No slicing required
-      return @reversed ? array.reverse : array if @offset.nil? && @limit.nil?
+      if @offset.nil? && @limit.nil?
+        context.stop_index(@name, index: length)
+        return @reversed ? array.reverse : array
+      end
 
       start = if @offset
                 offset = context.evaluate(@offset)
@@ -62,7 +66,7 @@ module Liquid2
       stop = @limit ? Liquid2.to_i(context.evaluate(@limit)) + start : length
       context.stop_index(@name, index: stop)
 
-      array = (stop ? array.slice(start...stop) : array.slice(start..)) || EMPTY_ENUM
+      array = (stop ? array.slice(start...stop) : array.slice(start..)) || EMPTY_ENUM # steep:ignore
       @reversed ? array.reverse! : array
     end
   end

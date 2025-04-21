@@ -128,7 +128,7 @@ module Liquid2
       index = 0
       while (segment = path[index])
         index += 1
-        obj = get_item(obj, segment)
+        obj = get_item(obj, evaluate(segment))
 
         next unless obj == :undefined
 

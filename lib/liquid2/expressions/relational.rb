@@ -72,6 +72,14 @@ module Liquid2
     end
   end
 
+  class In < ComparisonExpression
+    def evaluate(context)
+      left = context.evaluate(@left)
+      right = context.evaluate(@right)
+      Liquid2.contains(right, left)
+    end
+  end
+
   # TODO: pass or inject a Token into errors
   # TODO: move these to liquid2.rb?
   # TODO: rename these with trailing "?"

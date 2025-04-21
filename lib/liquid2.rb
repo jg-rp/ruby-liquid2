@@ -26,20 +26,20 @@ module Liquid2
   end
 
   # Stringify an object for output. Use this when writing directly to an output buffer.
+  # TODO: forget auto_escape
   def self.to_output_string(obj, auto_escape: false)
     case obj
     when Array
       # Concatenate string representations of array elements.
-      s = obj.map do |item|
-        auto_escape ? Markup.escape(item) : Liquid2.to_s(item)
+      obj.map do |item|
+        Liquid2.to_s(item)
       end.join
-      auto_escape ? Markup.new(s) : s
     when BigDecimal
       # TODO: test capture
       # TODO: are there any scenarios where we need to cast to_f before output?
       obj.to_f.to_s
     else
-      auto_escape ? Markup.escape(obj) : Liquid2.to_s(obj)
+      Liquid2.to_s(obj)
     end
   end
 
