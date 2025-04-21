@@ -40,37 +40,29 @@ module Liquid2
     end
 
     def render(context, buffer)
-      enum, length = @expression.evaluate(context)
+      array = @expression.evaluate(context)
 
-      if length.zero?
+      if array.empty?
         return @default ? (@default || raise).render(context, buffer) : 0
       end
 
-      char_count = 0
       name = @expression.identifier.name
-
-      forloop = ForLoop.new("#{name}-#{@expression.enum}",
-                            enum,
-                            length,
-                            context.parent_loop(self))
-
-      namespace = {
-        "forloop" => forloop,
-        name => nil
-      }
+      forloop = ForLoop.new(@expression.name, array, context.parent_loop(self))
+      namespace = { "forloop" => forloop }
 
       context.loop(namespace, forloop) do
-        forloop.each do |item|
+        index = 0
+        while (item = array[index])
           namespace[name] = item
-          char_count += @block.render(context, buffer)
+          @block.render(context, buffer)
+          index += 1
+          forloop.next
           if (interrupt = context.interrupts.pop)
-            next if interrupt == :continue
+            index += 1 if interrupt == :continue
             break if interrupt == :break
           end
         end
       end
-
-      char_count
     end
   end
 
@@ -82,7 +74,6 @@ module Liquid2
 
     def render(context, _buffer)
       context.interrupts << :break
-      0
     end
   end
 
@@ -94,7 +85,6 @@ module Liquid2
 
     def render(context, _buffer)
       context.interrupts << :continue
-      0
     end
   end
 
@@ -114,10 +104,10 @@ module Liquid2
       "parentloop",
     ]
 
-    def initialize(name, enum, length, parent_loop)
+    def initialize(name, array, parent_loop)
       @name = name
-      @enum = enum
-      @length = length
+      @array = array
+      @length = array.length
       @parentloop = parent_loop
       @index = -1
     end
@@ -134,13 +124,7 @@ module Liquid2
       end
     end
 
-    def each
-      @enum.each do |item|
-        @index += 1
-        yield item
-      end
-    end
-
+    def next = @index += 1
     def index = @index + 1
     def index0 = @index
     def rindex = @length - @index

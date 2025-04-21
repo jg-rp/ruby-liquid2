@@ -455,9 +455,9 @@ module Liquid2
             
     def full_name: () -> String
 
-    def render: (?Hash[String, untyped]? globals) -> String
+    def render: (?Hash[String, untyped]? globals) -> void
 
-    def render_with_context: (RenderContext context, _Buffer buffer, ?partial: bool, ?block_scope: bool, ?namespace: Hash[String, untyped]?) -> Integer
+    def render_with_context: (RenderContext context, String buffer, ?partial: bool, ?block_scope: bool, ?namespace: Hash[String, untyped]?) -> Integer
                            
     # Merge templates globals with another namespace.
     def make_globals: (Hash[String, untyped]? namespace) -> Hash[String, untyped]
@@ -615,10 +615,6 @@ module Liquid2
 end
 
 module Liquid2
-  interface _Buffer
-    def write: (String) -> Integer
-    def string: () -> String
-  end
 
   # The base class for all nodes in a Liquid syntax tree.
   class Node
@@ -633,7 +629,7 @@ module Liquid2
     # @param token [[Symbol, String?, Integer]]
     def initialize: ([Symbol, String?, Integer] token) -> void
 
-    def render: (RenderContext context, _Buffer buffer) -> Integer
+    def render: (RenderContext context, String buffer) -> void
   end
 
   # An node representing a block of Liquid markup.
@@ -645,7 +641,7 @@ module Liquid2
 
     def initialize: ([Symbol, String?, Integer] token, Array[Node | String] nodes) -> void
 
-    def render: (RenderContext context, _Buffer buffer) -> Integer
+    def render: (RenderContext context, String buffer) -> void
   end
 
   # A Liquid block guarded by an expression.
@@ -663,7 +659,7 @@ module Liquid2
 
     def initialize: ([Symbol, String?, Integer] token, untyped expression, Block block) -> void
 
-    def render: (RenderContext context, _Buffer buffer) -> Integer
+    def render: (RenderContext context, String buffer) -> void
   end
 
   # Base class for all Liquid tags.
@@ -671,8 +667,7 @@ module Liquid2
     # Render this node to the output buffer.
     # @param context [RenderContext]
     # @param buffer [StringIO]
-    # @return [Integer] The number of bytes written to _buffer_.
-    def render: (RenderContext context, _Buffer buffer) -> Integer
+    def render: (RenderContext context, String buffer) -> void
   end
 end
 
@@ -683,6 +678,8 @@ module Liquid2
     def key?: (String key) -> bool
 
     def fetch: (String key, ?::Symbol default) -> untyped
+             
+    def []: (String key) -> untyped?
   end
 
   # Per render contextual information. A new RenderContext is created automatically
@@ -753,11 +750,12 @@ module Liquid2
     alias []= assign
 
     # Resolve _path_ to variable/data in the current scope.
-    # @param path [Array<String|Integer>] Path segments.
+    # @param head [String|Integer] First segment of the path.
+    # @param path [Array<String|Integer>] Remaining path segments.
     # @param node [Node?] An associated token to use for error context.
     # @param default [Object?] A default value to return if the path can no be resolved.
     # @return [Object]
-    def fetch: (Array[untyped] path, node: _HasToken, ?default: untyped) -> untyped
+    def fetch: (untyped head, Array[untyped] path, node: _HasToken, ?default: untyped) -> untyped
 
     # Resolve variable _name_ in the current scope.
     # @param name [String]
@@ -870,28 +868,28 @@ module Liquid2
     # @param default [Block?]
     def initialize: ([Symbol, String?, Integer] token, LoopExpression expression, Block block, Block? default) -> void
 
-    def render: (RenderContext context, _Buffer buffer) -> untyped
+    def render: (RenderContext context, String buffer) -> void
   end
 
   # The standard _break_ tag.
   class BreakTag < Tag
     def self.parse: (Parser _parser) -> BreakTag
 
-    def render: (RenderContext context, _Buffer _buffer) -> 0
+    def render: (RenderContext context, String _buffer) -> void
   end
 
   # The standard _continue_ tag.
   class ContinueTag < Tag
     def self.parse: (Parser _parser) -> ContinueTag
 
-    def render: (RenderContext context, _Buffer _buffer) -> 0
+    def render: (RenderContext context, String _buffer) -> void
   end
 
   # `for` loop helper variables.
   class ForLoop
     @name: String
 
-    @enum: Enumerable[untyped]
+    @array: Array[untyped]
 
     @length: Integer
 
@@ -907,13 +905,13 @@ module Liquid2
 
     KEYS: Set[String]
 
-    def initialize: (String name, Enumerable[untyped] enum, Integer length, (ForLoop | Undefined) parent_loop) -> void
+    def initialize: (String name, Array[untyped] enum, (ForLoop | Undefined) parent_loop) -> void
 
     def key?: (String key) -> bool
 
     def fetch: (String key, ?::Symbol default) -> untyped
-
-    def each: () { (untyped) -> untyped } -> untyped
+             
+    def next: () -> void
 
     def index: () -> Integer
 
@@ -931,6 +929,7 @@ module Liquid2
   interface _Namespace
     def key?: (String) -> bool
     def fetch: (String, ?::Symbol default) -> untyped
+    def []: (String) -> untyped
   end
 
   # Combine multiple hashes for sequential lookup.
@@ -1166,6 +1165,8 @@ module Liquid2
 
     @cols: untyped?
 
+    @name: String
+
     attr_reader identifier: Identifier
 
     attr_reader enum: untyped
@@ -1178,12 +1179,13 @@ module Liquid2
 
     attr_reader cols: untyped?
 
+    attr_reader name: String
+
     EMPTY_ENUM: untyped
 
     def initialize: ([Symbol, String?, Integer] token, Identifier identifier, untyped enum, ?limit: untyped?, ?offset: untyped?, ?reversed: bool, ?cols: untyped?) -> void
 
-    # @return [[Enumerator, Integer]] An enumerator and its length.
-    def evaluate: (RenderContext context) -> [Enumerable[untyped], Integer]
+    def evaluate: (RenderContext context) -> Array[untyped]
 
     def lazy_slice: (Enumerator[untyped] enum, Integer start_index, ?Integer? stop_index) -> Enumerable[untyped]
   end
@@ -1194,8 +1196,10 @@ module Liquid2
   # If the path has just one segment, it is often just called a "variable".
   class Path < Expression
     @segments: Array[String | Integer | Path]
+    @head: (String | Integer | Path)
 
     attr_reader segments: Array[String | Integer | Path]
+    attr_reader head: (String | Integer | Path)
 
     # @param segments [Array[String | Integer | Path]]
     def initialize: ([Symbol, String?, Integer] token, Array[String | Integer | Path] segments) -> void
@@ -1270,7 +1274,7 @@ module Liquid2
     # @param expression [Expression]
     def initialize: ([Symbol, String?, Integer] token, Identifier name, untyped expression) -> void
 
-    def render: (RenderContext context, _Buffer _buffer) -> 0
+    def render: (RenderContext context, String _buffer) -> void
   end
 end
 
@@ -1286,7 +1290,7 @@ module Liquid2
     # @param expression [FilteredExpression]
     def initialize: ([Symbol, String?, Integer] token, (FilteredExpression | TernaryExpression) expression) -> void
 
-    def render: (RenderContext context, _Buffer buffer) -> Integer
+    def render: (RenderContext context, String buffer) -> void
   end
 
   # `{# comment #}` style comments.
@@ -1296,7 +1300,7 @@ module Liquid2
     # @param text [String]
     def initialize: ([Symbol, String?, Integer] token, String text) -> void
 
-    def render: (RenderContext _context, _Buffer _buffer) -> 0
+    def render: (RenderContext _context, String _buffer) -> void
   end
 end
 
@@ -1409,7 +1413,7 @@ module Liquid2
 
     @alternatives: Array[ConditionalBlock]
 
-    @default: Block
+    @default: Block?
 
     END_TAG: String
 
@@ -1426,7 +1430,7 @@ module Liquid2
     # @param default [Block?]
     def initialize: ([Symbol, String?, Integer] token, untyped expression, Block block, Array[ConditionalBlock] alternatives, Block? default) -> void
 
-    def render: (RenderContext context, _Buffer buffer) -> Integer
+    def render: (RenderContext context, String buffer) -> void
   end
 end
 

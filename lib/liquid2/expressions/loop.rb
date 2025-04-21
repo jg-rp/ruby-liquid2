@@ -3,10 +3,11 @@
 require_relative "../expression"
 
 module Liquid2
+  # An expression used by the standard `for` and `tablerow` tags.
   class LoopExpression < Expression
-    attr_reader :identifier, :enum, :limit, :offset, :reversed, :cols
+    attr_reader :identifier, :enum, :limit, :offset, :reversed, :cols, :name
 
-    EMPTY_ENUM = Enumerator.new {}
+    EMPTY_ENUM = [].freeze # steep:ignore
 
     def initialize(token, identifier, enum, limit: nil, offset: nil, reversed: false, cols: nil)
       super(token)
@@ -16,27 +17,41 @@ module Liquid2
       @offset = offset
       @reversed = reversed
       @cols = cols
+      @name = "#{@identifier.name}-#{@enum}"
     end
 
-    # @return [[Enumerator, Integer]] An enumerator and its length.
+    # @return [[Enumerable, Integer]] An enumerable and its length.
     def evaluate(context)
       obj = context.evaluate(@enum)
 
-      # TODO: optionally enable string iteration
-      enum, length = if obj.is_a?(String)
-                       [obj.each_char, obj.length]
-                     elsif obj.respond_to?(:each)
-                       [obj.each, obj.size]
-                     else
-                       [EMPTY_ENUM, 0]
-                     end
+      # @type var array: Array[untyped]
+      array = if obj.is_a?(Array)
+                obj
+              elsif obj.is_a?(Hash)
+                obj.to_a
+              elsif obj.is_a?(Range)
+                # TODO: special big range slicing
+                obj.to_a
+              elsif obj.is_a?(String)
+                # TODO: optionally enable string iteration
+                obj.each_char.to_a
+              elsif obj.respond_to?(:each)
+                # TODO: special lazy drop slicing
+                # #each and #slice is our enumerable drop interface
+                obj.each.to_a
+              else
+                EMPTY_ENUM
+              end
 
-      offset_key = "#{@identifier.name}-#{@enum}"
+      length = array.length
+
+      # No slicing required
+      return @reversed ? array.reverse : array if @offset.nil? && @limit.nil?
 
       start = if @offset
                 offset = context.evaluate(@offset)
                 if offset == "continue"
-                  context.stop_index(offset_key)
+                  context.stop_index(@name)
                 else
                   Liquid2.to_i(offset)
                 end
@@ -45,24 +60,10 @@ module Liquid2
               end
 
       stop = @limit ? Liquid2.to_i(context.evaluate(@limit)) + start : length
+      context.stop_index(@name, index: stop)
 
-      context.stop_index(offset_key, index: stop)
-
-      if obj.respond_to?(:slice) && !obj.is_a?(String) && !obj.is_a?(Hash)
-        array = stop ? obj.slice(start...stop) : obj.slice(start..)
-        array = array.reverse if @reversed
-        return [array.to_enum, array.size]
-      end
-
-      [lazy_slice(enum, start, stop), length]
-    end
-
-    protected
-
-    def lazy_slice(enum, start_index, stop_index = nil)
-      sliced = enum.lazy.drop(start_index)
-      sliced = sliced.take(stop_index - start_index) if stop_index
-      @reversed ? sliced.to_a.reverse : sliced
+      array = (stop ? array.slice(start...stop) : array.slice(start..)) || EMPTY_ENUM
+      @reversed ? array.reverse! : array
     end
   end
 end

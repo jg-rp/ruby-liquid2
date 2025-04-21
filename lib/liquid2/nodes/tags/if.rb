@@ -63,13 +63,13 @@ module Liquid2
     def render(context, buffer)
       return @block.render(context, buffer) if context.evaluate(@expression)
 
-      @alternatives.each do |alt|
+      index = 0
+      while (alt = @alternatives[index])
+        index += 1
         return alt.block.render(context, buffer) if context.evaluate(alt.expression)
       end
 
-      return @default.render(context, buffer) if @default
-
-      0
+      (@default || raise).render(context, buffer) if @default
     end
   end
 end

@@ -18,6 +18,13 @@ module Liquid2
         default
       end
     end
+
+    def [](key)
+      case key
+      when "now", "today"
+        Time.now
+      end
+    end
   end
 
   # Per render contextual information. A new RenderContext is created automatically
@@ -104,28 +111,30 @@ module Liquid2
     alias []= assign
 
     # Resolve _path_ to variable/data in the current scope.
-    # @param path [Array<String|Integer>] Path segments.
+    # @param head [String|Integer] First segment of the path.
+    # @param path [Array<String|Integer>] Remaining path segments.
     # @param node [Node?] An associated token to use for error context.
     # @param default [Object?] A default value to return if the path can no be resolved.
     # @return [Object]
-    def fetch(path, node:, default: :undefined)
-      root = path.first
-      obj = @scope.fetch(root)
+    def fetch(head, path, node:, default: :undefined)
+      obj = @scope.fetch(evaluate(head))
 
       if obj == :undefined
-        return @env.undefined(root, node: node) if default == :undefined
+        return @env.undefined(head, node: node) if default == :undefined
 
         return default
       end
 
-      path.to_enum.drop(1).each do |segment|
+      index = 0
+      while (segment = path[index])
+        index += 1
         obj = get_item(obj, segment)
 
         next unless obj == :undefined
 
         return default unless default == :undefined
 
-        return @env.undefined(root, node: node)
+        return @env.undefined(head, node: node)
       end
 
       obj

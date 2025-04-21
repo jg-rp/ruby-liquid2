@@ -28,7 +28,6 @@ module Liquid2
 
     def render(context, _buffer)
       context.assign(@name, context.evaluate(@expression))
-      0
     end
   end
 end

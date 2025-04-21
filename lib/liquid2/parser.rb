@@ -15,6 +15,7 @@ require_relative "expressions/identifier"
 require_relative "expressions/logical"
 require_relative "expressions/loop"
 require_relative "expressions/path"
+require_relative "expressions/range"
 require_relative "expressions/relational"
 
 module Liquid2
@@ -620,7 +621,12 @@ module Liquid2
 
     # @return [Node]
     def parse_range_lambda_or_grouped_expression
-      raise "TODO"
+      token = eat(:token_lparen)
+      start = parse_primary
+      eat(:token_double_dot)
+      stop = parse_primary
+      eat(:token_rparen)
+      RangeExpression.new(token, start, stop)
     end
 
     # @return [Node]

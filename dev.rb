@@ -4,14 +4,17 @@ require "json"
 require "liquid2"
 
 source = <<~LIQUID
-  {{ false | default: 'bar', allow_false:true }}
+  {% for x in (1..4) %}
+    {{ greeting }}, {{ customer.first_name }}!
+  {% endfor %}
 LIQUID
 
 data = JSON.parse <<~DATA
   {
         "customer": {
           "first_name": "Holly"
-        }
+        },
+        "greeting": "Hello"
       }
 DATA
 

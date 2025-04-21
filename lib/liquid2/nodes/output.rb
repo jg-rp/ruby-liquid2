@@ -16,7 +16,7 @@ module Liquid2
     end
 
     def render(context, buffer)
-      buffer.write(Liquid2.to_output_s(@expression.evaluate(context)))
+      buffer << Liquid2.to_output_s(@expression.evaluate(context))
     end
   end
 end

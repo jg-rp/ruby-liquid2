@@ -32,10 +32,10 @@ module Liquid2
     end
 
     def render(globals = nil)
-      buf = @env.output_stream_limit ? LimitedStringIO.new(@env.output_stream_limit || raise) : StringIO.new
+      buf = +""
       context = RenderContext.new(self, globals: make_globals(globals))
       render_with_context(context, buf)
-      buf.string
+      buf
     end
 
     def render_with_context(context, buffer, partial: false, block_scope: false, namespace: nil)
@@ -43,7 +43,9 @@ module Liquid2
 
       # TODO: don't extend if namespace is nil
       context.extend(namespace || {}) do
-        @ast.each do |node|
+        index = 0
+        while (node = @ast[index])
+          index += 1
           if (interrupt = context.interrupts.pop)
             if !partial && block_scope
               raise LiquidSyntaxError.new("unexpected #{interrupt}",
@@ -53,12 +55,12 @@ module Liquid2
             context.interrupts << interrupt
           end
 
-          bytes += case node
-                   when String
-                     buffer.write(node)
-                   else
-                     node.render(context, buffer)
-                   end
+          case node
+          when String
+            buffer << node
+          else
+            node.render(context, buffer)
+          end
         end
       end
 

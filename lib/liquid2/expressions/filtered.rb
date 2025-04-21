@@ -12,7 +12,11 @@ module Liquid2
 
     def evaluate(context)
       left = context.evaluate(@left)
-      @filters.each { |f| left = f.evaluate(left, context) }
+      index = 0
+      while (filter = @filters[index])
+        left = filter.evaluate(left, context)
+        index += 1
+      end
       left
     end
   end
@@ -39,10 +43,18 @@ module Liquid2
         rv = @left.evaluate(context)
       elsif @alternative
         rv = context.evaluate(@alternative)
-        @filters.each { |f| rv = f.evaluate(rv, context) }
+        index = 0
+        while (filter = @filters[index])
+          left = filter.evaluate(left, context)
+          index += 1
+        end
       end
 
-      @tail_filters.each { |f| rv = f.evaluate(rv, context) }
+      index = 0
+      while (filter = @tail_filters[index])
+        left = filter.evaluate(left, context)
+        index += 1
+      end
       rv
     end
   end
@@ -79,7 +91,9 @@ module Liquid2
       positional_args = [] # @type var positional_args: Array[untyped]
       keyword_args = {} # @type var keyword_args: Hash[Symbol, untyped]
 
-      @args.each do |arg|
+      index = 0
+      while (arg = @args[index])
+        index += 1
         if arg.respond_to?(:name)
           keyword_args[arg.name] = context.evaluate(arg.value)
         else

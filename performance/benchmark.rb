@@ -8,7 +8,7 @@ require "liquid2"
 
 # A benchmark fixture
 class Fixture
-  attr_reader :templates, :data
+  attr_reader :templates, :data, :name
 
   # @param path [Pathname]
   def initialize(path)
@@ -53,19 +53,19 @@ Benchmark.ips do |x|
   # the warmup phase (default 2) and calculation phase (default 5)
   x.config(warmup: 2, time: 5)
 
-  x.report("tokenize:") do
-    Liquid2::Scanner.tokenize(source, scanner)
-  end
+  # x.report("tokenize (#{fixture.name}):") do
+  #   Liquid2::Scanner.tokenize(source, scanner)
+  # end
 
-  x.report("parse:") do
-    env.parse(source)
-  end
+  # x.report("parse (#{fixture.name}):") do
+  #   env.parse(source)
+  # end
 
-  x.report("render:") do
+  x.report("render (#{fixture.name}):") do
     template.render
   end
 
-  x.report("both:") do
-    env.parse(source).render
-  end
+  # x.report("both (#{fixture.name}):") do
+  #   env.parse(source).render
+  # end
 end

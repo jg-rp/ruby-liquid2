@@ -11,11 +11,11 @@ module Liquid2
     def self.from(expr, trailing_question: true)
       # TODO: trailing question
       # TODO: expr might not have a token if its not a path.
-      unless expr.is_a?(Path) && expr.segments.length == 1
+      unless expr.is_a?(Path) && expr.segments.empty?
         raise LiquidSyntaxError.new("expected an identifier, found #{expr}", expr.token)
       end
 
-      val = expr.segments.first
+      val = expr.head
 
       unless val.is_a?(String)
         raise LiquidSyntaxError.new("expected an identifier, found #{val}", expr.token)

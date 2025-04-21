@@ -31,29 +31,30 @@ module Liquid2
 
     def render(context, buffer)
       if context.env.suppress_blank_control_flow_blocks && @blank
-        buf = NullIO.new
-        @nodes.each do |node|
+        buf = +""
+        index = 0
+        while (node = @nodes[index])
+          index += 1
           case node
           when String
-            buf.write(node)
+            buf << node
           else
             node.render(context, buf)
           end
-          return 0 unless context.interrupts.empty?
+          return unless context.interrupts.empty?
         end
-        0
       else
-        count = 0
-        @nodes.each do |node|
-          count += case node
-                   when String
-                     buffer.write(node)
-                   else
-                     node.render(context, buffer)
-                   end
-          return count unless context.interrupts.empty?
+        index = 0
+        while (node = @nodes[index])
+          index += 1
+          case node
+          when String
+            buffer << node
+          else
+            node.render(context, buffer)
+          end
+          return unless context.interrupts.empty?
         end
-        count
       end
     end
   end

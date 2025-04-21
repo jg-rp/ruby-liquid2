@@ -9,38 +9,26 @@ module Liquid2
     end
 
     def [](key)
-      @hashes.reverse_each do |hash|
-        return hash.fetch(key) if hash.key?(key) # TODO: this causes two scope traversals
+      if (index = @hashes.rindex { |h| h.key?(key) })
+        @hashes[index][key]
       end
-      nil
-    end
-
-    def size
-      @hashes.length
     end
 
     def key?(key)
-      @hashes.reverse_each do |hash|
-        return true if hash.key?(key)
-      end
-      false
+      !@hashes.rindex { |h| h.key?(key) }.nil?
     end
 
     def fetch(key, default = :undefined)
-      @hashes.reverse_each do |hash|
-        return hash.fetch(key) if hash.key?(key) # TODO: this causes two scope traversals
+      if (index = @hashes.rindex { |h| h.key?(key) })
+        @hashes[index][key]
+      else
+        default
       end
-      default
     end
 
-    def push(hash)
-      @hashes << hash
-    end
-
+    def size = @hashes.length
+    def push(hash) = @hashes << hash
     alias << push
-
-    def pop
-      @hashes.pop
-    end
+    def pop = @hashes.pop
   end
 end

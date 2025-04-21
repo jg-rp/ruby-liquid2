@@ -8,6 +8,7 @@ class TestCompliance < Minitest::Spec
   i_suck_and_my_tests_are_order_dependent!
 
   # TEST_CASES = JSON.load_file("test/cts/cts.json")
+  # TODO: implement array literals and test `for`
   TEST_CASES = JSON.load_file("test/cts/tests/tags/for.json")
 
   describe "render template" do
