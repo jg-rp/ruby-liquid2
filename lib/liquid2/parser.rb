@@ -341,7 +341,7 @@ module Liquid2
 
       loop do
         kind = current_kind
-        break if kind == :token_eof || PRECEDENCES.fetch(kind, Precedence::LOWEST) < precedence
+        break if kind == :token_eof || (PRECEDENCES[kind] || Precedence::LOWEST) < precedence
         return left unless BINARY_OPERATORS.member?(kind)
 
         left = parse_infix_expression(left)
@@ -679,7 +679,7 @@ module Liquid2
     # @return [Node]
     def parse_infix_expression(left)
       op_token = self.next
-      precedence = PRECEDENCES.fetch(op_token.first, Precedence::LOWEST)
+      precedence = PRECEDENCES[op_token.first] || Precedence::LOWEST
       right = parse_primary(precedence: precedence)
 
       case op_token.first
@@ -717,7 +717,6 @@ module Liquid2
 
     # @return [Filter]
     def parse_filter
-      # @type var children: Array[Token | Node]
       @pos += 1 # pipe or double pipe
       name = eat(:token_word)
 

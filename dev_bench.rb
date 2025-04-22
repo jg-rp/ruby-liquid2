@@ -29,6 +29,13 @@ h = { "foo" => "bar", "bar" => "foo" }
 
 ar = %w[foo bar]
 
+ns = [
+  { "foo" => "bar", "bar" => "foo" },
+  { "foo" => "bar", "bar" => "foo" },
+  { "foo" => "bar", "bar" => "foo", "baz" => false },
+  { "foo" => "bar", "bar" => "foo" }
+]
+
 Benchmark.ips do |x|
   x.config(warmup: 2, time: 5)
 
@@ -150,11 +157,41 @@ Benchmark.ips do |x|
     ar.fetch(2, :undefined)
   end
 
-  x.report("Key? and [] (hash)") do
-    h.key?(0) ? h[0] : :undefined
-    h.key?(1) ? h[1] : :undefined
-    h.key?(2) ? h[2] : :undefined
+  x.report("Key? and [] (array)") do
+    ar.length > 0 ? ar[0] : :undefined
+    ar.length > 1 ? ar[1] : :undefined
+    ar.length > 2 ? ar[2] : :undefined
   end
 
-  # TODO: rindex vs explicit loop
+  x.report("rindex") do
+    if (index = ns.rindex { |hs| hs.key?("baz") })
+      ns[index]["baz"]
+    end
+
+    if (index = ns.rindex { |hs| hs.key?("banana") })
+      ns[index]["banana"]
+    end
+  end
+
+  x.report("while and return") do
+    index = ns.length - 1
+    while index >= 0
+      hs = ns[index]
+      if hs.key?("baz")
+        hs["baz"]
+        break
+      end
+      index -= 1
+    end
+
+    index = ns.length - 1
+    while index >= 0
+      hs = ns[index]
+      if hs.key?("banana")
+        hs["banana"]
+        break
+      end
+      index -= 1
+    end
+  end
 end

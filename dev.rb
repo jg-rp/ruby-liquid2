@@ -4,14 +4,11 @@ require "json"
 require "liquid2"
 
 source = <<~LIQUID
-  {% assign a = b, c, 'd' %}{{ a }}
+  {% for a in b %}{{ a }} {{ forloop.length }},{% endfor %}
 LIQUID
 
 data = JSON.parse <<~DATA
-  {
-        "b": 1,
-        "c": 2
-      }
+  { "b": [1, 2, 3] }
 DATA
 
 scanner = StringScanner.new("")

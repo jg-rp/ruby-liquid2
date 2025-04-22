@@ -9,8 +9,11 @@ module Liquid2
     end
 
     def [](key)
-      if (index = @hashes.rindex { |h| h.key?(key) })
-        @hashes[index][key]
+      index = @hashes.length - 1
+      while index >= 0
+        h = @hashes[index]
+        index -= 1
+        return h[key] if h.key?(key)
       end
     end
 
@@ -19,11 +22,14 @@ module Liquid2
     end
 
     def fetch(key, default = :undefined)
-      if (index = @hashes.rindex { |h| h.key?(key) })
-        @hashes[index][key]
-      else
-        default
+      index = @hashes.length - 1
+      while index >= 0
+        h = @hashes[index]
+        index -= 1
+        return h[key] if h.key?(key)
       end
+
+      default
     end
 
     def size = @hashes.length

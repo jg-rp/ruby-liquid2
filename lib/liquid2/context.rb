@@ -4,7 +4,7 @@ require_relative "utils/chain_hash"
 require_relative "utils/string_io"
 
 module Liquid2
-  # Hash-like object for resolving built-in dynamic objects.
+  # Hash-like obj for resolving built-in dynamic objs.
   class BuiltIn
     def key?(key)
       %w[now today].include?(key)
@@ -40,6 +40,7 @@ module Liquid2
     # @param disabled_tags [Array<String>?]
     # @param copy_depth [Integer?]
     # @param parent [RenderContext?]
+    # @param parent_scope [Array[_Namespace]] Namespaces from a parent render context.
     # @param loop_carry [Integer?]
     # @param local_namespace_carry [Integer?]
     def initialize(
@@ -71,6 +72,7 @@ module Liquid2
 
       # Namespaces are searched from right to left. When a RenderContext is extended, the
       # temporary namespace is pushed to the end of this queue.
+      # TODO: exclude @globals if globals is empty
       @scope = ReadOnlyChainHash.new(@counters, BUILT_IN, @globals, @locals)
 
       # A namespace supporting stateful tags, such as `cycle` and `increment`.
@@ -82,7 +84,7 @@ module Liquid2
         macros: {}
       }
 
-      # A stack of forloop objects used for populating forloop.parentloop.
+      # A stack of forloop objs used for populating forloop.parentloop.
       @loops = [] # : Array[ForLoop]
 
       # A stack of interrupts used to signal breaking and continuing `for` loops.
@@ -128,13 +130,25 @@ module Liquid2
       index = 0
       while (segment = path[index])
         index += 1
-        obj = get_item(obj, evaluate(segment))
+        segment = evaluate(segment)
+        segment = segment.to_liquid(self) if segment.respond_to?(:to_liquid)
 
-        next unless obj == :undefined
+        if obj.respond_to?(:[]) &&
+           ((obj.respond_to?(:key?) && obj.key?(segment)) ||
+            (obj.respond_to?(:fetch) && segment.is_a?(Integer)))
+          obj = obj[segment]
+          next
+        end
 
-        return default unless default == :undefined
-
-        return @env.undefined(head, node: node)
+        obj = if segment == "size" && obj.respond_to?(:size)
+                obj.size
+              elsif segment == "first" && obj.respond_to?(:first)
+                obj.first
+              elsif segment == "last" && obj.respond_to?(:last)
+                obj.last
+              else
+                return default == :undefined ? @env.undefined(head, node: node) : default
+              end
       end
 
       obj
@@ -142,17 +156,8 @@ module Liquid2
 
     # Resolve variable _name_ in the current scope.
     # @param name [String]
-    # @param default [Object?]
     # @return [Object?]
-    def resolve(name, default: :undefined)
-      obj = @scope.fetch(name)
-
-      return obj unless obj == :undefined
-
-      return default unless default == :undefined
-
-      nil
-    end
+    def resolve(name) = @scope.fetch(name)
 
     alias [] resolve
 
@@ -175,7 +180,7 @@ module Liquid2
 
     # Copy this render context and add _namespace_ to the new scope.
     # @param namespace [Hash<String, Object>]
-    # @param template [Template?] The template object bound to the new context.
+    # @param template [Template?] The template obj bound to the new context.
     # @param disabled_tags [Set<String>] Names of tags to disallow in the new context.
     # @param carry_loop_iterations [bool] If true, pass the current loop iteration count to the
     #   new context.
@@ -224,7 +229,7 @@ module Liquid2
       @loops.pop
     end
 
-    # Return the last ForLoop object if one is available, or an instance of Undefined otherwise.
+    # Return the last ForLoop obj if one is available, or an instance of Undefined otherwise.
     def parent_loop(node)
       return @env.undefined("parentloop", node: node) if @loops.empty?
 
@@ -288,47 +293,6 @@ module Liquid2
         value.sum(1) { |k, v| assign_score(k) + assign_score(v) }
       else
         1
-      end
-    end
-
-    # Lookup _key_ in _obj_.
-    # @param obj [Object]
-    # @param key [untyped]
-    # @return [untyped]
-    def get_item(obj, key)
-      key = key.to_liquid(self) if key.respond_to?(:to_liquid)
-
-      # Strings get special treatment.
-      if obj.is_a?(String)
-        return case key
-               when "size"
-                 obj.size
-               when "first"
-                 obj.empty? ? :undefined : obj[0]
-               when "last"
-                 obj.empty? ? :undefined : obj[-1]
-               else
-                 :undefined
-               end
-      end
-
-      # Otherwise we rely on the `fetch(key, default)` interface.
-      return :undefined unless obj.respond_to?(:fetch)
-
-      # If obj is an array and key is not an int, we'll get a TypeError
-      value = obj.is_a?(Array) && !key.is_a?(Integer) ? :undefined : obj.fetch(key, :undefined)
-
-      return value unless value == :undefined
-
-      case key
-      when "size"
-        obj.respond_to?(:size) ? obj.size : :undefined
-      when "first"
-        obj.respond_to?(:first) ? obj.first || :undefined : :undefined
-      when "last"
-        obj.respond_to?(:last) ? obj.last || :undefined : :undefined
-      else
-        :undefined
       end
     end
   end

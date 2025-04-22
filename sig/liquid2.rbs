@@ -77,11 +77,13 @@ module Liquid2
 
     @default_trim: :whitespace_control_plus | :whitespace_control_minus | :whitespace_control_tilde
 
-    @undefined: _Undefined
+    @undefined: singleton(Undefined)
 
     @loader: TemplateLoader
 
     @globals: Hash[String, untyped]
+
+    @scanner: StringScanner
 
     attr_reader mode: :lax | :strict
 
@@ -520,7 +522,7 @@ module Liquid2
 
     attr_reader force_default: bool
 
-    def initialize: (String name, ?node: Node?) -> void
+    def initialize: (String name, ?node: _HasToken?) -> void
 
     def []: (*untyped) ?{ (?) -> untyped } -> self
 
@@ -761,9 +763,7 @@ module Liquid2
 
     # Resolve variable _name_ in the current scope.
     # @param name [String]
-    # @param default [Object?]
-    # @return [Object?]
-    def resolve: (untyped name, ?default: ::Symbol) -> (untyped | nil)
+    def resolve: (untyped name) -> untyped
 
     alias [] resolve
 
@@ -808,11 +808,6 @@ module Liquid2
 
     def assign_score: (untyped value) -> untyped
 
-    # Lookup _key_ in _obj_.
-    # @param obj [Object]
-    # @param key [untyped]
-    # @return [untyped]
-    def get_item: (untyped obj, untyped key) -> (untyped | :undefined)
   end
 end
 
@@ -910,6 +905,8 @@ module Liquid2
     def initialize: (String name, Array[untyped] enum, (ForLoop | Undefined) parent_loop) -> void
 
     def key?: (String key) -> bool
+
+    def []: (String key) -> untyped
 
     def fetch: (String key, ?::Symbol default) -> untyped
              

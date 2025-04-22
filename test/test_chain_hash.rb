@@ -40,7 +40,7 @@ class TestChainHash < Minitest::Test
     assert_equal(99, scope.fetch(:foo))
   end
 
-  def test_poo_scope
+  def test_pop_scope
     scope = Liquid2::ReadOnlyChainHash.new({ foo: 1 }, { foo: 2 })
     scope.pop
 

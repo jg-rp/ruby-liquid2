@@ -120,6 +120,10 @@ module Liquid2
       KEYS.member?(key)
     end
 
+    def [](key)
+      send(key) if KEYS.member?(key)
+    end
+
     def fetch(key, default = :undefined)
       if KEYS.member?(key)
         send(key)
