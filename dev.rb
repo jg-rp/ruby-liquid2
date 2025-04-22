@@ -4,39 +4,11 @@ require "json"
 require "liquid2"
 
 source = <<~LIQUID
-  {% assign count = 0 -%}
-
-  {% for name in names -%}
-    {% assign count = count | plus: 1 -%}
-    {% assign upper_name = name | upcase -%}
-    {% assign greeting = "Hello, " | append: upper_name | append: "!" -%}
-    {% assign remainder = count | modulo: 2 -%}
-
-    {% if remainder == 0 -%}
-      {% assign greeting = greeting | append: " You're even-numbered." -%}
-    {% else -%}
-      {% assign greeting = greeting | append: " You're odd-numbered." -%}
-    {% endif -%}
-
-    {{ greeting }}
-  {% endfor %}
+  {% case 'b' %}{% when 'a' or 'b' %}c{% when 'd' %}e{% endcase %}
 LIQUID
 
 data = JSON.parse <<~DATA
-    {
-    "names": [
-      "Alice",
-      "Bob",
-      "Charlie",
-      "David",
-      "Eva",
-      "Frank",
-      "Grace",
-      "Hank",
-      "Ivy",
-      "Jack"
-    ]
-  }
+  { "a": "b" }
 DATA
 
 scanner = StringScanner.new("")

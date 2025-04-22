@@ -318,7 +318,7 @@ module Liquid2
     # A primary expression is a literal, a path (to a variable), or a logical
     # expression composed of other primary expressions.
     # @return [Node]
-    def parse_primary(precedence: Precedence::LOWEST)
+    def parse_primary(precedence: Precedence::LOWEST, infix: true)
       # Keywords followed by a dot or square bracket are parsed as paths.
       looks_like_a_path = PATH_PUNCTUATION.include?(peek_kind)
 
@@ -355,6 +355,8 @@ module Liquid2
              else
                raise LiquidSyntaxError.new("unexpected token #{current}", current)
              end
+
+      return left unless infix
 
       loop do
         kind = current_kind

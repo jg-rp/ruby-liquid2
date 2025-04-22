@@ -6,62 +6,55 @@ module Liquid2
   # The standard _case_ tag.
   class CaseTag < Node
     END_BLOCK = Set["endcase", "when", "else"]
+    WHEN_DELIM = Set[:token_comma, :token_or]
 
-    def self.parse(stream, parser)
-      # @type var children: Array[Token | Node]
-      children = [stream.eat(:token_tag_start),
-                  stream.eat_whitespace_control,
-                  stream.eat(:token_tag_name)]
-
-      expression = parser.parse_primary(stream)
-      children << expression << stream.eat_whitespace_control << stream.eat(:token_tag_end)
-      children << stream.eat(:token_other) if stream.current.kind == :token_other
-      # TODO: skip junk between `{% case .. %}` and first `{% when %}`.
+    def self.parse(parser)
+      token = parser.previous
+      expression = parser.parse_primary
+      parser.carry_whitespace_control
+      parser.eat(:token_tag_end)
+      parser.eat(:token_other) if parser.current_kind == :token_other
 
       whens = [] # : Array[MultiEqualBlock]
       default = nil # : Block?
 
-      whens << parse_when(stream, parser, expression) while stream.tag?("when")
-      children.push(*whens)
+      whens << parse_when(parser, expression) while parser.tag?("when")
 
-      if stream.tag?("else")
-        children.push(*stream.eat_empty_tag("else"))
-        default = parser.parse_block(stream, END_BLOCK)
-        children << default
+      if parser.tag?("else")
+        parser.eat_empty_tag("else")
+        default = parser.parse_block(END_BLOCK)
       end
 
-      children.push(*stream.eat_empty_tag("endcase")) if stream.tag?("endcase")
-      new(children, expression, whens, default)
+      parser.eat_empty_tag("endcase")
+      new(token, expression, whens, default)
     end
 
-    # @return [MultiConditionalBlock]
-    def self.parse_when(stream, parser, expr)
-      # @type var children: Array[Token | Node]
-      children = [stream.eat(:token_tag_start),
-                  stream.eat_whitespace_control,
-                  stream.eat(:token_tag_name)]
+    # @return [MultiEqualBlock]
+    def self.parse_when(parser, expr)
+      parser.eat(:token_tag_start)
+      parser.skip_whitespace_control
+      token = parser.eat(:token_tag_name)
 
-      children << stream.next if stream.current.kind == :token_comma
+      parser.next if parser.current_kind == :token_comma
 
       args = [] # : Array[Expression]
 
       loop do
-        item = parser.parse_primary(stream)
-        args << item
-        children << item
-        break unless stream.current.kind == :token_comma || stream.word?("or")
+        args << parser.parse_primary(infix: false)
+        break unless WHEN_DELIM.member?(parser.current_kind)
 
-        children << stream.next
+        parser.next
       end
 
-      children << stream.eat_whitespace_control << stream.eat(:token_tag_end)
-      block = parser.parse_block(stream, END_BLOCK)
-      children << block
-      MultiEqualBlock.new(children, expr, args, block)
+      parser.carry_whitespace_control
+      parser.eat(:token_tag_end)
+
+      block = parser.parse_block(END_BLOCK)
+      MultiEqualBlock.new(token, expr, args, block)
     end
 
-    def initialize(children, expression, whens, default)
-      super(children)
+    def initialize(token, expression, whens, default)
+      super(token)
       @expression = expression
       @whens = whens
       @default = default
@@ -69,24 +62,25 @@ module Liquid2
     end
 
     def render(context, buffer)
-      count = 0
-      @whens.each do |node|
-        count += node.render(context, buffer)
+      rendered = false
+      index = 0
+      while (node = @whens[index])
+        rendered_ = node.render(context, buffer)
+        rendered ||= rendered_
+        index += 1
       end
 
-      count += (@default || raise).render(context, buffer) if @default && count.zero?
-      count
+      (@default || raise).render(context, buffer) if @default && !rendered
     end
   end
 
   # A Liquid block guarded by any one of multiple expressions.
   class MultiEqualBlock < Node
-    # @param children [Array<Token | Node>]
     # @param left [Expression]
     # @param conditions [Array<Expression>]
     # @param block [Block]
-    def initialize(children, left, conditions, block)
-      super(children)
+    def initialize(token, left, conditions, block)
+      super(token)
       @left = left
       @conditions = conditions
       @block = block
@@ -94,11 +88,12 @@ module Liquid2
     end
 
     def render(context, buffer)
-      left = @left.evaluate(context)
-      if @conditions.map { |right| Liquid2.eq(left, right.evaluate(context)) }.any?
+      left = context.evaluate(@left)
+      if @conditions.map { |right| Liquid2.eq(left, context.evaluate(right)) }.any?
         @block.render(context, buffer)
+        true
       else
-        0
+        false
       end
     end
   end

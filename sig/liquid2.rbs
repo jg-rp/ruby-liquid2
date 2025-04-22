@@ -329,7 +329,7 @@ module Liquid2
     # Parse a _primary_ expression.
     # A primary expression is a literal, a path (to a variable), or a logical
     # expression composed of other primary expressions.
-    def parse_primary: (?precedence: Integer) -> untyped
+    def parse_primary: (?precedence: Integer, ?infix: bool) -> untyped
 
     # Parse a string literal without interpolation..
     # @return [String]
@@ -1764,5 +1764,49 @@ module Liquid2
     def initialize: ([Symbol, String?, Integer] token, Identifier name, Block block) -> void
 
     def render: (RenderContext context, String buffer) -> void
+  end
+end
+
+module Liquid2
+  # The standard _case_ tag.
+  class CaseTag < Node
+    @expression: untyped 
+
+    @whens: Array[MultiEqualBlock]
+
+    @default: Block?
+
+    @blank: bool
+
+    END_BLOCK: Set[String]
+
+    WHEN_DELIM: Set[Symbol]
+
+    def self.parse: (Parser parser) -> CaseTag
+
+    # @return [MultiEqualBlock]
+    def self.parse_when: (Parser parser, untyped expr) -> MultiEqualBlock
+
+    def initialize: ([Symbol, String?, Integer] token, untyped expression, Array[MultiEqualBlock] whens, Block? default) -> void
+
+    def render: (RenderContext context, String buffer) -> void
+  end
+
+  # A Liquid block guarded by any one of multiple expressions.
+  class MultiEqualBlock < Node
+    @left: untyped
+
+    @conditions: Array[untyped]
+
+    @block: Block
+
+    @blank: bool
+
+    # @param left [Expression]
+    # @param conditions [Array<Expression>]
+    # @param block [Block]
+    def initialize: ([Symbol, String?, Integer] token, untyped left, Array[untyped] conditions, Block block) -> void
+
+    def render: (RenderContext context, String buffer) -> bool
   end
 end
