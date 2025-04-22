@@ -7,37 +7,32 @@ module Liquid2
   class CaptureTag < Node
     END_BLOCK = Set["endcapture"]
 
-    # @param stream [TokenStream]
     # @param parser [Parser]
     # @return [CaptureTag]
-    def self.parse(stream, parser)
-      # @type var children: Array[Token | Node]
-      children = [stream.eat(:token_tag_start),
-                  stream.eat_whitespace_control,
-                  stream.eat(:token_tag_name)]
-
-      name = parser.parse_identifier(stream, trailing_question: false)
-      children << name << stream.eat_whitespace_control << stream.eat(:token_tag_end)
-      block = parser.parse_block(stream, END_BLOCK)
-      children << block
-      children.push(*stream.eat_empty_tag("endcapture"))
-      new(children, name, block)
+    def self.parse(parser)
+      token = parser.previous
+      name = parser.parse_identifier(trailing_question: false)
+      parser.carry_whitespace_control
+      parser.eat(:token_tag_end)
+      block = parser.parse_block(END_BLOCK)
+      parser.eat_empty_tag("endcapture")
+      new(token, name, block)
     end
 
-    # @param children [Array<Token | Node>]
     # @param name [Identifier]
     # @param block [Block]
-    def initialize(children, name, block)
-      super(children)
-      @name = name.name
+    def initialize(token, name, block)
+      super(token)
+      @name = name
       @block = block
+      @block.blank = false
+      @blank = false
     end
 
-    def render(context, buffer)
-      buf = context.get_output_buffer(buffer)
+    def render(context, _buffer)
+      buf = +""
       @block.render(context, buf)
-      context.assign(@name, buf.string)
-      0
+      context.assign(@name.name, buf)
     end
   end
 end

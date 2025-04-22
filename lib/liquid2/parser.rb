@@ -145,9 +145,7 @@ module Liquid2
     # Advance the pointer if the current token is a whitespace control token, and
     # remember the token's value for the next text node.
     def carry_whitespace_control
-      return unless current_kind == :token_whitespace_control
-
-      @whitespace_carry = self.next[0]
+      @whitespace_carry = current_kind == :token_whitespace_control ? self.next[0] : nil
     end
 
     # @return [Array[Node | String]]

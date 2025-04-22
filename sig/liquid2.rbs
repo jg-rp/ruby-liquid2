@@ -640,7 +640,7 @@ module Liquid2
 
     @blank: bool
 
-    attr_reader blank: bool
+    attr_accessor blank: bool
 
     attr_reader token: [Symbol, String?, Integer]
 
@@ -1743,5 +1743,26 @@ module Liquid2
     def initialize: ([Symbol, String?, Integer] token, String text) -> void
 
     def render: (RenderContext _context, String _buffer) -> void
+  end
+end
+
+module Liquid2
+  # The standard _capture_ tag.
+  class CaptureTag < Node
+    @name: Identifier
+
+    @block: Block
+
+    END_BLOCK: Set[String]
+
+    # @param parser [Parser]
+    # @return [CaptureTag]
+    def self.parse: (Parser parser) -> CaptureTag
+
+    # @param name [Identifier]
+    # @param block [Block]
+    def initialize: ([Symbol, String?, Integer] token, Identifier name, Block block) -> void
+
+    def render: (RenderContext context, String buffer) -> void
   end
 end

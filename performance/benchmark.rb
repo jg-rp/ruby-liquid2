@@ -57,15 +57,15 @@ Benchmark.ips do |x|
   #   Liquid2::Scanner.tokenize(source, scanner)
   # end
 
-  # x.report("parse (#{fixture.name}):") do
-  #   env.parse(source)
-  # end
+  x.report("parse (#{fixture.name}):") do
+    env.parse(source)
+  end
 
   x.report("render (#{fixture.name}):") do
     template.render
   end
 
-  # x.report("both (#{fixture.name}):") do
-  #   env.parse(source).render
-  # end
+  x.report("both (#{fixture.name}):") do
+    env.parse(source).render
+  end
 end

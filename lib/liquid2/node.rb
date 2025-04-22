@@ -5,7 +5,8 @@ require_relative "utils/string_io"
 module Liquid2
   # The base class for all nodes in a Liquid syntax tree.
   class Node
-    attr_reader :blank, :token
+    attr_reader :token
+    attr_accessor :blank
 
     # @param token [[Symbol, String?, Integer]]
     def initialize(token)
