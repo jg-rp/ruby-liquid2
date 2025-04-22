@@ -241,6 +241,78 @@ module Liquid2
       :lex_markup
     end
 
+    def lex_inside_inline_comment
+      if @scanner.skip_until(/(-)?%\}/)
+        @scanner.pos -= @scanner.captures&.first.nil? ? 2 : 3
+        @tokens << [:token_comment, @source.byteslice(@start...@scanner.pos), @start]
+        @start = @scanner.pos
+      end
+
+      accept_whitespace_control
+
+      case @scanner.scan(/[\}%]\}/)
+      when "}}"
+        @tokens << [:token_output_end, nil, @start]
+      when "%}"
+        @tokens << [:token_tag_end, nil, @start]
+      else
+        # Unexpected token
+        return nil if @scanner.eos?
+
+        @tokens << [:token_unknown, @scanner.getch, @start]
+      end
+
+      @start = @scanner.pos
+      :lex_markup
+    end
+
+    def lex_raw
+      skip_trivia
+      accept_whitespace_control
+
+      case @scanner.scan(/[\}%]\}/)
+      when "}}"
+        @tokens << [:token_output_end, nil, @start]
+        @start = @scanner.pos
+      when "%}"
+        @tokens << [:token_tag_end, nil, @start]
+        @start = @scanner.pos
+      end
+
+      if @scanner.skip_until(/(\{%[+\-~]?\s*endraw\s*[+\-~]?%\})/)
+        @scanner.pos -= @scanner.captures&.first&.length || raise
+        @tokens << [:token_raw, @source.byteslice(@start...@scanner.pos), @start]
+        @start = @scanner.pos
+      end
+
+      :lex_markup
+    end
+
+    def lex_block_comment
+      skip_trivia
+      accept_whitespace_control
+
+      case @scanner.scan(/[\}%]\}/)
+      when "}}"
+        @tokens << [:token_output_end, nil, @start]
+        @start = @scanner.pos
+      when "%}"
+        @tokens << [:token_tag_end, nil, @start]
+        @start = @scanner.pos
+      end
+
+      # TODO: handle nested comment blocks?
+      # TODO: handle raw tags inside comment blocks?
+
+      if @scanner.skip_until(/(\{%[+\-~]?\s*endcomment\s*[+\-~]?%\})/)
+        @scanner.pos -= @scanner.captures&.first&.length || raise
+        @tokens << [:token_comment, @source.byteslice(@start...@scanner.pos), @start]
+        @start = @scanner.pos
+      end
+
+      :lex_markup
+    end
+
     def lex_line_statements
       # TODO: For debugging. Comment this out when benchmarking.
       raise "must emit before accepting an expression token" if @scanner.pos != @start
@@ -251,7 +323,24 @@ module Liquid2
         @tokens << [:token_tag_start, nil, @start]
         @tokens << [:token_tag_name, tag_name, @start]
         @start = @scanner.pos
-        :lex_inside_line_statement
+
+        # TODO: handle block comment
+        if tag_name == "#" && @scanner.scan_until(/([\r\n]+|-?%\})/)
+          @scanner.pos -= @scanner.captures&.first&.length || raise
+          @tokens << [:token_comment, @source.byteslice(@start...@scanner.pos), @start]
+          @start = @scanner.pos
+          @tokens << [:token_tag_end, nil, @start]
+          :lex_line_statements
+
+        elsif tag_name == "comment" && @scanner.scan_until(/(endcomment)/)
+          @tokens << [:token_tag_end, nil, @start]
+          @scanner.pos -= @scanner.captures&.first&.length || raise
+          @tokens << [:token_comment, @source.byteslice(@start...@scanner.pos), @start]
+          @start = @scanner.pos
+          :lex_line_statements
+        else
+          :lex_inside_line_statement
+        end
       else
         accept_whitespace_control
         case @scanner.scan(/[\}%]\}/)
@@ -296,11 +385,13 @@ module Liquid2
           elsif (value = @scanner.scan(RE_WORD))
             @tokens << [TOKEN_MAP[value] || :token_word, value, @start]
             @start = @scanner.pos
-          elsif @scanner.scan(/[\r\n]+/)
+          elsif @scanner.scan(/(\r?\n)+/)
+            # End of the line statement
             @tokens << [:token_tag_end, nil, @start]
             @start = @scanner.pos
             return :lex_line_statements
           else
+            # End of the line statement and enclosing `liquid` tag.
             @tokens << [:token_tag_end, nil, @start]
             accept_whitespace_control
             case @scanner.scan(/[\}%]\}/)

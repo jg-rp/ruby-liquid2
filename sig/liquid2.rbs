@@ -215,6 +215,12 @@ module Liquid2
 
     def lex_expression: () -> Symbol?
                       
+    def lex_raw: () -> Symbol?
+               
+    def lex_block_comment: () -> Symbol?
+
+    def lex_inside_inline_comment: () -> Symbol?
+
     def lex_line_statements: () -> Symbol?
                            
     def lex_inside_line_statement: () -> Symbol?
@@ -1691,5 +1697,51 @@ module Liquid2
     def initialize: ([Symbol, String?, Integer] token, Expression expression) -> void
 
     def render: (RenderContext context, String buffer) -> void
+  end
+end
+
+module Liquid2
+  # `{% # comment %}` style comments.
+  class InlineComment < Node
+    @text: String
+
+    def self.parse: (Parser parser) -> InlineComment
+
+    # @param text [String]
+    def initialize: ([Symbol, String?, Integer] token, String text) -> void
+
+    def render: (RenderContext _context, String _buffer) -> void
+  end
+end
+
+module Liquid2
+  # The standard _raw_ tag.
+  class RawTag < Node
+    @text: String
+
+    @blank: bool
+
+    # @param parser [Parser]
+    # @return [RawTag]
+    def self.parse: (Parser parser) -> RawTag
+
+    # @param text [String]
+    def initialize: ([Symbol, String?, Integer] token, String text) -> void
+
+    def render: (RenderContext _context, String buffer) -> void
+  end
+end
+
+module Liquid2
+  # The standard _comment_ tag.
+  class BlockComment < Node
+    @text: String
+
+    def self.parse: (Parser parser) -> BlockComment
+
+    # @param text [String]
+    def initialize: ([Symbol, String?, Integer] token, String text) -> void
+
+    def render: (RenderContext _context, String _buffer) -> void
   end
 end

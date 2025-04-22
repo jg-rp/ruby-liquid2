@@ -298,6 +298,7 @@ module Liquid2
     end
 
     def parse_line_statements
+      token = previous
       nodes = [] # : Array[Node]
 
       loop do
@@ -312,7 +313,7 @@ module Liquid2
         end
       end
 
-      Block.new(nodes.first.token, nodes)
+      Block.new(token, nodes)
     end
 
     # Parse a _primary_ expression.

@@ -5,19 +5,18 @@ require_relative "../../node"
 module Liquid2
   # The standard _comment_ tag.
   class BlockComment < Node
-    def self.parse(stream, _parser)
-      # @type var children: Array[Token | Node]
-      children = stream.eat_empty_tag("comment")
-      token = stream.eat(:token_comment)
-      children << token
-      children.push(*stream.eat_empty_tag("endcomment"))
-      new(children, token.text)
+    def self.parse(parser)
+      token = parser.previous
+      parser.carry_whitespace_control
+      parser.eat(:token_tag_end)
+      comment = parser.eat(:token_comment)
+      parser.eat_empty_tag("endcomment")
+      new(token, comment[1] || raise)
     end
 
-    # @param children [Array<Token|Node>]
     # @param text [String]
-    def initialize(children, text)
-      super(children)
+    def initialize(token, text)
+      super(token)
       @text = text
     end
 

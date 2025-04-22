@@ -2,6 +2,7 @@
   "rubocop.mode": "enableUnconditionally",
   "cSpell.words": [
     "bigdecimal",
+    "byteslice",
     "charpos",
     "Cyclomatic",
     "endcapture",

@@ -4,10 +4,7 @@ require "json"
 require "liquid2"
 
 source = <<~LIQUID
-  {% liquid echo 'a'
-    assign b = 'c'
-    echo b
-    %}
+  {% liquid\ncomment\necho 'b'\nendcomment %}
 LIQUID
 
 data = JSON.parse <<~DATA
