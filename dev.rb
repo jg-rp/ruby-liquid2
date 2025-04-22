@@ -4,7 +4,10 @@ require "json"
 require "liquid2"
 
 source = <<~LIQUID
-  {% for a in b %}{{ a }} {{ forloop.length }},{% endfor %}
+  {% liquid echo 'a'
+    assign b = 'c'
+    echo b
+    %}
 LIQUID
 
 data = JSON.parse <<~DATA

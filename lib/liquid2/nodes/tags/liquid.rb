@@ -5,22 +5,18 @@ require_relative "../../node"
 module Liquid2
   # The standard _liquid_ tag.
   class LiquidTag < Node
-    # @param stream [TokenStream]
     # @param parser [Parser]
     # @return [LiquidTag]
-    def self.parse(stream, parser)
-      # @type var children: Array[Token | Node]
-      children = [stream.eat(:token_tag_start),
-                  stream.eat_whitespace_control,
-                  stream.eat(:token_tag_name)]
-
-      block = parser.parse_line_statements(stream)
-      children << stream.eat_whitespace_control << stream.eat(:token_tag_end)
-      new(children, block)
+    def self.parse(parser)
+      token = parser.previous # token_tag_name
+      block = parser.parse_line_statements
+      parser.carry_whitespace_control
+      parser.eat(:token_tag_end)
+      new(token, block)
     end
 
-    def initialize(children, block)
-      super(children)
+    def initialize(token, block)
+      super(token)
       @block = block
       @blank = block.blank
     end

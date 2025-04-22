@@ -206,12 +206,18 @@ module Liquid2
     def emit: (Symbol kind, String? value) -> void
 
     def skip_trivia: () -> void
+                   
+    def skip_line_trivia: () -> void
 
     def accept_whitespace_control: () -> bool
 
     def lex_markup: () -> Symbol?
 
     def lex_expression: () -> Symbol?
+                      
+    def lex_line_statements: () -> Symbol?
+                           
+    def lex_inside_line_statement: () -> Symbol?
 
     # Scan a string literal surrounded by _quote_.
     # Assumes the opening quote has already been consumed and emitted.
@@ -311,6 +317,8 @@ module Liquid2
 
     # @return [LoopExpression]
     def parse_loop_expression: () -> LoopExpression
+
+    def parse_line_statements: () -> Block
 
     # Parse a _primary_ expression.
     # A primary expression is a literal, a path (to a variable), or a logical
@@ -1649,5 +1657,39 @@ module Liquid2
 
     # Return the result of multiplying _left_ by _right_.
     def self.times: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
+  end
+end
+
+module Liquid2
+  # The standard _liquid_ tag.
+  class LiquidTag < Node
+    @block: Block
+
+    @blank: bool
+
+    # @param parser [Parser]
+    # @return [LiquidTag]
+    def self.parse: (Parser parser) -> LiquidTag
+
+    def initialize: ([Symbol, String?, Integer] token, Block block) -> void
+
+    def render: (RenderContext context, String buffer) -> void
+  end
+end
+
+module Liquid2
+  # The standard _echo_ tag.
+  class EchoTag < Node
+    @expression: Expression
+
+    @blank: bool
+
+    # @param parser [Parser]
+    # @return [EchoTag]
+    def self.parse: (Parser parser) -> EchoTag
+
+    def initialize: ([Symbol, String?, Integer] token, Expression expression) -> void
+
+    def render: (RenderContext context, String buffer) -> void
   end
 end

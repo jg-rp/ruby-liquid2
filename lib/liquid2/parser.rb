@@ -297,6 +297,24 @@ module Liquid2
                          limit: limit, offset: offset, reversed: reversed, cols: cols)
     end
 
+    def parse_line_statements
+      nodes = [] # : Array[Node]
+
+      loop do
+        case current_kind
+        when :token_tag_start
+          @pos += 1
+          nodes << parse_tag
+        when :token_whitespace_control, :token_tag_end
+          break
+        else
+          raise LiquidSyntaxError.new("unexpected token: #{current}", current)
+        end
+      end
+
+      Block.new(nodes.first.token, nodes)
+    end
+
     # Parse a _primary_ expression.
     # A primary expression is a literal, a path (to a variable), or a logical
     # expression composed of other primary expressions.

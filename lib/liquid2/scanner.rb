@@ -101,14 +101,21 @@ module Liquid2
 
     def skip_trivia
       # TODO: For debugging. Comment this out when benchmarking.
-      # raise "must emit before skipping trivia" if @scanner.pos != @start
+      raise "must emit before skipping trivia" if @scanner.pos != @start
 
       @start = @scanner.pos if @scanner.skip(RE_WHITESPACE)
     end
 
+    def skip_line_trivia
+      # TODO: For debugging. Comment this out when benchmarking.
+      raise "must emit before skipping line trivia" if @scanner.pos != @start
+
+      @start = @scanner.pos if @scanner.skip(RE_LINE_SPACE)
+    end
+
     def accept_whitespace_control
       # TODO: For debugging. Comment this out when benchmarking.
-      # raise "must emit before accepting whitespace control" if @scanner.pos != @start
+      raise "must emit before accepting whitespace control" if @scanner.pos != @start
 
       ch = @scanner.peek(1)
 
@@ -160,7 +167,6 @@ module Liquid2
           # Try to parse expr anyway
           :lex_expression
         end
-        :lex_expression
       else
         if @scanner.skip_until(/\{[\{%#]/)
           @scanner.pos -= 2
@@ -181,7 +187,7 @@ module Liquid2
 
     def lex_expression
       # TODO: For debugging. Comment this out when benchmarking.
-      # raise "must emit before accepting an expression token" if @scanner.pos != @start
+      raise "must emit before accepting an expression token" if @scanner.pos != @start
 
       loop do
         skip_trivia
@@ -233,6 +239,83 @@ module Liquid2
 
       @start = @scanner.pos
       :lex_markup
+    end
+
+    def lex_line_statements
+      # TODO: For debugging. Comment this out when benchmarking.
+      raise "must emit before accepting an expression token" if @scanner.pos != @start
+
+      skip_trivia # Leading newlines are OK
+
+      if (tag_name = @scanner.scan(/(?:[a-z][a-z_0-9]*|#)/))
+        @tokens << [:token_tag_start, nil, @start]
+        @tokens << [:token_tag_name, tag_name, @start]
+        @start = @scanner.pos
+        :lex_inside_line_statement
+      else
+        accept_whitespace_control
+        case @scanner.scan(/[\}%]\}/)
+        when "}}"
+          @tokens << [:token_output_end, nil, @start]
+          @start = @scanner.pos
+        when "%}"
+          @tokens << [:token_tag_end, nil, @start]
+          @start = @scanner.pos
+        end
+
+        :lex_markup
+      end
+    end
+
+    def lex_inside_line_statement
+      loop do
+        skip_line_trivia
+
+        case @scanner.get_byte
+        when "'"
+          @start = @scanner.pos
+          scan_single_quote_string
+        when "\""
+          @start = @scanner.pos
+          scan_double_quote_string
+        when nil
+          # End of scanner. Unclosed expression or string literal.
+          break
+
+        else
+          @scanner.pos -= 1
+          if (value = @scanner.scan(RE_FLOAT))
+            @tokens << [:token_float, value, @start]
+            @start = @scanner.pos
+          elsif (value = @scanner.scan(RE_INT))
+            @tokens << [:token_int, value, @start]
+            @start = @scanner.pos
+          elsif (value = @scanner.scan(RE_PUNCTUATION))
+            @tokens << [TOKEN_MAP[value] || raise, nil, @start]
+            @start = @scanner.pos
+          elsif (value = @scanner.scan(RE_WORD))
+            @tokens << [TOKEN_MAP[value] || :token_word, value, @start]
+            @start = @scanner.pos
+          elsif @scanner.scan(/[\r\n]+/)
+            @tokens << [:token_tag_end, nil, @start]
+            @start = @scanner.pos
+            return :lex_line_statements
+          else
+            @tokens << [:token_tag_end, nil, @start]
+            accept_whitespace_control
+            case @scanner.scan(/[\}%]\}/)
+            when "}}"
+              @tokens << [:token_output_end, nil, @start]
+              @start = @scanner.pos
+            when "%}"
+              @tokens << [:token_tag_end, nil, @start]
+              @start = @scanner.pos
+            end
+
+            return :lex_markup
+          end
+        end
+      end
     end
 
     # TODO: scan string factory instead of code duplication?
