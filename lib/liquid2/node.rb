@@ -26,35 +26,23 @@ module Liquid2
     def initialize(token, nodes)
       super(token)
       @nodes = nodes
-      # TODO: @blank = nodes.all?(&:blank)
+      @blank = nodes.all? do |n|
+        (n.is_a?(String) && n.match(/\A\s*\Z/)) || (n.is_a?(Node) && n.blank)
+      end
     end
 
     def render(context, buffer)
-      if context.env.suppress_blank_control_flow_blocks && @blank
-        buf = +""
-        index = 0
-        while (node = @nodes[index])
-          index += 1
-          case node
-          when String
-            buf << node
-          else
-            node.render(context, buf)
-          end
-          return unless context.interrupts.empty?
+      buffer = +"" if context.env.suppress_blank_control_flow_blocks && @blank
+      index = 0
+      while (node = @nodes[index])
+        index += 1
+        case node
+        when String
+          buffer << node
+        else
+          node.render(context, buffer)
         end
-      else
-        index = 0
-        while (node = @nodes[index])
-          index += 1
-          case node
-          when String
-            buffer << node
-          else
-            node.render(context, buffer)
-          end
-          return unless context.interrupts.empty?
-        end
+        return unless context.interrupts.empty?
       end
     end
   end

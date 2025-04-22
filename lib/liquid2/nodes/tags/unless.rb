@@ -3,6 +3,7 @@
 require_relative "if"
 
 module Liquid2
+  # The standard _unless_ tag.
   class UnlessTag < IfTag
     END_TAG = "endunless"
     END_BLOCK = Set["else", "elsif", "endunless"].freeze
@@ -14,7 +15,7 @@ module Liquid2
         return alt.block.render(context, buffer) if alt.expression.evaluate(context)
       end
 
-      return @default.render(context, buffer) if @default
+      return (@default || raise).render(context, buffer) if @default
 
       0
     end

@@ -1368,6 +1368,13 @@ module Liquid2
 
     def render: (RenderContext context, String buffer) -> void
   end
+
+  # The standard _unless_ tag
+  class UnlessTag < IfTag
+    END_TAG: String
+
+    END_BLOCK: Set[String]
+  end
 end
 
 module Liquid2

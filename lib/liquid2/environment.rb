@@ -77,7 +77,7 @@ module Liquid2
       @loop_iteration_limit = nil
       @output_stream_limit = nil
 
-      @suppress_blank_control_flow_blocks = false
+      @suppress_blank_control_flow_blocks = true
 
       @validate_filter_arguments = true
 

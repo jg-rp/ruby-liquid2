@@ -57,7 +57,7 @@ module Liquid2
       @block = block
       @alternatives = alternatives
       @default = default
-      @blank = block.blank && alternatives.map(&:blank).all? && (!default || default.blank)
+      @blank = block.blank && alternatives.all?(&:blank) && (!default || default.blank)
     end
 
     def render(context, buffer)
