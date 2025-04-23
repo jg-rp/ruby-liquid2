@@ -18,6 +18,7 @@ require_relative "expressions/loop"
 require_relative "expressions/path"
 require_relative "expressions/range"
 require_relative "expressions/relational"
+require_relative "expressions/template_string"
 
 module Liquid2
   # Liquid template parser.
@@ -345,8 +346,7 @@ module Liquid2
              when :token_empty
                looks_like_a_path ? parse_path : Empty.new(self.next)
              when :token_single_quote_string, :token_double_quote_string
-               # TODO: unescape
-               self.next[1]
+               parse_string_literal
              when :token_word, :token_lbracket
                parse_path
              when :token_lparen
@@ -354,7 +354,11 @@ module Liquid2
              when :token_not
                parse_prefix_expression
              else
-               raise LiquidSyntaxError.new("unexpected token #{current}", current)
+               unless looks_like_a_path && RESERVED_WORDS.include?(kind)
+                 raise LiquidSyntaxError.new("unexpected token #{current}", current)
+               end
+
+               parse_path
              end
 
       return left unless infix
@@ -487,7 +491,8 @@ module Liquid2
       :token_else,
       :token_other,
       :token_eof,
-      :token_line_term
+      :token_line_term,
+      :token_string_interpol_end
     ]
 
     TERMINATE_GROUPED_EXPRESSION = Set[
@@ -858,6 +863,31 @@ module Liquid2
       tail_filters = parse_filters if current_kind == :token_double_pipe
 
       TernaryExpression.new(left.token, left, condition, alternative, filters, tail_filters)
+    end
+
+    def parse_string_literal
+      token = self.next # double or single quote string
+      return token[1] || raise unless current_kind == :token_string_interpol_start
+
+      segments = [] # : Array[untyped]
+      segments << token[1] unless (token[1] || raise).empty?
+
+      # TODO: Does this mean consecutive literal strings are implicitly combined into one?
+      # If there is at least on :token_string_interpol_start following the first string.
+      loop do
+        case current_kind
+        when :token_string_interpol_start
+          @pos += 1
+          segments << parse_filtered_expression
+          eat(:token_string_interpol_end)
+        when :token_double_quote_string, :token_single_quote_string
+          segments << self.next[1]
+        else
+          break
+        end
+      end
+
+      TemplateString.new(token, segments)
     end
   end
 end

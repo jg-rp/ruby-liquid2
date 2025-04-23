@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "utils/unescape"
+
 module Liquid2
   # Liquid template source text lexical scanner.
   #
@@ -196,10 +198,10 @@ module Liquid2
         case @scanner.get_byte
         when "'"
           @start = @scanner.pos
-          scan_single_quote_string
+          scan_string("'", :token_single_quote_string, RE_SINGLE_QUOTE_STRING_SPECIAL)
         when "\""
           @start = @scanner.pos
-          scan_double_quote_string
+          scan_string("\"", :token_double_quote_string, RE_DOUBLE_QUOTE_STRING_SPECIAL)
         when nil
           # End of scanner. Unclosed expression or string literal.
           break
@@ -364,10 +366,10 @@ module Liquid2
         case @scanner.get_byte
         when "'"
           @start = @scanner.pos
-          scan_single_quote_string
+          scan_string("'", :token_single_quote_string, RE_SINGLE_QUOTE_STRING_SPECIAL)
         when "\""
           @start = @scanner.pos
-          scan_double_quote_string
+          scan_string("\"", :token_double_quote_string, RE_DOUBLE_QUOTE_STRING_SPECIAL)
         when nil
           # End of scanner. Unclosed expression or string literal.
           break
@@ -410,55 +412,84 @@ module Liquid2
       end
     end
 
-    # TODO: scan string factory instead of code duplication?
-
-    # Scan a string literal surrounded by _quote_.
+    # Scan a string literal surrounded by single quotes.
     # Assumes the opening quote has already been consumed and emitted.
-    def scan_single_quote_string
+    def scan_string(quote, symbol, pattern)
+      needs_unescaping = false
+
       loop do
-        @scanner.pos -= 1 if @scanner.skip_until(RE_SINGLE_QUOTE_STRING_SPECIAL)
+        @scanner.pos -= 1 if @scanner.skip_until(pattern)
         case @scanner.get_byte
-        when "'"
-          @tokens << [:token_single_quote_string,
-                      @source.byteslice(@start...@scanner.pos - 1),
-                      @start]
-
+        when quote
+          token = [symbol, @source.byteslice(@start...@scanner.pos - 1), @start] # : [Symbol, String, Integer]
+          token[1] = Liquid2.unescape_string(token[1], quote, token) if needs_unescaping
+          @tokens << token
           @start = @scanner.pos
-          return
-        when "\\"
-          # An escape sequence. Move past the next character.
-          # TODO: mark this string as needs unescaping?
-          @scanner.get_byte
-        when "$"
-          # TODO: Possibly the start of a `${` expression.
-        when nil
-          # End of scanner. Unclosed string literal.
-          @tokens << [:token_single_quote_string, @source.byteslice(@start...@scanner.pos), @start]
-          @start = @scanner.pos
-          return
-        end
-      end
-    end
-
-    def scan_double_quote_string
-      loop do
-        @scanner.pos -= 1 if @scanner.skip_until(RE_DOUBLE_QUOTE_STRING_SPECIAL)
-        case @scanner.get_byte
-        when "\""
-          @tokens << [:token_double_quote_string,
-                      @source.byteslice(@start...@scanner.pos - 1),
-                      @start]
-
-          @start = @scanner.pos
+          needs_unescaping = false
           return
         when "\\"
           # An escape sequence. Move past the next character.
           @scanner.get_byte
+          needs_unescaping = true
         when "$"
-          # TODO: Possibly the start of a `${` expression.
+          next unless @scanner.peek(1) == "{"
+
+          # The start of a `${` expression.
+          # Emit what we have so far. This could be empty if the template string
+          # starts with `${`.
+          token = [symbol, @source.byteslice(@start...@scanner.pos - 1), @start] # : [Symbol, String, Integer]
+          token[1] = Liquid2.unescape_string(token[1], quote, token) if needs_unescaping
+          @tokens << token
+
+          @start = @scanner.pos
+          needs_unescaping = false
+
+          # Emit and move past `${`
+          @tokens << [:token_string_interpol_start, nil, @start]
+          @scanner.pos += 1
+          @start = @scanner.pos
+
+          loop do
+            skip_trivia
+
+            case @scanner.get_byte
+            when "'"
+              @start = @scanner.pos
+              scan_string("'", :token_single_quote_string, RE_SINGLE_QUOTE_STRING_SPECIAL)
+            when "\""
+              @start = @scanner.pos
+              scan_string("\"", :token_double_quote_string, RE_DOUBLE_QUOTE_STRING_SPECIAL)
+            when "}"
+              @tokens << [:token_string_interpol_end, nil, @start]
+              @start = @scanner.pos
+              break
+            when nil
+              # End of scanner. Unclosed expression or string literal.
+              break
+            else
+              @scanner.pos -= 1
+              if (value = @scanner.scan(RE_FLOAT))
+                @tokens << [:token_float, value, @start]
+                @start = @scanner.pos
+              elsif (value = @scanner.scan(RE_INT))
+                @tokens << [:token_int, value, @start]
+                @start = @scanner.pos
+              elsif (value = @scanner.scan(RE_PUNCTUATION))
+                @tokens << [TOKEN_MAP[value] || raise, nil, @start]
+                @start = @scanner.pos
+              elsif (value = @scanner.scan(RE_WORD))
+                @tokens << [TOKEN_MAP[value] || :token_word, value, @start]
+                @start = @scanner.pos
+              else
+                break
+              end
+            end
+          end
         when nil
           # End of scanner. Unclosed string literal.
-          @tokens << [:token_double_quote_string, @source.byteslice(@start...@scanner.pos), @start]
+          token = [symbol, @source.byteslice(@start...@scanner.pos - 1), @start] # : [Symbol, String, Integer]
+          token[1] = Liquid2.unescape_string(token[1], quote, token) if needs_unescaping
+          @tokens << token
           @start = @scanner.pos
           return
         end

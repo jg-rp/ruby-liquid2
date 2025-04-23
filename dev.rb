@@ -4,20 +4,11 @@ require "json"
 require "liquid2"
 
 source = <<~LIQUID
-  Hello, {# this is a comment #} World!
+  {{ 'Hello, ${you | append: '${something}'}!' }}
 LIQUID
 
 data = JSON.parse <<~DATA
-  {
-        "a": [
-          {
-            "x": 99
-          },
-          {
-            "z": 42
-          }
-        ]
-      }
+  {"you": "World", "something": " and Liquid"}
 DATA
 
 templates = JSON.parse <<~TEMPLATES

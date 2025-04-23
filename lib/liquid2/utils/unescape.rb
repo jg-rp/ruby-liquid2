@@ -2,6 +2,8 @@
 
 module Liquid2
   # Replace escape sequences with their equivalent Unicode code point.
+  # This is a bit like Ruby's String#undump, but assumes surrounding quotes have been removed
+  # and follows JSON escaping semantics.
   # @param value [String]
   # @param quote [String] one of '"' or "'".
   # @param token [Token]

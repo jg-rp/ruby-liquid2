@@ -227,8 +227,7 @@ module Liquid2
 
     # Scan a string literal surrounded by _quote_.
     # Assumes the opening quote has already been consumed and emitted.
-    def scan_single_quote_string: () -> void
-    def scan_double_quote_string: () -> void
+    def scan_string: (("\"" | "'"), Symbol, Regexp) -> void
   end
 end
 
@@ -424,6 +423,8 @@ module Liquid2
 
     # @param left [Expression]
     def parse_ternary_expression: (FilteredExpression left) -> TernaryExpression
+                                
+    def parse_string_literal: () -> (String | TemplateString)
   end
 end
 
@@ -1894,5 +1895,17 @@ module Liquid2
     # @param enum [Enumerable<Object>]
     # @return [Enumerable<Object>]
     def map: (RenderContext context, Enumerable[untyped] enum) -> Enumerable[untyped]
+  end
+end
+
+module Liquid2
+  # Quoted string with interpolated expressions.
+  class TemplateString < Expression
+    @segments: Array[untyped]
+
+    # @param segments [Array<Expression>]
+    def initialize: ([Symbol, String?, Integer] token, Array[untyped] segments) -> void
+
+    def evaluate: (RenderContext context) -> String
   end
 end
