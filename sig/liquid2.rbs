@@ -1461,21 +1461,7 @@ module Liquid2
     # Return _left_ rounded up to the next whole number.
     def self.ceil: (untyped left) -> Integer
 
-    class Compact
-      def validate: (Liquid2::Environment _env, Liquid2::Filter node) -> void
-
-      # Return a copy of _left_ with nil items removed.
-      # Coerce _left_ to an array-like object if it is not one already.
-      #
-      # If _key_ is given, assume items in _left_ are hash-like and remove items from _left_
-      # where `item.fetch(key, nil)` is nil.
-      #
-      # If key is not `:undefined`, coerce it to a string before calling `fetch` on items in
-      # _left_.
-      def call: (untyped left, ?untyped? key, context: Liquid2::RenderContext) -> Array[untyped]
-
-      def parameters: () -> untyped
-    end
+    def self.compact: (untyped left, untyped key, context: RenderContext) -> Array[untyped]
 
     # Return _left_ concatenated with _right_, or nil if _right_ is not an array.
     # Coerce _left_ to an arrays if it isn't an array already..
@@ -1547,16 +1533,7 @@ module Liquid2
     # Coerce _left_ to a string if it is not one already.
     def self.strip: (untyped left) -> String
 
-    # The _map_ filter.
-    class Map
-      def validate: (Liquid2::Environment _env, Liquid2::Filter node) -> void
-
-      def call: (untyped left, untyped key, context: RenderContext) -> Array[untyped]
-
-      def parameters: () -> untyped
-                    
-      def fetch: (untyped obj, String key) -> untyped
-    end
+    def self.map: (untyped left, untyped key, context: RenderContext) -> Array[untyped]
 
     # Return _right_ subtracted from _left_.
     def self.minus: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
@@ -1928,5 +1905,30 @@ module Liquid2
     def initialize: ([Symbol, String?, Integer] token, untyped name, bool repeat, untyped var, Identifier? as, Array[KeywordArgument] args) -> void
 
     def render: (RenderContext context, String buffer) -> void
+  end
+end
+
+module Liquid2
+  # A lambda expression aka arrow function
+  class Lambda < Expression
+    @params: Array[Identifier]
+
+    @expr: untyped
+
+    attr_reader params: Array[Identifier]
+
+    attr_reader expr: untyped
+
+    # @param params [Array<Identifier>]
+    # @param expr [Expression]
+    def initialize: ([Symbol, String?, Integer] token, Array[Identifier] params, untyped expr) -> void
+
+    def evaluate: (RenderContext _context) -> self
+
+    # Apply this lambda function to elements from _enum_.
+    # @param context [RenderContext]
+    # @param enum [Enumerable<Object>]
+    # @return [Enumerable<Object>]
+    def map: (RenderContext context, Enumerable[untyped] enum) -> Enumerable[untyped]
   end
 end

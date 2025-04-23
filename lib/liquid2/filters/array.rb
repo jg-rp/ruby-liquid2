@@ -10,37 +10,29 @@ module Liquid2
       to_enumerable(left).map { |item| Liquid2.to_s(item) }.join(Liquid2.to_s(sep))
     end
 
-    # The _compact_ filter.
-    # TODO: forget filter validation and write them all as methods.
-    class Compact
-      # Return a copy of _left_ with nil items removed.
-      # Coerce _left_ to an array-like object if it is not one already.
-      #
-      # If _key_ is given, assume items in _left_ are hash-like and remove items from _left_
-      # where `item.fetch(key, nil)` is nil.
-      #
-      # If key is not `:undefined`, coerce it to a string before calling `fetch` on items in
-      # _left_.
-      def call(left, key = :undefined, context:)
-        left = Liquid2::Filters.to_enumerable(left)
+    # Return a copy of _left_ with nil items removed.
+    # Coerce _left_ to an array-like object if it is not one already.
+    #
+    # If _key_ is given, assume items in _left_ are hash-like and remove items from _left_
+    # where `item.fetch(key, nil)` is nil.
+    #
+    # If key is not `:undefined`, coerce it to a string before calling `fetch` on items in
+    # _left_.
+    def self.compact(left, key = :undefined, context:)
+      left = Liquid2::Filters.to_enumerable(left)
 
-        case key
-        when Liquid2::Lambda
-          key.map(context, left).zip(left).reject do |r, _i|
-            r.nil? || r.is_a?(Liquid2::Undefined)
-          end.map(&:last)
-        when :undefined
-          left.compact
-        else
-          # TODO: stringify key?
-          left.reject do |item|
-            item.respond_to?(:fetch) ? item.fetch(key, nil).nil? : true
-          end
+      case key
+      when Liquid2::Lambda
+        key.map(context, left).zip(left).reject do |r, _i|
+          r.nil? || r.is_a?(Liquid2::Undefined)
+        end.map(&:last)
+      when :undefined
+        left.compact
+      else
+        # TODO: stringify key?
+        left.reject do |item|
+          item.respond_to?(:fetch) ? item.fetch(key, nil).nil? : true
         end
-      end
-
-      def parameters
-        method(:call).parameters
       end
     end
 
@@ -74,45 +66,16 @@ module Liquid2
       end
     end
 
-    # The _map_ filter.
-    class Map
-      def validate(_env, node)
-        if node.args.length != 1
-          raise LiquidArgumentError.new(
-            "#{node.name.inspect} expects one argument, got #{node.args.length}", node
-          )
+    def self.map(left, key, context:)
+      left = Liquid2::Filters.to_enumerable(left)
+
+      if key.is_a?(Liquid2::Lambda)
+        key.map(context, left).map do |item|
+          item.is_a?(Liquid2::Undefined) ? nil : item
         end
-
-        return unless node.args.length == 1
-
-        arg = node.args.first.value
-
-        return unless arg.is_a?(Liquid2::Lambda) && !arg.expr.is_a?(Liquid2::Path)
-
-        raise LiquidArgumentError.new("#{node.name.inspect} expects a path to a variable", node)
-      end
-
-      def call(left, key, context:)
-        left = Liquid2::Filters.to_enumerable(left)
-
-        if key.is_a?(Liquid2::Lambda)
-          key.map(context, left).map do |item|
-            item.is_a?(Liquid2::Undefined) ? nil : item
-          end
-        else
-          key = Liquid2.to_s(key)
-          left.map { |item| fetch(item, key) }
-        end
-      end
-
-      def parameters
-        method(:call).parameters
-      end
-
-      def fetch(obj, key)
-        obj.fetch(key, nil)
-      rescue StandardError
-        raise LiquidArgumentError.new("can't select property #{key.inspect}", nil)
+      else
+        key = Liquid2.to_s(key)
+        left.map { |item| item[key] }
       end
     end
 
