@@ -107,7 +107,7 @@
       "data": {
         "a": "zoo"
       },
-      "result": "z"
+      "result": "zoo"
     },
     {
       "name": "string input, string value, match",
@@ -115,7 +115,7 @@
       "data": {
         "a": "zoo"
       },
-      "result": "z"
+      "result": "zoo"
     },
     {
       "name": "string input, string value, no match",

@@ -1437,6 +1437,8 @@ module Liquid2
 
     # Cast _obj_ to a  date and time. Return `nil` if casting fails.
     def self.to_date: (untyped obj) -> untyped
+                    
+    def self.fetch: (untyped obj, untyped key) -> untyped
 
     # Return the concatenation of items in _left_ separated by _sep_.
     def self.join: (untyped left, ?::String sep) -> untyped
@@ -1493,24 +1495,13 @@ module Liquid2
     #
     # It is safe to use `escape_once` on string values that already contain HTML-escape sequences.
     def self.escape_once: (untyped left) -> String
-                        
-    class Find
-      def validate: (Liquid2::Environment _env, Liquid2::Filter node) -> void
-
-      def call: (untyped left, untyped key, ?untyped? value, context: Liquid2::RenderContext) -> untyped
-
-      def parameters: () -> untyped
-
-      def fetch: (untyped obj, untyped key, ?untyped default) -> untyped
-    end
-
-    class FindIndex < Find
-      def call: (untyped left, untyped key, ?untyped? value, context: RenderContext) -> (Integer | nil)
-    end
-
-    class Has < Find
-      def call: (untyped left, untyped key, ?untyped? value, context: RenderContext) -> bool
-    end
+    
+    
+    def self.find: (untyped left, untyped key, ?untyped? value, context: Liquid2::RenderContext) -> untyped
+                 
+    def self.find_index: (untyped left, untyped key, ?untyped? value, context: Liquid2::RenderContext) -> Integer?
+                       
+    def self.has: (untyped left, untyped key, ?untyped? value, context: Liquid2::RenderContext) -> bool
 
     # Return the first item in _left_, or `nil` if _left_ does not have a first item.
     def self.first: (untyped left) -> untyped
@@ -1551,19 +1542,9 @@ module Liquid2
     # Coerce _left_ and _right_ to strings if they aren't strings already.
     def self.prepend: (untyped left, untyped right) -> String
                     
-    class FilteringFilter
-      def fetch: (untyped obj, untyped key, ?untyped? default) -> untyped
-
-      def parameters: () -> untyped
-    end
-
-    class Reject < FilteringFilter
-      def call: (untyped left, untyped key, ?untyped? value, context: RenderContext) -> Array[untyped]
-    end
-
-    class Where < FilteringFilter
-      def call: (untyped left, untyped key, ?untyped? value, context: untyped) -> untyped
-    end
+    def self.reject: (untyped left, untyped key, ?untyped? value, context: Liquid2::RenderContext) -> Array[untyped]
+                  
+    def self.where: (untyped left, untyped key, ?untyped? value, context: Liquid2::RenderContext) -> Array[untyped]
 
     # Return _left_ with all occurrences of _pattern_ replaced with _replacement_.
     # All arguments are coerced to strings if they aren't strings already.
@@ -1606,24 +1587,13 @@ module Liquid2
     # Coerce _left_ to a string if it is not one already.
     def self.upcase: (untyped left) -> String
 
-    class Sort
-      def call: (untyped left, ?untyped? key, context: RenderContext) -> Array[untyped]
+    def self.sort: (untyped left, ?untyped? key, context: RenderContext) -> Array[untyped]
 
-      def parameters: () -> untyped
+    def self.sort_natural: (untyped left, ?untyped? key, context: RenderContext) -> Array[untyped]
 
-      def fetch: (untyped obj, untyped key, ?untyped? default) -> untyped
+    def self.nil_safe_compare: (untyped a, untyped b) -> (0 | 1 | -1)
 
-      # XXX: copied from Shopify/liquid
-      def nil_safe_compare: (untyped a, untyped b) -> Integer
-                          
-      # XXX: copied from Shopify/liquid
-      def nil_safe_casecmp: (untyped a, untyped b) -> Integer
-    end
-
-    # The _sort_natural_ filter.
-    class SortNatural < Sort
-      def call: (untyped left, ?untyped? key, context: RenderContext) -> Array[untyped]
-    end
+    def self.nil_safe_casecmp: (untyped a, untyped b) -> (0 | 1 | -1)
 
     # Split _left_ on every occurrence of _pattern_.
     def self.split: (untyped left, untyped pattern) -> Array[String]
@@ -1639,13 +1609,7 @@ module Liquid2
     def self.strip_newlines: (untyped left) -> String
                            
     # The _sum_ filter.
-    class Sum
-      def call: (untyped left, ?untyped? key, context: RenderContext) -> Integer
-
-      def parameters: () -> untyped
-
-      def fetch: (untyped obj, untyped key, ?untyped? default) -> untyped
-    end
+    def self.sum: (untyped left, ?untyped? key, context: Liquid2::RenderContext) -> Integer
 
     # Return the result of multiplying _left_ by _right_.
     def self.times: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)

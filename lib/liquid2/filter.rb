@@ -14,8 +14,6 @@ module Liquid2
       when Array
         obj.flatten
       when Hash, String
-        # XXX: This needs to be changed.
-        # It is a throwback from Shopify/liquid and impacts the behavior of array filters.
         [obj]
       # when String
       #   obj.each_char
@@ -86,6 +84,12 @@ module Liquid2
       end
     rescue ::ArgumentError
       nil
+    end
+
+    def self.fetch(obj, key, default = nil)
+      obj[key]
+    rescue ArgumentError, TypeError, NoMethodError
+      default
     end
   end
 end

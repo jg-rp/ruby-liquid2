@@ -82,7 +82,7 @@ module Liquid2
       else
         filter.call(left, *positional_args, **keyword_args) # steep:ignore
       end
-    rescue ArgumentError => e
+    rescue ArgumentError, TypeError => e
       raise LiquidArgumentError.new(e.message, @token)
     end
 
@@ -97,7 +97,11 @@ module Liquid2
       keyword_args = {} # @type var keyword_args: Hash[Symbol, untyped]
 
       index = 0
-      while (arg = @args[index])
+      loop do
+        # `@args[index]` could be `false` or `nil`
+        break if index >= @args.length
+
+        arg = @args[index]
         index += 1
         if arg.respond_to?(:sym)
           keyword_args[arg.sym] = context.evaluate(arg.value)

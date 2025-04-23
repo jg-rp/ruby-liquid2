@@ -4,11 +4,20 @@ require "json"
 require "liquid2"
 
 source = <<~LIQUID
-  {% for a in b %}{% include 'a' %}{% endfor %}
+  Hello, {# this is a comment #} World!
 LIQUID
 
 data = JSON.parse <<~DATA
-  { "b": [1, 2, 3] }
+  {
+        "a": [
+          {
+            "x": 99
+          },
+          {
+            "z": 42
+          }
+        ]
+      }
 DATA
 
 templates = JSON.parse <<~TEMPLATES

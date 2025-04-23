@@ -6,8 +6,6 @@ require_relative "undefined"
 require_relative "loader"
 require_relative "filters/date"
 require_relative "filters/default"
-require_relative "filters/filter"
-require_relative "filters/find"
 require_relative "filters/math"
 require_relative "filters/array"
 require_relative "filters/size"
@@ -142,11 +140,11 @@ module Liquid2
       register_filter("downcase", Liquid2::Filters.method(:downcase))
       register_filter("escape_once", Liquid2::Filters.method(:escape_once))
       register_filter("escape", Liquid2::Filters.method(:escape))
-      register_filter("find_index", Liquid2::Filters::FindIndex.new)
-      register_filter("find", Liquid2::Filters::Find.new)
+      register_filter("find_index", Liquid2::Filters.method(:find_index))
+      register_filter("find", Liquid2::Filters.method(:find))
       register_filter("first", Liquid2::Filters.method(:first))
       register_filter("floor", Liquid2::Filters.method(:floor))
-      register_filter("has", Liquid2::Filters::Has.new)
+      register_filter("has", Liquid2::Filters.method(:has))
       register_filter("join", Liquid2::Filters.method(:join))
       register_filter("last", Liquid2::Filters.method(:last))
       register_filter("lstrip", Liquid2::Filters.method(:lstrip))
@@ -156,7 +154,7 @@ module Liquid2
       register_filter("newline_to_br", Liquid2::Filters.method(:newline_to_br))
       register_filter("plus", Liquid2::Filters.method(:plus))
       register_filter("prepend", Liquid2::Filters.method(:prepend))
-      register_filter("reject", Liquid2::Filters::Reject.new)
+      register_filter("reject", Liquid2::Filters.method(:reject))
       register_filter("remove_first", Liquid2::Filters.method(:remove_first))
       register_filter("remove_last", Liquid2::Filters.method(:remove_last))
       register_filter("remove", Liquid2::Filters.method(:remove))
@@ -168,16 +166,16 @@ module Liquid2
       register_filter("rstrip", Liquid2::Filters.method(:rstrip))
       register_filter("size", Liquid2::Filters.method(:size))
       register_filter("slice", Liquid2::Filters.method(:slice))
-      register_filter("sort_natural", Liquid2::Filters::SortNatural.new)
-      register_filter("sort", Liquid2::Filters::Sort.new)
+      register_filter("sort_natural", Liquid2::Filters.method(:sort_natural))
+      register_filter("sort", Liquid2::Filters.method(:sort))
       register_filter("split", Liquid2::Filters.method(:split))
       register_filter("strip_html", Liquid2::Filters.method(:strip_html))
       register_filter("strip_newlines", Liquid2::Filters.method(:strip_newlines))
       register_filter("strip", Liquid2::Filters.method(:strip))
-      register_filter("sum", Liquid2::Filters::Sum.new)
+      register_filter("sum", Liquid2::Filters.method(:sum))
       register_filter("times", Liquid2::Filters.method(:times))
       register_filter("upcase", Liquid2::Filters.method(:upcase))
-      register_filter("where", Liquid2::Filters::Where.new)
+      register_filter("where", Liquid2::Filters.method(:where))
     end
 
     def undefined(name, node: nil)

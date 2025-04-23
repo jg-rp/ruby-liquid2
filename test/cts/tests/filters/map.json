@@ -195,7 +195,7 @@
           }
         ]
       },
-      "invalid": true
+      "result": "true#false#false"
     }
   ]
 }

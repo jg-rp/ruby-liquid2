@@ -10,7 +10,7 @@ module Liquid2
   class Scanner
     attr_reader :tokens
 
-    RE_MARKUP_START = /\{[\{%]/
+    RE_MARKUP_START = /\{[\{%#]/
     RE_WHITESPACE = /[ \n\r\t]+/
     RE_LINE_SPACE = /[ \t]+/
     RE_WORD = /[\u0080-\uFFFFa-zA-Z_][\u0080-\uFFFFa-zA-Z0-9_-]*/
@@ -132,7 +132,8 @@ module Liquid2
 
     def lex_markup
       case @scanner.scan(RE_MARKUP_START)
-      # TODO: {# comments
+      when "{#"
+        raise "TODO"
       when "{{"
         @tokens << [:token_output_start, nil, @start]
         @start = @scanner.pos

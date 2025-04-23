@@ -97,7 +97,7 @@
           }
         ]
       },
-      "invalid": true
+      "result": "(title,foo)(name,a)(title,)(name,b)(title,bar)(name,c)"
     }
   ]
 }

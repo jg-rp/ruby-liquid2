@@ -572,7 +572,7 @@ module Liquid2
       if (tag = @env.tags[token[1] || raise])
         tag.parse(self)
       else
-        raise LiquidSyntaxError.new("unknown tag #{token[0]}", token)
+        raise LiquidSyntaxError.new("unknown tag #{token[1].inspect}", token)
       end
     end
 

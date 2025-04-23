@@ -46,6 +46,66 @@ module Liquid2
       Filters.to_enumerable(left).to_a.concat(right)
     end
 
+    def self.find(left, key, value = nil, context:)
+      left = Liquid2::Filters.to_enumerable(left)
+
+      if key.is_a?(Liquid2::Lambda)
+        key.map(context, left).zip(left).reject do |r, i|
+          return i unless r.is_a?(Liquid2::Undefined) || !Liquid2.truthy?(context, r)
+        end
+      elsif !value.nil? && !Liquid2.undefined?(value)
+        left.each do |item|
+          return item if fetch(item, key) == value
+        end
+      else
+        left.each do |item|
+          return item if fetch(item, key)
+        end
+      end
+
+      nil
+    end
+
+    def self.find_index(left, key, value = nil, context:)
+      left = Liquid2::Filters.to_enumerable(left)
+
+      if key.is_a?(Liquid2::Lambda)
+        key.map(context, left).reject.with_index do |r, index|
+          return index unless r.is_a?(Liquid2::Undefined) || !Liquid2.truthy?(context, r)
+        end
+      elsif !value.nil? && !Liquid2.undefined?(value)
+        left.each_with_index do |item, index|
+          return index if fetch(item, key) == value
+        end
+      else
+        left.each_with_index do |item, index|
+          return index if fetch(item, key)
+        end
+      end
+
+      nil
+    end
+
+    def self.has(left, key, value = nil, context:)
+      left = Liquid2::Filters.to_enumerable(left)
+
+      if key.is_a?(Liquid2::Lambda)
+        key.map(context, left).reject do |r|
+          return true unless r.is_a?(Liquid2::Undefined) || !Liquid2.truthy?(context, r)
+        end
+      elsif !value.nil? && !Liquid2.undefined?(value)
+        left.each do |item|
+          return true if fetch(item, key) == value
+        end
+      else
+        left.each do |item|
+          return true if fetch(item, key)
+        end
+      end
+
+      false
+    end
+
     # Return the first item in _left_, or `nil` if _left_ does not have a first item.
     def self.first(left)
       case left
@@ -83,6 +143,46 @@ module Liquid2
     # Coerce _left_ to an array if it isn't an array already.
     def self.reverse(left)
       to_enumerable(left).to_a.reverse
+    end
+
+    def self.reject(left, key, value = nil, context:)
+      left = Liquid2::Filters.to_enumerable(left)
+
+      if key.is_a?(Liquid2::Lambda)
+        key.map(context, left).zip(left).reject do |r, _item|
+          r.is_a?(Liquid2::Undefined) || Liquid2.truthy?(context, r)
+        end.map(&:last)
+      elsif !value.nil? && !Liquid2.undefined?(value)
+        key = Liquid2.to_s(key)
+        left.reject do |item|
+          fetch(item, key) == value
+        end
+      else
+        key = Liquid2.to_s(key)
+        left.reject do |item|
+          Liquid2.truthy?(context, fetch(item, key))
+        end
+      end
+    end
+
+    def self.where(left, key, value = nil, context:)
+      left = Liquid2::Filters.to_enumerable(left)
+
+      if key.is_a?(Liquid2::Lambda)
+        key.map(context, left).zip(left).filter do |r, _item|
+          r.is_a?(Liquid2::Undefined) || Liquid2.truthy?(context, r)
+        end.map(&:last)
+      elsif !value.nil? && !Liquid2.undefined?(value)
+        key = Liquid2.to_s(key)
+        left.filter do |item|
+          fetch(item, key) == value
+        end
+      else
+        key = Liquid2.to_s(key)
+        left.filter do |item|
+          Liquid2.truthy?(context, fetch(item, key))
+        end
+      end
     end
   end
 end
