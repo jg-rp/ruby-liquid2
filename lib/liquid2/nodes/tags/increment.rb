@@ -5,29 +5,24 @@ require_relative "../../node"
 module Liquid2
   # The standard _increment_ tag.
   class IncrementTag < Node
-    # @param stream [TokenStream]
     # @param parser [Parser]
-    # @return [IncrementTag]
-    def self.parse(stream, parser)
-      # @type var children: Array[Token | Node]
-      children = [stream.eat(:token_tag_start),
-                  stream.eat_whitespace_control,
-                  stream.eat(:token_tag_name)]
-
-      name = parser.parse_identifier(stream, trailing_question: false)
-      children << name << stream.eat_whitespace_control << stream.eat(:token_tag_end)
-      new(children, name)
+    # @return [DecrementTag]
+    def self.parse(parser)
+      token = parser.previous
+      name = parser.parse_identifier(trailing_question: false)
+      parser.carry_whitespace_control
+      parser.eat(:token_tag_end)
+      new(token, name)
     end
 
-    # @param children [Array<Token | Node>]
     # @param name [Identifier]
-    def initialize(children, name)
-      super(children)
+    def initialize(token, name)
+      super(token)
       @name = name.name
     end
 
     def render(context, buffer)
-      buffer.write(context.increment(@name).to_s)
+      buffer << context.increment(@name).to_s
     end
   end
 end

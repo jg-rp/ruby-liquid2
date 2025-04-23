@@ -15,7 +15,16 @@ module Liquid2
     end
 
     def render(_context, _buffer)
-      raise "nodes must implement `render: (RenderContext, _Buffer) -> Integer`"
+      raise "nodes must implement `render: (RenderContext, String) -> void`"
+    end
+
+    def render_with_disabled_tag_check(context, buffer)
+      # TODO: test assert that all tags have a token kind of :token_tag_name?
+      if context.disabled_tags.empty? || !context.disabled_tags.include?(@token[1] || raise)
+        return render(context, buffer)
+      end
+
+      raise DisabledTagError.new("#{@token[1]} is not allowed in this context", @token)
     end
   end
 
@@ -41,7 +50,7 @@ module Liquid2
         when String
           buffer << node
         else
-          node.render(context, buffer)
+          node.render_with_disabled_tag_check(context, buffer)
         end
         return unless context.interrupts.empty?
       end

@@ -8,73 +8,61 @@ module Liquid2
 
   # The standard _render_ tag.
   class RenderTag < Node
-    # @param stream [TokenStream]
     # @param parser [Parser]
     # @return [RenderTag]
-    def self.parse(stream, parser)
-      # @type var children: Array[Token | Node]
-      children = [stream.eat(:token_tag_start),
-                  stream.eat_whitespace_control,
-                  stream.eat(:token_tag_name)]
-
-      name = parser.parse_string(stream)
-      raise LiquidTypeError, "expected a string literal" unless name.is_a?(StringLiteral)
-
-      children << name
+    def self.parse(parser)
+      token = parser.previous
+      name = parser.parse_string
+      raise LiquidTypeError, "expected a string literal" unless name.is_a?(String)
 
       repeat = false
       var = nil # : Expression?
       as = nil # : Identifier?
 
-      if stream.current.kind == :token_for && !%i[token_comma
-                                                  token_colon].include?(stream.peek.kind)
-        children << stream.next
+      if parser.current_kind == :token_for && !%i[token_comma
+                                                  token_colon].include?(parser.peek_kind)
+        parser.next
         repeat = true
-        var = parser.parse_primary(stream)
-        children << var
-        if stream.current.kind == :token_as
-          children << stream.next
-          as = parser.parse_identifier(stream)
-          children << as
+        var = parser.parse_primary
+        if parser.current_kind == :token_as
+          parser.next
+          as = parser.parse_identifier
         end
-      elsif stream.current.kind == :token_with && !%i[token_comma
-                                                      token_colon].include?(stream.peek.kind)
-        children << stream.next
-        var = parser.parse_primary(stream)
-        children << var
-        if stream.current.kind == :token_as
-          children << stream.next
-          as = parser.parse_identifier(stream)
-          children << as
+      elsif parser.current_kind == :token_with && !%i[token_comma
+                                                      token_colon].include?(parser.peek_kind)
+        parser.next
+        var = parser.parse_primary
+        if parser.current_kind == :token_as
+          parser.next
+          as = parser.parse_identifier
         end
       end
 
-      children << stream.next if stream.current.kind == :token_comma
-      args = parser.parse_keyword_arguments(stream)
-      children.push(*args)
-      children << stream.eat_whitespace_control << stream.eat(:token_tag_end)
-      new(children, name, repeat, var, as, args)
+      parser.next if parser.current_kind == :token_comma
+      args = parser.parse_keyword_arguments
+      parser.carry_whitespace_control
+      parser.eat(:token_tag_end)
+      new(token, name, repeat, var, as, args)
     end
 
-    # @param children Array[Token | Node]
-    # @param name [StringLiteral]
+    # @param name [String]
     # @param repeat [bool]
     # @param var [Expression?]
     # @param as [Identifier?]
     # @param args [Array<KeywordArgument> | nil]
-    def initialize(children, name, repeat, var, as, args)
-      super(children)
+    def initialize(token, name, repeat, var, as, args)
+      super(token)
       @name = name
       @repeat = repeat
       @var = var
-      @as = as&.text
+      @as = as&.name
       @args = args
+      @blank = false
     end
 
     def render(context, buffer)
-      template = context.env.get_template(@name.value, context: context, tag: :render)
-      namespace = @args.to_h { |arg| arg.evaluate(context) }
-      count = 0
+      template = context.env.get_template(@name, context: context, tag: :render)
+      namespace = @args.to_h { |arg| [arg.name, context.evaluate(arg.value)] }
 
       ctx = context.copy(namespace,
                          template: template,
@@ -82,33 +70,34 @@ module Liquid2
                          carry_loop_iterations: true)
 
       if @var
-        val = (@var || raise).evaluate(ctx)
+        val = context.evaluate(@var || raise)
         key = @as || template.name.split(".").first
 
-        if @repeat && val.respond_to?(:each) && val.respond_to(:size)
+        if @repeat && val.respond_to?(:[]) && val.respond_to?(:size)
           ctx.raise_for_loop_limit(length: val.size)
 
           forloop = ForLoop.new(
-            key, val.to_enum, val.size, context.env.undefined("parentloop")
+            key, val.size, context.env.undefined("parentloop")
           )
 
           namespace["forloop"] = forloop
 
-          forloop.each do |item|
+          index = 0
+          while (item = val[index])
             namespace[key] = item
-            count += template.render_with_context(ctx, buffer, partial: true, block_scope: true)
+            index += 1
+            forloop.next
+            template.render_with_context(ctx, buffer, partial: true, block_scope: true)
           end
         else
           namespace[key] = val
-          count += template.render_with_context(ctx, buffer, partial: true, block_scope: true)
+          template.render_with_context(ctx, buffer, partial: true, block_scope: true)
         end
       else
-        count += template.render_with_context(ctx, buffer, partial: true, block_scope: true)
+        template.render_with_context(ctx, buffer, partial: true, block_scope: true)
       end
-
-      count
     rescue LiquidTemplateNotFoundError => e
-      e.node_or_token = @name
+      e.token = @name
       e.template_name = context.template.full_name
       raise e
     end

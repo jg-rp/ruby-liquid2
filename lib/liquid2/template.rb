@@ -39,32 +39,29 @@ module Liquid2
     end
 
     def render_with_context(context, buffer, partial: false, block_scope: false, namespace: nil)
-      bytes = 0
-
       # TODO: don't extend if namespace is nil
       context.extend(namespace || {}) do
         index = 0
         while (node = @ast[index])
           index += 1
-          if (interrupt = context.interrupts.pop)
-            if !partial && block_scope
-              raise LiquidSyntaxError.new("unexpected #{interrupt}",
-                                          node.token) # steep:ignore
-            end
-
-            context.interrupts << interrupt
-          end
-
           case node
           when String
             buffer << node
           else
-            node.render(context, buffer)
+            node.render_with_disabled_tag_check(context, buffer)
           end
+
+          next unless (interrupt = context.interrupts.pop)
+
+          if !partial && block_scope
+            raise LiquidSyntaxError.new("unexpected #{interrupt}",
+                                        node.token) # steep:ignore
+          end
+
+          context.interrupts << interrupt
+          break
         end
       end
-
-      bytes
     end
 
     # Merge template globals with another namespace.

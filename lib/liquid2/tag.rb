@@ -8,7 +8,7 @@ module Liquid2
     # @param buffer [StringIO]
     # @return [Integer] The number of bytes written to _buffer_.
     def render(_context, _buffer)
-      raise "tag nodes must implement `render: (RenderContext, _Buffer) -> Integer`."
+      raise "tags must implement `render: (RenderContext, String) -> void`."
     end
   end
 end

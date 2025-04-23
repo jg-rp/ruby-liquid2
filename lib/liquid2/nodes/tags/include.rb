@@ -5,96 +5,85 @@ require_relative "../../node"
 module Liquid2
   # The standard _include_ tag.
   class IncludeTag < Node
-    # @param stream [TokenStream]
     # @param parser [Parser]
     # @return [IncludeTag]
-    def self.parse(stream, parser)
-      # @type var children: Array[Token | Node]
-      children = [stream.eat(:token_tag_start),
-                  stream.eat_whitespace_control,
-                  stream.eat(:token_tag_name)]
-
-      name = parser.parse_primary(stream)
-      children << name
+    def self.parse(parser)
+      token = parser.previous
+      name = parser.parse_primary
 
       repeat = false
       var = nil # : Expression?
       as = nil # : Identifier?
 
-      if stream.current.kind == :token_for && !%i[token_comma
-                                                  token_colon].include?(stream.peek.kind)
-        children << stream.next
+      if parser.current_kind == :token_for && !%i[token_comma
+                                                  token_colon].include?(parser.peek_kind)
+        parser.next
         repeat = true
-        var = parser.parse_primary(stream)
-        children << var
-        if stream.current.kind == :token_as
-          children << stream.next
-          as = parser.parse_identifier(stream)
-          children << as
+        var = parser.parse_primary
+        if parser.current_kind == :token_as
+          parser.next
+          as = parser.parse_identifier
         end
-      elsif stream.current.kind == :token_with && !%i[token_comma
-                                                      token_colon].include?(stream.peek.kind)
-        children << stream.next
-        var = parser.parse_primary(stream)
-        children << var
-        if stream.current.kind == :token_as
-          children << stream.next
-          as = parser.parse_identifier(stream)
-          children << as
+      elsif parser.current_kind == :token_with && !%i[token_comma
+                                                      token_colon].include?(parser.peek_kind)
+        parser.next
+        var = parser.parse_primary
+        if parser.current_kind == :token_as
+          parser.next
+          as = parser.parse_identifier
         end
       end
 
-      children << stream.next if stream.current.kind == :token_comma
-      args = parser.parse_keyword_arguments(stream)
-      children.push(*args)
-      children << stream.eat_whitespace_control << stream.eat(:token_tag_end)
-      new(children, name, repeat, var, as, args)
+      parser.next if parser.current_kind == :token_comma
+      args = parser.parse_keyword_arguments
+      parser.carry_whitespace_control
+      parser.eat(:token_tag_end)
+      new(token, name, repeat, var, as, args)
     end
 
-    # @param children Array[Token | Node]
     # @param name [Expression]
     # @param repeat [bool]
     # @param var [Expression?]
     # @param as [Identifier?]
     # @param args [Array<KeywordArgument> | nil]
-    def initialize(children, name, repeat, var, as, args)
-      super(children)
+    def initialize(token, name, repeat, var, as, args)
+      super(token)
       @name = name
       @repeat = repeat
       @var = var
-      @as = as&.text
+      @as = as&.name
       @args = args
+      @blank = false
     end
 
     def render(context, buffer)
-      name = @name.evaluate(context)
+      name = context.evaluate(@name)
       template = context.env.get_template(name.to_s, context: context, tag: :include)
-      namespace = @args.to_h { |arg| arg.evaluate(context) }
-      count = 0
+      namespace = @args.to_h { |arg| [arg.name, context.evaluate(arg.value)] }
 
       context.extend(namespace, template: template) do
         if @var
-          val = (@var || raise).evaluate(context)
+          val = context.evaluate(@var || raise)
           key = @as || template.name.split(".").first
 
-          if val.respond_to?(:each) && val.respond_to(:size)
+          if val.is_a?(Array)
             context.raise_for_loop_limit(length: val.size)
-            val.each do |item|
+            index = 0
+            while (item = val[index])
               namespace[key] = item
-              count += template.render_with_context(context, buffer, partial: true)
+              template.render_with_context(context, buffer, partial: true, block_scope: true)
+              index += 1
             end
           else
             namespace[key] = val
-            count += template.render_with_context(context, buffer, partial: true)
+            template.render_with_context(context, buffer, partial: true, block_scope: true)
           end
         else
-          count += template.render_with_context(context, buffer, partial: true)
+          template.render_with_context(context, buffer, partial: true, block_scope: true)
         end
       end
-
-      count
     rescue LiquidTemplateNotFoundError => e
-      e.node_or_token = @name
+      e.token = @token
       e.template_name = context.template.full_name
       raise e
     end

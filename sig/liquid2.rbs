@@ -475,7 +475,7 @@ module Liquid2
 
     def render: (?Hash[String, untyped]? globals) -> void
 
-    def render_with_context: (RenderContext context, String buffer, ?partial: bool, ?block_scope: bool, ?namespace: Hash[String, untyped]?) -> Integer
+    def render_with_context: (RenderContext context, String buffer, ?partial: bool, ?block_scope: bool, ?namespace: Hash[String, untyped]?) -> void
                            
     # Merge templates globals with another namespace.
     def make_globals: (Hash[String, untyped]? namespace) -> Hash[String, untyped]
@@ -648,6 +648,8 @@ module Liquid2
     def initialize: ([Symbol, String?, Integer] token) -> void
 
     def render: (RenderContext context, String buffer) -> void
+              
+    def render_with_disabled_tag_check: (RenderContext context, String buffer) -> void
   end
 
   # An node representing a block of Liquid markup.
@@ -745,6 +747,8 @@ module Liquid2
 
     attr_reader template: Template
 
+    attr_reader disabled_tags: (Array[String] | Set[String])
+
     attr_accessor interrupts: Array[:break | :continue]
 
     BUILT_IN: BuiltIn
@@ -828,15 +832,15 @@ end
 module Liquid2
   # The base class for all Liquid errors.
   class LiquidError < StandardError
-    @node: ([Symbol, String?, Integer] | nil)
+    @token: ([Symbol, String?, Integer] | nil)
 
     @template_name: String?
 
-    attr_accessor node: ([Symbol, String?, Integer] | nil)
+    attr_accessor token: ([Symbol, String?, Integer] | nil)
 
     attr_accessor template_name: (String | nil)
 
-    def initialize: (String message, ?[Symbol, String?, Integer]? node) -> void
+    def initialize: (String message, ?[Symbol, String?, Integer]? token) -> void
   end
 
   class LiquidSyntaxError < LiquidError
@@ -858,6 +862,9 @@ module Liquid2
   end
 
   class UndefinedError < LiquidError
+  end
+
+  class DisabledTagError < LiquidError
   end
 
   # The standard _for_ tag.
@@ -900,11 +907,9 @@ module Liquid2
   class ForLoop
     @name: String
 
-    @array: Array[untyped]
-
     @length: Integer
 
-    @parentloop: ForLoop?
+    @parentloop: (ForLoop | Undefined)
 
     @index: Integer
 
@@ -912,11 +917,11 @@ module Liquid2
 
     attr_reader length: Integer
 
-    attr_reader parentloop: ForLoop?
+    attr_reader parentloop: (ForLoop | Undefined)
 
     KEYS: Set[String]
 
-    def initialize: (String name, Array[untyped] enum, (ForLoop | Undefined) parent_loop) -> void
+    def initialize: (String name, Integer length, (ForLoop | Undefined) parent_loop) -> void
 
     def key?: (String key) -> bool
 
@@ -982,11 +987,15 @@ end
 
 module Liquid2
   class KeywordArgument < Expression
-    @name: Symbol
+    @name: String
+
+    @sym: Symbol
 
     @value: untyped
 
-    attr_reader name: Symbol
+    attr_reader name: String
+
+    attr_reader sym: Symbol
 
     attr_reader value: untyped
 
@@ -994,7 +1003,7 @@ module Liquid2
     # @param value [Expression]
     def initialize: ([Symbol, String?, Integer] token, String name, untyped value) -> void
 
-    def evaluate: (RenderContext context) -> [Symbol, untyped]
+    def evaluate: (RenderContext context) -> [String, untyped]
   end
 end
 
@@ -1808,5 +1817,116 @@ module Liquid2
     def initialize: ([Symbol, String?, Integer] token, untyped left, Array[untyped] conditions, Block block) -> void
 
     def render: (RenderContext context, String buffer) -> bool
+  end
+end
+
+module Liquid2
+  # The standard _cycle_ tag.
+  class CycleTag < Node
+    @name: untyped
+
+    @items: Array[untyped]
+
+    @blank: bool
+
+    # @param parser [Parser]
+    # @return [CycleTag]
+    def self.parse: (untyped parser) -> CycleTag
+
+    # @param name [Expression?]
+    # @param items [Array<Expression>]
+    def initialize: ([Symbol, String?, Integer] token, untyped name, Array[untyped] items) -> void
+
+    def render: (RenderContext context, String buffer) -> void
+  end
+end
+
+module Liquid2
+  # The standard _decrement_ tag.
+  class DecrementTag < Node
+    @name: String
+
+    # @param parser [Parser]
+    # @return [DecrementTag]
+    def self.parse: (Parser parser) -> DecrementTag
+
+    # @param name [Identifier]
+    def initialize: ([Symbol, String?, Integer] token, Identifier name) -> void
+
+    def render: (RenderContext context, String buffer) -> void
+  end
+end
+
+module Liquid2
+  # The standard _increment_ tag.
+  class IncrementTag < Node
+    @name: String
+
+    # @param parser [Parser]
+    # @return [IncrementTag]
+    def self.parse: (Parser parser) -> IncrementTag
+
+    # @param name [Identifier]
+    def initialize: ([Symbol, String?, Integer] token, Identifier name) -> void
+
+    def render: (RenderContext context, String buffer) -> void
+  end
+end
+
+module Liquid2
+  # The standard _include_ tag.
+  class IncludeTag < Node
+    @name: untyped
+
+    @repeat: bool
+
+    @var: untyped?
+
+    @as: String?
+
+    @args: Array[KeywordArgument]
+
+    # @param parser [Parser]
+    # @return [IncludeTag]
+    def self.parse: (Parser parser) -> IncludeTag
+
+    # @param name [Expression]
+    # @param repeat [bool]
+    # @param var [Expression?]
+    # @param as [Identifier?]
+    # @param args [Array<KeywordArgument> | nil]
+    def initialize: ([Symbol, String?, Integer] token, untyped name, bool repeat, untyped var, Identifier? as, Array[KeywordArgument] args) -> void
+
+    def render: (RenderContext context, String buffer) -> void
+  end
+end
+
+module Liquid2
+  DISABLED_TAGS: Set[String]
+
+  # The standard _render_ tag.
+  class RenderTag < Node
+    @name: untyped
+
+    @repeat: bool
+
+    @var: untyped?
+
+    @as: String?
+
+    @args: Array[KeywordArgument]
+
+    # @param parser [Parser]
+    # @return [RenderTag]
+    def self.parse: (Parser parser) -> RenderTag
+
+    # @param name [StringLiteral]
+    # @param repeat [bool]
+    # @param var [Expression?]
+    # @param as [Identifier?]
+    # @param args [Array<KeywordArgument> | nil]
+    def initialize: ([Symbol, String?, Integer] token, untyped name, bool repeat, untyped var, Identifier? as, Array[KeywordArgument] args) -> void
+
+    def render: (RenderContext context, String buffer) -> void
   end
 end

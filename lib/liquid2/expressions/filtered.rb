@@ -99,8 +99,8 @@ module Liquid2
       index = 0
       while (arg = @args[index])
         index += 1
-        if arg.respond_to?(:name)
-          keyword_args[arg.name] = context.evaluate(arg.value)
+        if arg.respond_to?(:sym)
+          keyword_args[arg.sym] = context.evaluate(arg.value)
         else
           positional_args << context.evaluate(arg)
         end

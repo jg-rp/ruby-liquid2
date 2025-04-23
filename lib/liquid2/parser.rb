@@ -418,6 +418,9 @@ module Liquid2
         @pos += 1
         val = parse_primary
         args << KeywordArgument.new(word, word[1] || raise, val)
+
+        break unless current_kind == :token_comma
+        @pos += 1 
       end
 
       args

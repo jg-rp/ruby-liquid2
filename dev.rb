@@ -4,19 +4,27 @@ require "json"
 require "liquid2"
 
 source = <<~LIQUID
-  {% case 'b' %}{% when 'a' or 'b' %}c{% when 'd' %}e{% endcase %}
+  {% for a in b %}{% include 'a' %}{% endfor %}
 LIQUID
 
 data = JSON.parse <<~DATA
-  { "a": "b" }
+  { "b": [1, 2, 3] }
 DATA
+
+templates = JSON.parse <<~TEMPLATES
+  {
+        "a": "{{ a }}{% break %}"
+      }
+TEMPLATES
+
+loader = Liquid2::HashLoader.new(templates)
 
 scanner = StringScanner.new("")
 Liquid2::Scanner.tokenize(source, scanner).each do |token|
   p token
 end
 
-env = Liquid2::Environment.new
+env = Liquid2::Environment.new(loader: loader)
 
 t = env.parse(source)
 

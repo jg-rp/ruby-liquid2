@@ -8,6 +8,7 @@ module Liquid2
     END_BLOCK = Set["endfor", "else"]
 
     def self.parse(parser)
+      # TODO: pass :token_tag_name to `#parse`?
       token = parser.previous # token_tag_name
       expression = parser.parse_loop_expression
       # TODO: replace these two with `parser.expect_end_of_tag`
@@ -47,7 +48,7 @@ module Liquid2
       end
 
       name = @expression.identifier.name
-      forloop = ForLoop.new(@expression.name, array, context.parent_loop(self))
+      forloop = ForLoop.new(@expression.name, array.length, context.parent_loop(self))
       namespace = { "forloop" => forloop }
 
       context.loop(namespace, forloop) do
@@ -108,10 +109,9 @@ module Liquid2
       "parentloop",
     ]
 
-    def initialize(name, array, parent_loop)
+    def initialize(name, length, parent_loop)
       @name = name
-      @array = array
-      @length = array.length
+      @length = length
       @parentloop = parent_loop
       @index = -1
     end
