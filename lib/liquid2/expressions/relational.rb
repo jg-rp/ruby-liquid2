@@ -14,6 +14,8 @@ module Liquid2
       @right = right
     end
 
+    def children = [@left, @right]
+
     protected
 
     def inner_evaluate(context)

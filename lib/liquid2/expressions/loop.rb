@@ -69,5 +69,13 @@ module Liquid2
       array = (stop ? array.slice(start...stop) : array.slice(start..)) || EMPTY_ENUM # steep:ignore
       @reversed ? array.reverse! : array
     end
+
+    def children
+      expressions = [@enum]
+      expressions << @limit if @limit
+      expressions << @offset if @offset
+      expressions << @cols if @cols
+      expressions
+    end
   end
 end

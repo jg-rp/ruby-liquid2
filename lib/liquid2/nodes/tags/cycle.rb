@@ -58,5 +58,7 @@ module Liquid2
 
       buffer << Liquid2.to_output_s(args[index])
     end
+
+    def expressions = @items
   end
 end

@@ -100,5 +100,38 @@ module Liquid2
       e.template_name = context.template.full_name
       raise e
     end
+
+    def children(static_context, include_partials: true)
+      return [] unless include_partials
+
+      name = static_context.evaluate(@name)
+      template = static_context.env.get_template(name.to_s, context: static_context, tag: :include)
+      template.ast
+    rescue LiquidTemplateNotFoundError => e
+      e.token = @token
+      e.template_name = static_context.template.full_name
+      raise e
+    end
+
+    def expressions
+      exprs = [@name]
+      exprs << @var if @var
+      exprs.concat(@args.map(&:value))
+      exprs
+    end
+
+    def partial_scope
+      scope = @args.map { |arg| Identifier.new([:token_word, arg.name, arg.token.last]) }
+
+      if @var
+        if @as
+          scope << @as # steep:ignore
+        elsif @name.is_a?(String)
+          scope << Identifier.new([:token_word, @name.split(".").first, @token.last])
+        end
+      end
+
+      Partial.new(@name, :isolated, scope)
+    end
   end
 end

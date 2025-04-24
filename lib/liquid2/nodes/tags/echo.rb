@@ -23,5 +23,7 @@ module Liquid2
     def render(context, buffer)
       buffer << Liquid2.to_output_s(context.evaluate(@expression))
     end
+
+    def expressions = [@expression]
   end
 end

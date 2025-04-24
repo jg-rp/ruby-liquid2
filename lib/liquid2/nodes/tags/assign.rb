@@ -21,12 +21,15 @@ module Liquid2
     # @param expression [Expression]
     def initialize(token, name, expression)
       super(token)
-      @name = name.name
+      @name = name
       @expression = expression
     end
 
     def render(context, _buffer)
-      context.assign(@name, context.evaluate(@expression))
+      context.assign(@name.name, context.evaluate(@expression))
     end
+
+    def expressions = [@expression]
+    def template_scope = [@name]
   end
 end

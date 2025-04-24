@@ -36,3 +36,6 @@ Metrics/ClassLength:
 
 Metrics/BlockLength:
   Enabled: false
+
+Lint/UnusedMethodArgument:
+  AllowUnusedKeywordArguments: true

@@ -14,5 +14,7 @@ module Liquid2
     def evaluate(context)
       Liquid2.truthy?(context, context.evaluate(@expr))
     end
+
+    def children = [@expr]
   end
 end

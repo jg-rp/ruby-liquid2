@@ -27,6 +27,37 @@ module Liquid2
 
       raise DisabledTagError.new("#{@token[1]} is not allowed in this context", @token)
     end
+
+    # Return all children of this node.
+    def children(_static_context, include_partials: true) = []
+
+    # Return this node's expressions.
+    def expressions = []
+
+    # Return variables this node adds to the template local scope.
+    def template_scope = []
+
+    # Return variables this nodes adds to its block scope.
+    def block_scope = []
+
+    # Return information about a partial template loaded by this node.
+    def partial_scope = nil
+  end
+
+  # Partial template meta data.
+  class Partial
+    attr_reader :name, :scope, :in_scope
+
+    # @param name [Expression | String] The name of the partial template.
+    # @param scope [:shared | :isolated | :inherited] A symbol indicating the kind of
+    #   scope the partial template should have when loaded.
+    # @param in_scope [Array[Identifier]] Names that will be added to the scope of the
+    #   partial template.
+    def initialize(name, scope, in_scope)
+      @name = name
+      @scope = scope
+      @in_scope = in_scope
+    end
   end
 
   # An node representing a block of Liquid markup.
@@ -56,6 +87,8 @@ module Liquid2
         return unless context.interrupts.empty?
       end
     end
+
+    def children(_static_context, include_partials: true) = @nodes
   end
 
   # A Liquid block guarded by an expression.
@@ -73,5 +106,8 @@ module Liquid2
     def render(context, buffer)
       @expression.evaluate(context) ? @block.render(context, buffer) : 0
     end
+
+    def children(_static_context, include_partials: true) = [@block]
+    def expressions = [@expression]
   end
 end

@@ -70,5 +70,14 @@ module Liquid2
 
       (@default || raise).render(context, buffer) if @default
     end
+
+    def children(_static_context, include_partials: true)
+      # @type var nodes: Array[Node]
+      nodes = [@block, *@alternatives]
+      nodes << (@default || raise) if @default
+      nodes
+    end
+
+    def expressions = [@expression]
   end
 end

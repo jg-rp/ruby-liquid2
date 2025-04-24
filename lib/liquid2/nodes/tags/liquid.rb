@@ -23,5 +23,7 @@ module Liquid2
     def render(context, buffer)
       @block.render(context, buffer)
     end
+
+    def children(_static_context, include_partials: true) = [@block]
   end
 end

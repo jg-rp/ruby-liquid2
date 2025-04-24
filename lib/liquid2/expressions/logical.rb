@@ -13,6 +13,8 @@ module Liquid2
     def evaluate(context)
       !Liquid2.truthy?(context, context.evaluate(@expr))
     end
+
+    def children = [@expr]
   end
 
   class LogicalAnd < Expression
@@ -28,6 +30,8 @@ module Liquid2
       left = context.evaluate(@left)
       Liquid2.truthy?(context, left) ? context.evaluate(@right) : left
     end
+
+    def children = [@left, @right]
   end
 
   class LogicalOr < Expression
@@ -43,6 +47,8 @@ module Liquid2
       left = context.evaluate(@left)
       Liquid2.truthy?(context, left) ? left : context.evaluate(@right)
     end
+
+    def children = [@left, @right]
   end
 
   # A logical expression with explicit parentheses.
@@ -56,5 +62,7 @@ module Liquid2
     def evaluate(context)
       context.evaluate(@expr)
     end
+
+    def children = [@expr]
   end
 end

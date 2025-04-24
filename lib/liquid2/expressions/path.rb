@@ -21,5 +21,13 @@ module Liquid2
 
     # TODO: fix and optimize
     def to_s = @head.to_s + @segments.map(&:to_s).join
+
+    def children
+      if @head.is_a?(Path)
+        [@head, *@segments.filter { |segment| segment.is_a?(Path) }]
+      else
+        @segments.filter { |segment| segment.is_a?(Path) }
+      end
+    end
   end
 end

@@ -651,6 +651,43 @@ module Liquid2
     def render: (RenderContext context, String buffer) -> void
               
     def render_with_disabled_tag_check: (RenderContext context, String buffer) -> void
+                                      
+    # Return all children of this node.
+    def children: (RenderContext _static_context, ?include_partials: bool) -> ::Array[Node | String]
+
+    # Return this node's expressions.
+    def expressions: () -> ::Array[untyped]
+
+    # Return variables this node adds to the template local scope.
+    def template_scope: () -> ::Array[Identifier]
+
+    # Return variables this nodes adds to its block scope.
+    def block_scope: () -> ::Array[Identifier]
+
+    # Return information about a partial template loaded by this node.
+    def partial_scope: () -> Partial?
+  end
+
+  # Partial template meta data.
+  class Partial
+    @name: untyped
+
+    @scope: (:shared | :isolated | :inherited)
+
+    @in_scope: Array[Identifier]
+
+    attr_reader name: untyped
+
+    attr_reader scope: :shared | :isolated | :inherited
+
+    attr_reader in_scope: Array[Identifier]
+
+    # @param name [Expression | String] The name of the partial template.
+    # @param scope [:shared | :isolated | :inherited] A symbol indicating the kind of
+    #   scope the partial template should have when loaded.
+    # @param in_scope [Array[Identifier]] Names that will be added to the scope of the
+    #   partial template.
+    def initialize: (untyped name, (:shared | :isolated | :inherited) scope, Array[Identifier] in_scope) -> void
   end
 
   # An node representing a block of Liquid markup.
@@ -983,6 +1020,8 @@ module Liquid2
 
     # @param token [[Symbol, String?, Integer]]
     def initialize: ([Symbol, String?, Integer] token) -> void
+
+    def children: () -> Array[untyped]
   end
 end
 
@@ -1087,7 +1126,7 @@ module Liquid2
     def evaluate: (RenderContext context) -> untyped
   end
 
-  class Filter < Node
+  class Filter < Expression
     @name: String
 
     @args: Array[untyped]
@@ -1306,7 +1345,7 @@ end
 module Liquid2
   # The standard _assign_ tag.
   class AssignTag < Tag
-    @name: String
+    @name: Identifier
 
     @expression: untyped
 
@@ -1798,7 +1837,7 @@ end
 module Liquid2
   # The standard _decrement_ tag.
   class DecrementTag < Tag
-    @name: String
+    @name: Identifier
 
     # @param parser [Parser]
     # @return [DecrementTag]
@@ -1814,7 +1853,7 @@ end
 module Liquid2
   # The standard _increment_ tag.
   class IncrementTag < Tag
-    @name: String
+    @name: Identifier
 
     # @param parser [Parser]
     # @return [IncrementTag]
@@ -1836,7 +1875,7 @@ module Liquid2
 
     @var: untyped?
 
-    @as: String?
+    @as: Identifier?
 
     @args: Array[KeywordArgument]
 

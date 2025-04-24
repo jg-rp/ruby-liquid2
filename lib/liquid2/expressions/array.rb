@@ -14,5 +14,7 @@ module Liquid2
     def evaluate(context)
       @items.map { |item| context.evaluate(item) }
     end
+
+    def children = @items
   end
 end

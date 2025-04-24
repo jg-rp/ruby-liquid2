@@ -14,5 +14,7 @@ module Liquid2
     def evaluate(context)
       @segments.map { |expr| Liquid2.to_s(context.evaluate(expr)) }.join
     end
+
+    def children = @segments
   end
 end

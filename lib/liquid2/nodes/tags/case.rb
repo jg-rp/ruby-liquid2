@@ -71,6 +71,15 @@ module Liquid2
 
       (@default || raise).render(context, buffer) if @default && !rendered
     end
+
+    def children(_static_context, include_partials: true)
+      # @type var nodes: Array[Node]
+      nodes = @whens.clone
+      nodes << (@default || raise) if @default
+      nodes
+    end
+
+    def expressions = [@expression]
   end
 
   # A Liquid block guarded by any one of multiple expressions.
@@ -95,5 +104,8 @@ module Liquid2
         false
       end
     end
+
+    def children(_static_context, include_partials: true) = [@block]
+    def expressions = @conditions
   end
 end

@@ -20,5 +20,7 @@ module Liquid2
     def to_s
       "(#{@start}..#{@stop})"
     end
+
+    def children = [@start, @stop]
   end
 end

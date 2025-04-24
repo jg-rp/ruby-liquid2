@@ -17,11 +17,13 @@ module Liquid2
     # @param name [Identifier]
     def initialize(token, name)
       super(token)
-      @name = name.name
+      @name = name
     end
 
     def render(context, buffer)
-      buffer << context.decrement(@name).to_s
+      buffer << context.decrement(@name.name).to_s
     end
+
+    def template_scope = [@name]
   end
 end

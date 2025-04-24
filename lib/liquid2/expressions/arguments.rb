@@ -18,5 +18,7 @@ module Liquid2
     def evaluate(context)
       [@name, context.evaluate(@value)]
     end
+
+    def children = [@value]
   end
 end

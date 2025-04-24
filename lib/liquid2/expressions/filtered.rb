@@ -86,6 +86,8 @@ module Liquid2
       raise LiquidArgumentError.new(e.message, @token)
     end
 
+    def children = @args
+
     private
 
     # @param context [RenderContext]

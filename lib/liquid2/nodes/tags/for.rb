@@ -63,6 +63,19 @@ module Liquid2
         end
       end
     end
+
+    def children(_static_context, include_partials: true)
+      # @type var nodes: Array[Node]
+      nodes = [@block]
+      nodes << (@default || raise) if @default
+      nodes
+    end
+
+    def expressions = [@expression]
+
+    def block_scope
+      [@expression.identifier, Identifier.new([:token_word, "forloop", @expression.token.last])]
+    end
   end
 
   # The standard _break_ tag.

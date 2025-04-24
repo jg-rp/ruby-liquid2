@@ -33,5 +33,8 @@ module Liquid2
       @block.render(context, buf)
       context.assign(@name.name, buf)
     end
+
+    def children(_static_context, include_partials: true) = [@block]
+    def template_scope = [@name]
   end
 end

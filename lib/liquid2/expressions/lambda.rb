@@ -17,6 +17,8 @@ module Liquid2
 
     def evaluate(_context) = self
 
+    def children = [@expr]
+
     # Apply this lambda function to elements from _enum_.
     # @param context [RenderContext]
     # @param enum [Enumerable<Object>]

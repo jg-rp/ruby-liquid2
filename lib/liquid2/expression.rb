@@ -9,5 +9,8 @@ module Liquid2
     def initialize(token)
       @token = token
     end
+
+    # Return children of this expression.
+    def children = []
   end
 end
