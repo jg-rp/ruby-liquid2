@@ -41,27 +41,7 @@ module Liquid2
 
     def initialize(loader: nil, mode: :lax, globals: nil)
       # A mapping of tag names to objects responding to `parse`.
-      # TODO: move these to `setup_tags_and_filters`
-      @tags = {
-        "assign" => AssignTag,
-        "if" => IfTag,
-        "for" => ForTag,
-        "break" => BreakTag,
-        "continue" => ContinueTag,
-        "liquid" => LiquidTag,
-        "echo" => EchoTag,
-        "capture" => CaptureTag,
-        "cycle" => CycleTag,
-        "decrement" => DecrementTag,
-        "increment" => IncrementTag,
-        "raw" => RawTag,
-        "unless" => UnlessTag,
-        "case" => CaseTag,
-        "include" => IncludeTag,
-        "comment" => BlockComment,
-        "#" => InlineComment,
-        "render" => RenderTag
-      }
+      @tags = {}
 
       # A mapping of filter names to objects responding to `#call(left, ...)`,
       # along with a flag to indicate if the callable accepts a `context`
@@ -127,6 +107,25 @@ module Liquid2
     end
 
     def setup_tags_and_filters
+      @tags["assign"] = AssignTag
+      @tags["if"] = IfTag
+      @tags["for"] = ForTag
+      @tags["break"] = BreakTag
+      @tags["continue"] = ContinueTag
+      @tags["liquid"] = LiquidTag
+      @tags["echo"] = EchoTag
+      @tags["capture"] = CaptureTag
+      @tags["cycle"] = CycleTag
+      @tags["decrement"] = DecrementTag
+      @tags["increment"] = IncrementTag
+      @tags["raw"] = RawTag
+      @tags["unless"] = UnlessTag
+      @tags["case"] = CaseTag
+      @tags["include"] = IncludeTag
+      @tags["comment"] = BlockComment
+      @tags["#"] = InlineComment
+      @tags["render"] = RenderTag
+
       register_filter("abs", Liquid2::Filters.method(:abs))
       register_filter("append", Liquid2::Filters.method(:append))
       register_filter("at_least", Liquid2::Filters.method(:at_least))

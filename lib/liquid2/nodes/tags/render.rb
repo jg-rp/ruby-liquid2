@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-require_relative "../../node"
+require_relative "../../tag"
 require_relative "for"
 
 module Liquid2
   DISABLED_TAGS = Set["include"]
 
   # The standard _render_ tag.
-  class RenderTag < Node
+  class RenderTag < Tag
     # @param parser [Parser]
     # @return [RenderTag]
     def self.parse(token, parser)

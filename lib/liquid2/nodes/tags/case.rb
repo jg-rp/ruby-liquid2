@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "../../node"
+require_relative "../../tag"
 
 module Liquid2
   # The standard _case_ tag.
-  class CaseTag < Node
+  class CaseTag < Tag
     END_BLOCK = Set["endcase", "when", "else"]
     WHEN_DELIM = Set[:token_comma, :token_or]
 

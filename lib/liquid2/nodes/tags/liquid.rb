@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "../../node"
+require_relative "../../tag"
 
 module Liquid2
   # The standard _liquid_ tag.
-  class LiquidTag < Node
+  class LiquidTag < Tag
     # @param parser [Parser]
     # @return [LiquidTag]
     def self.parse(token, parser)

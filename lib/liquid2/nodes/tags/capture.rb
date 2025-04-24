@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "../../node"
+require_relative "../../tag"
 
 module Liquid2
   # The standard _capture_ tag.
-  class CaptureTag < Node
+  class CaptureTag < Tag
     END_BLOCK = Set["endcapture"]
 
     # @param parser [Parser]

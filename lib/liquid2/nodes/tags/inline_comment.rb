@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "../../node"
+require_relative "../../tag"
 
 module Liquid2
   # `{% # comment %}` style comments.
-  class InlineComment < Node
+  class InlineComment < Tag
     def self.parse(token, parser)
       comment = parser.eat(:token_comment)
       parser.carry_whitespace_control

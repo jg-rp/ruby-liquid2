@@ -46,7 +46,7 @@ env = fixture.env
 source = fixture.templates["index.liquid"]
 template = env.get_template("index.liquid")
 
-scanner = StringScanner.new("")
+# scanner = StringScanner.new("")
 
 Benchmark.ips do |x|
   # Configure the number of seconds used during

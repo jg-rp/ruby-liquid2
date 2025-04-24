@@ -1366,7 +1366,7 @@ end
 
 module Liquid2
   # The standard _if_ tag
-  class IfTag < Node
+  class IfTag < Tag
     @expression: untyped
 
     @block: Block
@@ -1631,7 +1631,7 @@ end
 
 module Liquid2
   # The standard _liquid_ tag.
-  class LiquidTag < Node
+  class LiquidTag < Tag
     @block: Block
 
     @blank: bool
@@ -1648,7 +1648,7 @@ end
 
 module Liquid2
   # The standard _echo_ tag.
-  class EchoTag < Node
+  class EchoTag < Tag
     @expression: Expression
 
     @blank: bool
@@ -1665,7 +1665,7 @@ end
 
 module Liquid2
   # `{% # comment %}` style comments.
-  class InlineComment < Node
+  class InlineComment < Tag
     @text: String
 
     def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> InlineComment
@@ -1679,7 +1679,7 @@ end
 
 module Liquid2
   # The standard _raw_ tag.
-  class RawTag < Node
+  class RawTag < Tag
     @text: String
 
     @blank: bool
@@ -1697,7 +1697,7 @@ end
 
 module Liquid2
   # The standard _comment_ tag.
-  class BlockComment < Node
+  class BlockComment < Tag
     @text: String
 
     def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> BlockComment
@@ -1711,7 +1711,7 @@ end
 
 module Liquid2
   # The standard _capture_ tag.
-  class CaptureTag < Node
+  class CaptureTag < Tag
     @name: Identifier
 
     @block: Block
@@ -1732,7 +1732,7 @@ end
 
 module Liquid2
   # The standard _case_ tag.
-  class CaseTag < Node
+  class CaseTag < Tag
     @expression: untyped 
 
     @whens: Array[MultiEqualBlock]
@@ -1776,7 +1776,7 @@ end
 
 module Liquid2
   # The standard _cycle_ tag.
-  class CycleTag < Node
+  class CycleTag < Tag
     @name: untyped
 
     @items: Array[untyped]
@@ -1797,7 +1797,7 @@ end
 
 module Liquid2
   # The standard _decrement_ tag.
-  class DecrementTag < Node
+  class DecrementTag < Tag
     @name: String
 
     # @param parser [Parser]
@@ -1813,7 +1813,7 @@ end
 
 module Liquid2
   # The standard _increment_ tag.
-  class IncrementTag < Node
+  class IncrementTag < Tag
     @name: String
 
     # @param parser [Parser]
@@ -1829,7 +1829,7 @@ end
 
 module Liquid2
   # The standard _include_ tag.
-  class IncludeTag < Node
+  class IncludeTag < Tag
     @name: untyped
 
     @repeat: bool
@@ -1859,7 +1859,7 @@ module Liquid2
   DISABLED_TAGS: Set[String]
 
   # The standard _render_ tag.
-  class RenderTag < Node
+  class RenderTag < Tag
     @name: untyped
 
     @repeat: bool

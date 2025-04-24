@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "../../node"
+require_relative "../../tag"
 
 module Liquid2
   # The standard _cycle_ tag.
-  class CycleTag < Node
+  class CycleTag < Tag
     # @param parser [Parser]
     # @return [CycleTag]
     def self.parse(token, parser)

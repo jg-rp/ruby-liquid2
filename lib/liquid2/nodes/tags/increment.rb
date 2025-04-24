@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "../../node"
+require_relative "../../tag"
 
 module Liquid2
   # The standard _increment_ tag.
-  class IncrementTag < Node
+  class IncrementTag < Tag
     # @param parser [Parser]
     # @return [DecrementTag]
     def self.parse(token, parser)

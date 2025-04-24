@@ -20,7 +20,7 @@ Metrics/MethodLength:
   Enabled: false
 
 Metrics/AbcSize:
-  Max: 100
+  Enabled: false
 
 Metrics/PerceivedComplexity:
   Max: 100

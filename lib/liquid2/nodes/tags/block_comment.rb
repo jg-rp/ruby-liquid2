@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "../../node"
+require_relative "../../tag"
 
 module Liquid2
   # The standard _comment_ tag.
-  class BlockComment < Node
+  class BlockComment < Tag
     def self.parse(token, parser)
       parser.carry_whitespace_control
       parser.eat(:token_tag_end)

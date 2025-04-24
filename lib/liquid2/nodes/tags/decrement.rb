@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "../../node"
+require_relative "../../tag"
 
 module Liquid2
   # The standard _decrement_ tag.
-  class DecrementTag < Node
+  class DecrementTag < Tag
     # @param parser [Parser]
     # @return [DecrementTag]
     def self.parse(token, parser)
