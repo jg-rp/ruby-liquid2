@@ -7,8 +7,7 @@ module Liquid2
   class LiquidTag < Node
     # @param parser [Parser]
     # @return [LiquidTag]
-    def self.parse(parser)
-      token = parser.previous # token_tag_name
+    def self.parse(token, parser)
       block = parser.parse_line_statements
       parser.carry_whitespace_control
       parser.eat(:token_tag_end)

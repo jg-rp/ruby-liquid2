@@ -5,8 +5,7 @@ require_relative "../../node"
 module Liquid2
   # The standard _comment_ tag.
   class BlockComment < Node
-    def self.parse(parser)
-      token = parser.previous
+    def self.parse(token, parser)
       parser.carry_whitespace_control
       parser.eat(:token_tag_end)
       comment = parser.eat(:token_comment)

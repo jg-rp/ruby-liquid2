@@ -10,8 +10,7 @@ module Liquid2
   class RenderTag < Node
     # @param parser [Parser]
     # @return [RenderTag]
-    def self.parse(parser)
-      token = parser.previous
+    def self.parse(token, parser)
       name = parser.parse_string
       raise LiquidTypeError, "expected a string literal" unless name.is_a?(String)
 

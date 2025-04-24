@@ -8,8 +8,7 @@ module Liquid2
     END_BLOCK = Set["endcase", "when", "else"]
     WHEN_DELIM = Set[:token_comma, :token_or]
 
-    def self.parse(parser)
-      token = parser.previous
+    def self.parse(token, parser)
       expression = parser.parse_primary
       parser.carry_whitespace_control
       parser.eat(:token_tag_end)

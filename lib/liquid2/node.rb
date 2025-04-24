@@ -19,8 +19,9 @@ module Liquid2
     end
 
     def render_with_disabled_tag_check(context, buffer)
-      # TODO: test assert that all tags have a token kind of :token_tag_name?
-      if context.disabled_tags.empty? || !context.disabled_tags.include?(@token[1] || raise)
+      if context.disabled_tags.empty? ||
+         !is_a?(Tag) ||
+         !context.disabled_tags.include?(@token[1] || raise)
         return render(context, buffer)
       end
 

@@ -7,8 +7,7 @@ module Liquid2
   class EchoTag < Node
     # @param parser [Parser]
     # @return [EchoTag]
-    def self.parse(parser)
-      token = parser.previous # token_tag_name
+    def self.parse(token, parser)
       expression = parser.parse_filtered_expression
       parser.carry_whitespace_control
       parser.eat(:token_tag_end)

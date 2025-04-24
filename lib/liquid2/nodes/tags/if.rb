@@ -11,8 +11,7 @@ module Liquid2
 
     # @param parser [Parser]
     # @return [IfTag]
-    def self.parse(parser)
-      token = parser.previous # token_tag_name
+    def self.parse(token, parser)
       expression = BooleanExpression.new(parser.current, parser.parse_primary)
       parser.carry_whitespace_control
       parser.eat(:token_tag_end)

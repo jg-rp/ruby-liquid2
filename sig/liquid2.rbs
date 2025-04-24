@@ -5,7 +5,7 @@ module Liquid2
 
   interface _Tag
     # TODO: for some reason a singleton with a self.parse method does not type check.
-    def parse: (Parser) -> Tag
+    def parse: ([Symbol, String?, Integer], Parser) -> Tag
   end
 
   # TODO: Revisit this. I can't find a way to define a callable interface with arbitrary
@@ -880,7 +880,7 @@ module Liquid2
 
     END_BLOCK: Set[String]
 
-    def self.parse: (Parser parser) -> ForTag
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> ForTag
 
     # @param expression [LoopExpression]
     # @param block [Block]
@@ -892,14 +892,14 @@ module Liquid2
 
   # The standard _break_ tag.
   class BreakTag < Tag
-    def self.parse: (Parser _parser) -> BreakTag
+    def self.parse: ([Symbol, String?, Integer] token, Parser _parser) -> BreakTag
 
     def render: (RenderContext context, String _buffer) -> void
   end
 
   # The standard _continue_ tag.
   class ContinueTag < Tag
-    def self.parse: (Parser _parser) -> ContinueTag
+    def self.parse: ([Symbol, String?, Integer] token, Parser _parser) -> ContinueTag
 
     def render: (RenderContext context, String _buffer) -> void
   end
@@ -1312,7 +1312,7 @@ module Liquid2
 
     # @param parser [Parser]
     # @return [AssignTag]
-    def self.parse: (Parser parser) -> AssignTag
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> AssignTag
 
     # @param name [Identifier]
     # @param expression [Expression]
@@ -1379,7 +1379,7 @@ module Liquid2
 
     END_BLOCK: Set[String]
 
-    def self.parse: (Parser parser) -> IfTag
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> IfTag
 
     # @return [ConditionalBlock]
     def self.parse_elsif: (Parser parser) -> ConditionalBlock
@@ -1638,7 +1638,7 @@ module Liquid2
 
     # @param parser [Parser]
     # @return [LiquidTag]
-    def self.parse: (Parser parser) -> LiquidTag
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> LiquidTag
 
     def initialize: ([Symbol, String?, Integer] token, Block block) -> void
 
@@ -1655,7 +1655,7 @@ module Liquid2
 
     # @param parser [Parser]
     # @return [EchoTag]
-    def self.parse: (Parser parser) -> EchoTag
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> EchoTag
 
     def initialize: ([Symbol, String?, Integer] token, Expression expression) -> void
 
@@ -1668,7 +1668,7 @@ module Liquid2
   class InlineComment < Node
     @text: String
 
-    def self.parse: (Parser parser) -> InlineComment
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> InlineComment
 
     # @param text [String]
     def initialize: ([Symbol, String?, Integer] token, String text) -> void
@@ -1686,7 +1686,7 @@ module Liquid2
 
     # @param parser [Parser]
     # @return [RawTag]
-    def self.parse: (Parser parser) -> RawTag
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> RawTag
 
     # @param text [String]
     def initialize: ([Symbol, String?, Integer] token, String text) -> void
@@ -1700,7 +1700,7 @@ module Liquid2
   class BlockComment < Node
     @text: String
 
-    def self.parse: (Parser parser) -> BlockComment
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> BlockComment
 
     # @param text [String]
     def initialize: ([Symbol, String?, Integer] token, String text) -> void
@@ -1720,7 +1720,7 @@ module Liquid2
 
     # @param parser [Parser]
     # @return [CaptureTag]
-    def self.parse: (Parser parser) -> CaptureTag
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> CaptureTag
 
     # @param name [Identifier]
     # @param block [Block]
@@ -1745,7 +1745,7 @@ module Liquid2
 
     WHEN_DELIM: Set[Symbol]
 
-    def self.parse: (Parser parser) -> CaseTag
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> CaseTag
 
     # @return [MultiEqualBlock]
     def self.parse_when: (Parser parser, untyped expr) -> MultiEqualBlock
@@ -1785,7 +1785,7 @@ module Liquid2
 
     # @param parser [Parser]
     # @return [CycleTag]
-    def self.parse: (untyped parser) -> CycleTag
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> CycleTag
 
     # @param name [Expression?]
     # @param items [Array<Expression>]
@@ -1802,7 +1802,7 @@ module Liquid2
 
     # @param parser [Parser]
     # @return [DecrementTag]
-    def self.parse: (Parser parser) -> DecrementTag
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> DecrementTag
 
     # @param name [Identifier]
     def initialize: ([Symbol, String?, Integer] token, Identifier name) -> void
@@ -1818,7 +1818,7 @@ module Liquid2
 
     # @param parser [Parser]
     # @return [IncrementTag]
-    def self.parse: (Parser parser) -> IncrementTag
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> IncrementTag
 
     # @param name [Identifier]
     def initialize: ([Symbol, String?, Integer] token, Identifier name) -> void
@@ -1842,7 +1842,7 @@ module Liquid2
 
     # @param parser [Parser]
     # @return [IncludeTag]
-    def self.parse: (Parser parser) -> IncludeTag
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> IncludeTag
 
     # @param name [Expression]
     # @param repeat [bool]
@@ -1872,7 +1872,7 @@ module Liquid2
 
     # @param parser [Parser]
     # @return [RenderTag]
-    def self.parse: (Parser parser) -> RenderTag
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> RenderTag
 
     # @param name [StringLiteral]
     # @param repeat [bool]

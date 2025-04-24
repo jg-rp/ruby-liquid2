@@ -41,6 +41,7 @@ module Liquid2
 
     def initialize(loader: nil, mode: :lax, globals: nil)
       # A mapping of tag names to objects responding to `parse`.
+      # TODO: move these to `setup_tags_and_filters`
       @tags = {
         "assign" => AssignTag,
         "if" => IfTag,

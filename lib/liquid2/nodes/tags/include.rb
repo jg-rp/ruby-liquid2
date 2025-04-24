@@ -7,8 +7,7 @@ module Liquid2
   class IncludeTag < Node
     # @param parser [Parser]
     # @return [IncludeTag]
-    def self.parse(parser)
-      token = parser.previous
+    def self.parse(token, parser)
       name = parser.parse_primary
 
       repeat = false

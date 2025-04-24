@@ -7,8 +7,7 @@ module Liquid2
   class RawTag < Node
     # @param parser [Parser]
     # @return [RawTag]
-    def self.parse(parser)
-      token = parser.previous
+    def self.parse(token, parser)
       parser.carry_whitespace_control
       parser.eat(:token_tag_end)
       # TODO: apply whitespace control to raw text

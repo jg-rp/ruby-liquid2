@@ -7,14 +7,10 @@ module Liquid2
   class ForTag < Tag
     END_BLOCK = Set["endfor", "else"]
 
-    def self.parse(parser)
-      # TODO: pass :token_tag_name to `#parse`?
-      token = parser.previous # token_tag_name
+    def self.parse(token, parser)
       expression = parser.parse_loop_expression
-      # TODO: replace these two with `parser.expect_end_of_tag`
       parser.carry_whitespace_control
       parser.eat(:token_tag_end)
-
       block = parser.parse_block(END_BLOCK)
 
       if parser.tag?("else")
@@ -71,9 +67,10 @@ module Liquid2
 
   # The standard _break_ tag.
   class BreakTag < Tag
-    def self.parse(parser)
+    def self.parse(token, parser)
       parser.carry_whitespace_control
-      new(parser.eat(:token_tag_end))
+      parser.eat(:token_tag_end)
+      new(token)
     end
 
     def render(context, _buffer)
@@ -83,9 +80,10 @@ module Liquid2
 
   # The standard _continue_ tag.
   class ContinueTag < Tag
-    def self.parse(parser)
+    def self.parse(token, parser)
       parser.carry_whitespace_control
-      new(parser.eat(:token_tag_end))
+      parser.eat(:token_tag_end)
+      new(token)
     end
 
     def render(context, _buffer)

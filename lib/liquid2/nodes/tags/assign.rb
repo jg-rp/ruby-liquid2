@@ -7,8 +7,7 @@ module Liquid2
   class AssignTag < Node
     # @param parser [Parser]
     # @return [AssignTag]
-    def self.parse(parser)
-      token = parser.previous # token_tag_name
+    def self.parse(token, parser)
       name = parser.parse_identifier(trailing_question: false)
       parser.eat(:token_assign)
       expression = parser.parse_filtered_expression

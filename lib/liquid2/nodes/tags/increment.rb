@@ -7,8 +7,7 @@ module Liquid2
   class IncrementTag < Node
     # @param parser [Parser]
     # @return [DecrementTag]
-    def self.parse(parser)
-      token = parser.previous
+    def self.parse(token, parser)
       name = parser.parse_identifier(trailing_question: false)
       parser.carry_whitespace_control
       parser.eat(:token_tag_end)

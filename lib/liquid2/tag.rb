@@ -3,10 +3,16 @@
 module Liquid2
   # Base class for all Liquid tags.
   class Tag < Node
-    # Render this node to the output buffer.
+    def initialize(token)
+      super
+      return if token.first == :token_tag_name
+
+      raise "unexpected token kind for tag #{self.class} (#{token})"
+    end
+
+    # Render this tag to the output buffer.
     # @param context [RenderContext]
-    # @param buffer [StringIO]
-    # @return [Integer] The number of bytes written to _buffer_.
+    # @param buffer [String]
     def render(_context, _buffer)
       raise "tags must implement `render: (RenderContext, String) -> void`."
     end

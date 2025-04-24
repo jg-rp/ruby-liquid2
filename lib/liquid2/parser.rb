@@ -575,7 +575,7 @@ module Liquid2
       token = eat(:token_tag_name)
 
       if (tag = @env.tags[token[1] || raise])
-        tag.parse(self)
+        tag.parse(token, self)
       else
         raise LiquidSyntaxError.new("unknown tag #{token[1].inspect}", token)
       end

@@ -5,8 +5,7 @@ require_relative "../../node"
 module Liquid2
   # `{% # comment %}` style comments.
   class InlineComment < Node
-    def self.parse(parser)
-      token = parser.previous # token_tag_name
+    def self.parse(token, parser)
       comment = parser.eat(:token_comment)
       parser.carry_whitespace_control
       parser.eat(:token_tag_end)

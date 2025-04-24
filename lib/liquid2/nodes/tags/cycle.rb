@@ -7,8 +7,7 @@ module Liquid2
   class CycleTag < Node
     # @param parser [Parser]
     # @return [CycleTag]
-    def self.parse(parser)
-      token = parser.previous
+    def self.parse(token, parser)
       items = [] # : Array[untyped]
       group_name = nil # : untyped?
       first = parser.parse_primary
