@@ -4,7 +4,7 @@ require "json"
 require "liquid2"
 
 source = <<~LIQUID
-  {{ 'Hello, ${you | append: '${something}'}!' }}
+  {{ "one two three four" | truncatewords: 0 }}
 LIQUID
 
 data = JSON.parse <<~DATA

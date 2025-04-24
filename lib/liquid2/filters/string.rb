@@ -140,5 +140,46 @@ module Liquid2
     def self.strip_newlines(left)
       Liquid2.to_s(left).gsub(/\r?\n/, "")
     end
+
+    def self.truncate(left, max_length = 50, ellipsis = "...")
+      return if left.nil? || Liquid2.undefined?(left)
+
+      left = Liquid2.to_s(left)
+      max_length = to_integer(max_length)
+      return left if left.length <= max_length
+
+      ellipsis = Liquid2.to_s(ellipsis)
+      return ellipsis[0, max_length] if ellipsis.length >= max_length
+
+      "#{left[0...max_length - ellipsis.length]}#{ellipsis}"
+    end
+
+    def self.truncatewords(left, max_words = 15, ellipsis = "...")
+      return if left.nil? || Liquid2.undefined?(left)
+
+      left = Liquid2.to_s(left)
+      max_words = to_integer(max_words).clamp(1, 10_000)
+      words = left.split(" ", max_words + 1)
+      return left if words.length <= max_words
+
+      ellipsis = Liquid2.to_s(ellipsis)
+      words.pop
+      "#{words.join(" ")}#{ellipsis}"
+    end
+
+    def self.url_encode(left)
+      CGI.escape(Liquid2.to_s(left)) unless left.nil? || Liquid2.undefined?(left)
+    end
+
+    def self.url_decode(left)
+      return if left.nil? || Liquid2.undefined?(left)
+
+      decoded = CGI.unescape(Liquid2.to_s(left))
+      unless decoded.valid_encoding?
+        raise Liquid2::LiquidArgumentError.new("invalid byte sequence", nil)
+      end
+
+      decoded
+    end
   end
 end

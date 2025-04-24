@@ -20,7 +20,8 @@
     "parentloop",
     "rparen",
     "rpartition",
-    "rstrip"
+    "rstrip",
+    "truncatewords"
   ],
   "cSpell.enabledFileTypes": {
     "ruby": true

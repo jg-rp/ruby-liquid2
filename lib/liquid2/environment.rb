@@ -174,6 +174,11 @@ module Liquid2
       register_filter("strip", Liquid2::Filters.method(:strip))
       register_filter("sum", Liquid2::Filters.method(:sum))
       register_filter("times", Liquid2::Filters.method(:times))
+      register_filter("truncate", Liquid2::Filters.method(:truncate))
+      register_filter("truncatewords", Liquid2::Filters.method(:truncatewords))
+      register_filter("uniq", Liquid2::Filters.method(:uniq))
+      register_filter("url_encode", Liquid2::Filters.method(:url_encode))
+      register_filter("url_decode", Liquid2::Filters.method(:url_decode))
       register_filter("upcase", Liquid2::Filters.method(:upcase))
       register_filter("where", Liquid2::Filters.method(:where))
     end

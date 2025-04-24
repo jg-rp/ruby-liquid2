@@ -184,5 +184,19 @@ module Liquid2
         end
       end
     end
+
+    # Deduplicate items in _left_.
+    # Coerce _left_ to an array if it isn't an array already.
+    def self.uniq(left, key = nil, context:)
+      left = Liquid2::Filters.to_enumerable(left)
+
+      if key.nil?
+        left.to_a.uniq
+      elsif key.is_a?(Liquid2::Lambda)
+        key.map(context, left).zip(left).uniq { |r, _item| r }.map(&:last)
+      else
+        left.to_a.uniq { |item| fetch(item, key) }
+      end
+    end
   end
 end

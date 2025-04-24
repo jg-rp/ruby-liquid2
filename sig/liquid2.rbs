@@ -1249,7 +1249,7 @@ module Liquid2
 end
 
 module Liquid2
-  # Base for comparison expressions.
+  # Base class for all comparison expressions.
   class ComparisonExpression < Expression
     @left: untyped
 
@@ -1599,6 +1599,10 @@ module Liquid2
     # Split _left_ on every occurrence of _pattern_.
     def self.split: (untyped left, untyped pattern) -> Array[String]
                   
+    # Deduplicate items in _left_.
+    # Coerce _left_ to an array if it isn't an array already.
+    def self.uniq: (untyped left, ?untyped? key, context: RenderContext) -> Array[untyped]
+                  
     RE_HTML_BLOCKS: ::Regexp
 
     RE_HTML_TAGS: ::Regexp
@@ -1614,6 +1618,14 @@ module Liquid2
 
     # Return the result of multiplying _left_ by _right_.
     def self.times: (untyped left, untyped right) -> (Integer | Float | Numeric | BigDecimal)
+                  
+    def self.truncate: (untyped left, ?untyped max_length, ?untyped ellipsis) -> String?
+                     
+    def self.truncatewords: (untyped left, ?untyped max_words, ?untyped ellipsis) -> String?
+                          
+    def self.url_encode: (untyped left) -> String?
+
+    def self.url_decode: (untyped left) -> String?
   end
 end
 
