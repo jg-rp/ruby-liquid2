@@ -4,6 +4,8 @@ require_relative "../expression"
 
 module Liquid2
   class FilteredExpression < Expression
+    attr_reader :filters
+
     def initialize(token, left, filters)
       super(token)
       @left = left
@@ -22,6 +24,8 @@ module Liquid2
   end
 
   class TernaryExpression < Expression
+    attr_reader :filters, :tail_filters
+
     # @param left [FilteredExpression]
     # @param condition [BooleanExpression]
     # @param alternative [Expression | nil]

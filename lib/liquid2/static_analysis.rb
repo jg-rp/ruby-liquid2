@@ -136,19 +136,144 @@ module Liquid2
     end
 
     def self.analyze(template, include_partials:)
-      raise "TODO"
+      variables = VariableMap.new
+      globals = VariableMap.new
+      locals = VariableMap.new
+
+      # @type var filters: Hash[String, Array[Span]]
+      filters = Hash.new { |_hash, _key| [] }
+      # @type var tags: Hash[String, Array[Span]]
+      tags = Hash.new { |_hash, _key| [] }
+
+      # @type var template_scope: Set[String]
+      template_scope = Set[]
+      root_scope = StaticScope.new(template_scope)
+      static_context = Liquid2::RenderContext.new(template)
+
+      # Names of partial templates that have already been analyzed.
+      # @type var seen: Set[String]
+      seen = Set[]
+
+      # @type var visit: ^(Node, String, StaticScope) -> void
+      visit = lambda do |node, template_name, scope|
+        seen.add(template_name) unless template_name.empty?
+
+        # Update tags
+        tags[node.name] << Span.new(template_name, node.token.last) if node.is_a?(Liquid2::Tag)
+
+        # Update variables from node.expressions
+        node.expressions.each do |expr|
+          if expr.is_a?(Liquid2::Expression)
+            analyze_variables(expr, template_name, scope, globals,
+                              variables)
+          end
+
+          # Update filters from expr
+          extract_filters(expr, template_name).each do |name, span|
+            filters[name] << span
+          end
+        end
+
+        # Update template scope from node.template_scope
+        node.template_scope.each do |ident|
+          scope.add(ident.name)
+          locals.add(Variable.new([ident.name], Span.new(template_name, ident.token.last)))
+        end
+
+        if (partial = node.partial_scope)
+          partial_name = static_context.evaluate(partial.name).to_s
+
+          unless seen.include?(partial_name)
+            partial_scope = if partial.scope == :isolated
+                              StaticScope.new(Set.new(partial.in_scope.map(&:name)))
+                            else
+                              root_scope.push(Set.new(partial.in_scope.map(&:name)))
+                            end
+
+            node.children(static_context, include_partials: include_partials).each do |child|
+              seen.add(partial_name)
+              visit.call(child, partial_name, partial_scope) if child.is_a?(Liquid2::Node)
+            end
+
+            partial_scope.pop
+          end
+        else
+          scope.push(Set.new(node.block_scope.map(&:name)))
+          node.children(static_context, include_partials: include_partials).each do |child|
+            visit.call(child, template_name, scope) if child.is_a?(Liquid2::Node)
+          end
+          scope.pop
+        end
+      end
+
+      template.ast.each do |node|
+        visit.call(node, template.name, root_scope) if node.is_a?(Liquid2::Node)
+      end
+
+      Result.new(variables.data, globals.data, locals.data, filters, tags)
     end
 
     def self.extract_filters(expression, template_name)
-      raise "TODO"
+      filters = [] # : Array[[String, Span]]
+
+      if expression.is_a?(Liquid2::FilteredExpression)
+        expression.filters.each do |filter|
+          filters << [filter.name, Span.new(template_name, filter.token.last)]
+        end
+      elsif expression.is_a?(Liquid2::TernaryExpression)
+        expression.filters.each do |filter|
+          filters << [filter.name, Span.new(template_name, filter.token.last)]
+        end
+
+        expression.tail_filters.each do |filter|
+          filters << [filter.name, Span.new(template_name, filter.token.last)]
+        end
+      end
+
+      if expression.is_a?(Liquid2::Expression)
+        expression.children.each do |expr|
+          filters.concat(extract_filters(expr, template_name))
+        end
+      end
+
+      filters
     end
 
     def self.analyze_variables(expression, template_name, scope, globals, variables)
-      raise "TODO"
+      if expression.is_a?(Path)
+        var = Variable.new(segments(expression, template_name),
+                           Span.new(template_name, expression.token.last))
+        variables.add(var)
+
+        root = var.segments.first.to_s
+        globals.add(var) unless scope.include?(root)
+      end
+
+      if (child_scope = expression.scope)
+        scope.push(Set.new(child_scope.map(&:name)))
+        expression.children.each do |expr|
+          if expr.is_a?(Expression)
+            analyze_variables(expr, template_name, scope, globals,
+                              variables)
+          end
+        end
+        scope.pop
+      else
+        expression.children.each do |expr|
+          if expr.is_a?(Expression)
+            analyze_variables(expr, template_name, scope, globals,
+                              variables)
+          end
+        end
+      end
     end
 
     def self.segments(path, template_name)
+      segments = [] # : Array[untyped]
+
       raise "TODO"
+
+      segments
     end
   end
 end

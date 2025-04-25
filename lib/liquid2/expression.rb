@@ -12,5 +12,9 @@ module Liquid2
 
     # Return children of this expression.
     def children = []
+
+    # Return variables this expression adds to the scope of any child expressions.
+    # Currently used by lambda expressions only.
+    def scope = nil
   end
 end

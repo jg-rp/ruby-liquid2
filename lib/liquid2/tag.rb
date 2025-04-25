@@ -16,5 +16,7 @@ module Liquid2
     def render(_context, _buffer)
       raise "tags must implement `render: (RenderContext, String) -> void`."
     end
+
+    def name = @token[1] || raise
   end
 end

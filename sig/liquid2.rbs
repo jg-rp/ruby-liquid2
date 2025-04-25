@@ -725,6 +725,9 @@ module Liquid2
     # @param context [RenderContext]
     # @param buffer [StringIO]
     def render: (RenderContext context, String buffer) -> void
+              
+    # Return the tags name.
+    def name: () -> String
   end
 end
 
@@ -1021,6 +1024,8 @@ module Liquid2
     def initialize: ([Symbol, String?, Integer] token) -> void
 
     def children: () -> Array[untyped]
+    
+    def scope: () -> Array[Identifier]?
   end
 end
 
@@ -1099,6 +1104,8 @@ module Liquid2
 
     @filters: Array[Filter]
 
+    attr_reader filters: Array[Filter]
+
     def initialize: ([Symbol, String?, Integer] token, untyped left, Array[Filter] filters) -> void
 
     def evaluate: (RenderContext context) -> untyped
@@ -1114,6 +1121,10 @@ module Liquid2
     @filters: Array[Filter]
 
     @tail_filters: Array[Filter]
+
+    attr_reader filters: Array[Filter]
+
+    attr_reader tail_filters: Array[Filter]
 
     # @param left [FilteredExpression]
     # @param condition [BooleanExpression]
@@ -2059,7 +2070,7 @@ module Liquid2
 
     def self.extract_filters: (untyped expression, String template_name) -> Array[[String, Span]]
 
-    def self.analyze_variables: (untyped expression, String template_name, StaticScope scope, VariableMap globals, VariableMap variables) -> void
+    def self.analyze_variables: (Expression expression, String template_name, StaticScope scope, VariableMap globals, VariableMap variables) -> void
 
     def self.segments: (Liquid2::Path path, String template_name) -> Array[untyped]
   end
