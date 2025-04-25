@@ -106,6 +106,8 @@ class TestTokenize < Minitest::Spec
     }
   ].freeze
 
+  # TODO: finish me
+
   scanner = StringScanner.new("")
 
   describe "scan template" do

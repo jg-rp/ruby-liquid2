@@ -481,6 +481,8 @@ module Liquid2
 
     def render: (?Hash[String, untyped]? globals) -> String
 
+    def analyze: (?include_partials: bool) -> StaticAnalysis::Result
+
     def render_with_context: (RenderContext context, String buffer, ?partial: bool, ?block_scope: bool, ?namespace: Hash[String, untyped]?) -> void
                            
     # Merge templates globals with another namespace.

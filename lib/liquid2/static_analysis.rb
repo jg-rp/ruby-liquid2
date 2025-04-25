@@ -31,6 +31,18 @@ module Liquid2
 
         raise "index is out of bounds for span"
       end
+
+      def ==(other)
+        self.class == other.class &&
+          @template_name == other.template_name &&
+          @index == other.index
+      end
+
+      alias eql? ==
+
+      def hash
+        [@template_name, @index].hash
+      end
     end
 
     # A variable as a sequence of segments and its location.
@@ -50,7 +62,8 @@ module Liquid2
 
       def ==(other)
         self.class == other.class &&
-          @segments == other.segments
+          @segments == other.segments &&
+          @span == other.span
       end
 
       alias eql? ==

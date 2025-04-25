@@ -38,6 +38,10 @@ module Liquid2
       buf
     end
 
+    def analyze(include_partials: false)
+      Liquid2::StaticAnalysis.analyze(self, include_partials: include_partials)
+    end
+
     def render_with_context(context, buffer, partial: false, block_scope: false, namespace: nil)
       # TODO: don't extend if namespace is nil
       context.extend(namespace || {}) do
