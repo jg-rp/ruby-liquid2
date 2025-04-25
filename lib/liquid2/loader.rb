@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "pathname"
+
 module Liquid2
   # Liquid template source text and meta data.
   class TemplateSource
@@ -28,8 +30,13 @@ module Liquid2
 
     def load(env, name, globals: nil, context: nil, **kwargs)
       data = get_source(env, name, context: context, **kwargs)
-      env.parse(data.source, name: data.name, globals: globals, up_to_date: data.up_to_date,
-                             overlay: data.matter)
+      path = Pathname.new(data.name)
+      env.parse(data.source,
+                name: path.basename.to_s,
+                path: data.name,
+                globals: globals,
+                up_to_date: data.up_to_date,
+                overlay: data.matter)
     end
   end
 

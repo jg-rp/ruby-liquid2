@@ -12,6 +12,7 @@ target :lib do
   library "strscan"
   library "stringio"
   library "time"
+  library "pathname"
 
   # configure_code_diagnostics(D::Ruby.default)      # `default` diagnostics setting (applies by default)
   # configure_code_diagnostics(D::Ruby.strict)       # `strict` diagnostics setting

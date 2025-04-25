@@ -2083,3 +2083,17 @@ module Liquid2
     def self.segments: (Liquid2::Path path, String template_name) -> Array[untyped]
   end
 end
+
+module Liquid2
+  class FileSystemLoader < TemplateLoader
+    @search_path: Array[Pathname]
+
+    @default_extension: String?
+
+    def initialize: ((String | Array[String]) search_path, ?default_extension: String?) -> void
+
+    def get_source: (Environment _env, String name, ?context: RenderContext?, **untyped _kwargs) -> TemplateSource
+
+    def resolve_path: (String template_name) -> Pathname
+  end
+end
