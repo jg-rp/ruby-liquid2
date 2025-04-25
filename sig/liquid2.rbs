@@ -4,7 +4,6 @@ module Liquid2
   end
 
   interface _Tag
-    # TODO: for some reason a singleton with a self.parse method does not type check.
     def parse: ([Symbol, String?, Integer], Parser) -> Tag
   end
 
@@ -1958,5 +1957,110 @@ module Liquid2
     def initialize: ([Symbol, String?, Integer] token, Array[untyped] segments) -> void
 
     def evaluate: (RenderContext context) -> String
+  end
+end
+
+
+module Liquid2
+  # Template static analysis.
+  module StaticAnalysis
+    # The location of a variable, tag or filter.
+    class Span
+      @template_name: String
+
+      @index: Integer
+
+      attr_reader template_name: String
+
+      attr_reader index: Integer
+
+      def initialize: (String template_name, Integer index) -> void
+
+      # @param source [String] Template source text.
+      # @return [[Integer, Integer]] The line and column number of this span in _source_.
+      def line_col: (String source) -> [Integer, Integer]
+    end
+
+    class Variable
+      @segments: Array[untyped]
+
+      @span: Span
+
+      attr_reader segments: Array[untyped]
+
+      attr_reader span: Span
+
+      RE_PROPERTY: ::Regexp
+
+      def initialize: (Array[untyped] segments, Span span) -> void
+
+      def to_s: () -> String
+
+      def ==: (untyped other) -> bool
+
+      alias eql? ==
+
+      def hash: () -> untyped
+
+      def segments_to_s: (Array[untyped] segments) -> String
+    end
+
+    class StaticScope
+      @stack: Array[Set[String]]
+
+      def initialize: (Set[String] globals) -> void
+
+      def include?: (String key) -> untyped
+
+      def push: (Set[String] scope) -> self
+
+      def pop: () -> Set[String]?
+
+      def add: (String name) -> void
+    end
+
+    class VariableMap
+      @data: Hash[String, Array[Variable]]
+
+      attr_reader data: Hash[String, Array[Variable]]
+
+      def initialize: () -> void
+
+      def []: (Variable var) -> Array[Variable]
+
+      def add: (Variable var) -> void
+    end
+
+    class Result
+      @variables: Hash[String, Array[Variable]]
+
+      @globals: Hash[String, Array[Variable]]
+
+      @locals: Hash[String, Array[Variable]]
+
+      @filters: Hash[String, Array[Span]]
+
+      @tags: Hash[String, Array[Span]]
+
+      attr_reader variables: Hash[String, Array[Variable]]
+
+      attr_reader globals: Hash[String, Array[Variable]]
+
+      attr_reader locals: Hash[String, Array[Variable]]
+
+      attr_reader filters: Hash[String, Array[Span]]
+
+      attr_reader tags: Hash[String, Array[Span]]
+
+      def initialize: (Hash[String, Array[Variable]] variables, Hash[String, Array[Variable]] globals, Hash[String, Array[Variable]] locals, Hash[String, Array[Span]] filters, Hash[String, Array[Span]] tags) -> void
+    end
+
+    def self.analyze: (Liquid2::Template template, include_partials: bool) -> Result
+
+    def self.extract_filters: (untyped expression, String template_name) -> Array[[String, Span]]
+
+    def self.analyze_variables: (untyped expression, String template_name, StaticScope scope, VariableMap globals, VariableMap variables) -> void
+
+    def self.segments: (Liquid2::Path path, String template_name) -> Array[untyped]
   end
 end
