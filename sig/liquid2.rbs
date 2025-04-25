@@ -24,6 +24,10 @@ module Liquid2
   
   DEFAULT_ENVIRONMENT: Environment
 
+  def self.parse: (String source) -> Template
+
+  def self.render: (String source, ?Hash[String, untyped]? data) -> String
+
   def self.to_liquid_string: (untyped obj) -> String
                            
   def self.to_output_string: (untyped obj, ?auto_escape: bool) -> String
@@ -111,6 +115,8 @@ module Liquid2
     # @param source [String] template source text.
     # @return [Template]
     def parse: (String source, ?name: String, ?path: String?, ?up_to_date: Proc::_Callable?, ?globals: Hash[String, untyped]?, ?overlay: Hash[String, untyped]?) -> Template
+
+    def render: (String source, ?Hash[String, untyped]?) -> String
 
     # Add or replace a filter. The same callable can be registered multiple times with
     # different names.
@@ -473,7 +479,7 @@ module Liquid2
             
     def full_name: () -> String
 
-    def render: (?Hash[String, untyped]? globals) -> void
+    def render: (?Hash[String, untyped]? globals) -> String
 
     def render_with_context: (RenderContext context, String buffer, ?partial: bool, ?block_scope: bool, ?namespace: Hash[String, untyped]?) -> void
                            

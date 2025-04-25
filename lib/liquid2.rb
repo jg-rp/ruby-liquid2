@@ -11,9 +11,26 @@ require_relative "liquid2/version"
 require_relative "liquid2/undefined"
 require_relative "liquid2/utils/chain_hash"
 require_relative "liquid2/utils/unescape"
+require_relative "liquid2/static_analysis"
 
 module Liquid2
   DEFAULT_ENVIRONMENT = Environment.new
+
+  # Parse _source_ text as a template using the default Liquid environment.
+  # @param source [String]
+  # @return [Template]
+  def self.parse(source)
+    DEFAULT_ENVIRONMENT.parse(source)
+  end
+
+  # Parse and render template _source_ with _data_ as template variables and
+  # the default Liquid environment.
+  # @param source [String]
+  # @param data [?Hash[String, untyped]?]
+  # @return [String]
+  def self.render(source, data = nil)
+    DEFAULT_ENVIRONMENT.render(source, data)
+  end
 
   # Stringify an object. Use this anywhere a string is expected, like in a filter.
   def self.to_liquid_string(obj)

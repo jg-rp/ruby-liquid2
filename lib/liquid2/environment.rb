@@ -73,6 +73,7 @@ module Liquid2
       setup_tags_and_filters
     end
 
+    # Parse _source_ text as a template.
     # @param source [String] template source text.
     # @return [Template]
     def parse(source, name: "", path: nil, up_to_date: nil, globals: nil, overlay: nil)
@@ -80,6 +81,14 @@ module Liquid2
                    Parser.parse(self, source, scanner: @scanner),
                    name: name, path: path, up_to_date: up_to_date,
                    globals: make_globals(globals), overlay: overlay)
+    end
+
+    # Parse and render template source text with _data_ as template variables.
+    # @param source [String]
+    # @param data [Hash[String, untyped]?]
+    # @return [String]
+    def render(source, data = nil)
+      parse(source).render(data)
     end
 
     # Add or replace a filter. The same callable can be registered multiple times with

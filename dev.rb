@@ -4,7 +4,7 @@ require "json"
 require "liquid2"
 
 source = <<~LIQUID
-  {{ "one two three four" | truncatewords: 0 }}
+  {% assign x = y | append: z %}
 LIQUID
 
 data = JSON.parse <<~DATA
@@ -19,20 +19,24 @@ TEMPLATES
 
 loader = Liquid2::HashLoader.new(templates)
 
-scanner = StringScanner.new("")
-Liquid2::Scanner.tokenize(source, scanner).each do |token|
-  p token
-end
+# scanner = StringScanner.new("")
+# Liquid2::Scanner.tokenize(source, scanner).each do |token|
+#   p token
+# end
 
 env = Liquid2::Environment.new(loader: loader)
 
 t = env.parse(source)
 
-pp t.ast
+# pp t.ast
 
 # # puts JSON.pretty_generate(t.ast.dump)
 
-puts t.render(data)
+# puts t.render(data)
+
+analysis = Liquid2::StaticAnalysis.analyze(t, include_partials: false)
+
+pp analysis
 
 # TODO: document the drop interface
 #   - #to_liquid(context)

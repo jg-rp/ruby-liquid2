@@ -21,6 +21,8 @@ module Liquid2
       end
       left
     end
+
+    def children =[@left, *@filters]
   end
 
   class TernaryExpression < Expression
@@ -60,6 +62,15 @@ module Liquid2
         index += 1
       end
       rv
+    end
+
+    def children
+      # @type var nodes: Array[untyped]
+      nodes = [@left, @condition]
+      nodes << @alternative if @alternative
+      nodes.concat(@filters) if @filters
+      nodes.concat(@tail_filters) if @tail_filters
+      nodes
     end
   end
 

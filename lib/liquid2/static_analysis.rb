@@ -141,9 +141,9 @@ module Liquid2
       locals = VariableMap.new
 
       # @type var filters: Hash[String, Array[Span]]
-      filters = Hash.new { |_hash, _key| [] }
+      filters = Hash.new { |hash, key| hash[key] = [] }
       # @type var tags: Hash[String, Array[Span]]
-      tags = Hash.new { |_hash, _key| [] }
+      tags = Hash.new { |hash, key| hash[key] = [] }
 
       # @type var template_scope: Set[String]
       template_scope = Set[]
@@ -269,11 +269,18 @@ module Liquid2
     end
 
     def self.segments(path, template_name)
-      segments = [] # : Array[untyped]
+      # @type var segments_: Array[untyped]
+      segments_ = [path.head.is_a?(Path) ? segments(path.head, template_name) : path.head]
 
-      raise "TODO"
+      path.segments.each do |segment|
+        segments_ << if segment.is_a?(Path)
+                       segments(segment, template_name)
+                     else
+                       segment
+                     end
+      end
 
-      segments
+      segments_
     end
   end
 end
