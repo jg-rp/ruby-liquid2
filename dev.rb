@@ -19,8 +19,7 @@ TEMPLATES
 
 # loader = Liquid2::HashLoader.new(templates)
 
-loader = Liquid2::FileSystemLoader.new("test/cts/benchmark_fixtures/001/templates/",
-                                       default_extension: ".liquid")
+loader = Liquid2::CachingFileSystemLoader.new("test/cts/benchmark_fixtures/001/templates/")
 
 # scanner = StringScanner.new("")
 # Liquid2::Scanner.tokenize(source, scanner).each do |token|
@@ -31,7 +30,8 @@ env = Liquid2::Environment.new(loader: loader)
 
 # t = env.parse(source)
 
-t = env.get_template("index")
+t = env.get_template("index.liquid")
+u = env.get_template("index.liquid")
 
 # pp t.ast
 
@@ -39,9 +39,9 @@ t = env.get_template("index")
 
 # puts t.render(data)
 
-analysis = Liquid2::StaticAnalysis.analyze(t, include_partials: false)
+# analysis = Liquid2::StaticAnalysis.analyze(t, include_partials: false)
 
-pp analysis
+# pp analysis
 
 # TODO: document the drop interface
 #   - #to_liquid(context)

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative "utils/chain_hash"
-require_relative "utils/string_io"
 
 module Liquid2
   # Hash-like obj for resolving built-in dynamic objs.

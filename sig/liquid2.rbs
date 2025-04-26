@@ -487,6 +487,8 @@ module Liquid2
                            
     # Merge templates globals with another namespace.
     def make_globals: (Hash[String, untyped]? namespace) -> Hash[String, untyped]
+                    
+    def up_to_date?: () -> bool?
   end
 
   # Liquid template source text and meta data.
@@ -2157,8 +2159,6 @@ module Liquid2
     @namespace_key: String?
 
     @cache: Liquid2::LRUCache
-
-    alias parent_load load
 
     def initialize_cache: (?auto_reload: bool, ?namespace_key: ::String, ?capacity: ::Integer, ?thread_safe: bool) -> untyped
 

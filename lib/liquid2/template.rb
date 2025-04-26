@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "utils/string_io"
-
 module Liquid2
   # A compiled template bound to a Liquid environment and ready to be rendered.
   class Template
@@ -71,6 +69,10 @@ module Liquid2
     # Merge template globals with another namespace.
     def make_globals(namespace)
       namespace.nil? ? @globals : @globals.merge(namespace)
+    end
+
+    def up_to_date?
+      @up_to_date&.call
     end
   end
 end

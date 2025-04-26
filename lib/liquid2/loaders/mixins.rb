@@ -3,9 +3,8 @@
 require_relative "../utils/cache"
 
 module Liquid2
+  # A mixin that adds caching to a template loader.
   module CachingLoaderMixin
-    alias parent_load load
-
     def initialize_cache(auto_reload: true, namespace_key: "", capacity: 300, thread_safe: false)
       @auto_reload = auto_reload
       @namespace_key = namespace_key
@@ -19,17 +18,18 @@ module Liquid2
     def load(env, name, globals: nil, context: nil, **kwargs)
       key = cache_key(name, context: context, **kwargs)
 
+      # @type var template: Liquid2::Template
+      # @type var cached_template: Liquid2::Template
       if (cached_template = @cache[key])
-        # @type var cached_template: Liquid2::Template
         if @auto_reload && !cached_template.up_to_date?
-          template = parent_load(env, name, globals: globals, context: context, **kwargs)
+          template = super
           @cache[key] = template
           template
         else
           cached_template
         end
       else
-        template = parent_load(env, name, globals: globals, context: context, **kwargs)
+        template = super
         @cache[key] = template
         template
       end

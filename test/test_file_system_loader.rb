@@ -80,4 +80,19 @@ class TestFileSystemLoader < Minitest::Test
       env.get_template("../../002/templates/index.liquid")
     end
   end
+
+  def test_templates_are_not_cached
+    loader = Liquid2::FileSystemLoader.new("test/cts/benchmark_fixtures/001/templates/")
+    env = Liquid2::Environment.new(loader: loader)
+    template = env.get_template("index.liquid")
+
+    assert_instance_of(Liquid2::Template, template)
+    assert_equal("index.liquid", template.name)
+    assert_predicate(template, :up_to_date?)
+
+    another_template = env.get_template("index.liquid")
+
+    assert_equal("index.liquid", another_template.name)
+    refute_same(template, another_template)
+  end
 end

@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "utils/string_io"
-
 module Liquid2
   # The base class for all nodes in a Liquid syntax tree.
   class Node
