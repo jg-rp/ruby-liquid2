@@ -30,7 +30,7 @@ module Liquid2
   # Per render contextual information. A new RenderContext is created automatically
   # every time `Template#render` is called.
   class RenderContext
-    attr_reader :env, :template, :disabled_tags
+    attr_reader :env, :template, :disabled_tags, :globals
     attr_accessor :interrupts
 
     BUILT_IN = BuiltIn.new

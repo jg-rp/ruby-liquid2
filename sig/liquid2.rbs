@@ -795,6 +795,8 @@ module Liquid2
 
     attr_reader template: Template
 
+    attr_reader globals: _Namespace
+
     attr_reader disabled_tags: (Array[String] | Set[String])
 
     attr_accessor interrupts: Array[:break | :continue]
@@ -2095,5 +2097,73 @@ module Liquid2
     def get_source: (Environment _env, String name, ?context: RenderContext?, **untyped _kwargs) -> TemplateSource
 
     def resolve_path: (String template_name) -> Pathname
+  end
+
+  class CachingFileSystemLoader < FileSystemLoader
+    include CachingLoaderMixin
+
+    def initialize: ((String | Array[String]) search_path, ?default_extension: String?, ?auto_reload: bool, ?namespace_key: ::String, ?capacity: ::Integer, ?thread_safe: bool) -> void
+  end
+end
+
+module Liquid2
+  # A least recently used cache relying on Ruby hash insertion order.
+  class LRUCache
+    @data: Hash[untyped, untyped]
+
+    @max_size: Integer
+
+    attr_reader max_size: Integer
+
+    def initialize: (?::Integer max_size) -> void
+
+    # Return the cached value or nil if _key_ does not exist.
+    def []: (untyped key) -> (nil | untyped)
+
+    def []=: (untyped key, untyped value) -> untyped
+
+    def length: () -> Integer
+
+    def keys: () -> Array[untyped]
+  end
+
+  class ThreadSafeLRUCache < LRUCache
+    include MonitorMixin
+
+    alias unsafe_get []
+
+    alias unsafe_set []=
+
+    alias unsafe_length length
+
+    alias unsafe_keys keys
+
+    def initialize: (?::Integer max_size) -> void
+
+    def []: (untyped key) -> untyped
+
+    def []=: (untyped key, untyped value) -> untyped
+
+    def length: () -> Integer
+
+    def keys: () -> Array[untyped]
+  end
+end
+
+module Liquid2
+  module CachingLoaderMixin
+    @auto_reload: bool
+
+    @namespace_key: String?
+
+    @cache: Liquid2::LRUCache
+
+    alias parent_load load
+
+    def initialize_cache: (?auto_reload: bool, ?namespace_key: ::String, ?capacity: ::Integer, ?thread_safe: bool) -> untyped
+
+    def load: (Environment env, String name, ?globals: untyped?, ?context: RenderContext?, **untyped kwargs) -> Template
+
+    def cache_key: (String name, ?context: RenderContext?, **untyped kwargs) -> String
   end
 end

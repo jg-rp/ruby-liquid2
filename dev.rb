@@ -17,7 +17,10 @@ templates = JSON.parse <<~TEMPLATES
       }
 TEMPLATES
 
-loader = Liquid2::HashLoader.new(templates)
+# loader = Liquid2::HashLoader.new(templates)
+
+loader = Liquid2::FileSystemLoader.new("test/cts/benchmark_fixtures/001/templates/",
+                                       default_extension: ".liquid")
 
 # scanner = StringScanner.new("")
 # Liquid2::Scanner.tokenize(source, scanner).each do |token|
@@ -26,7 +29,9 @@ loader = Liquid2::HashLoader.new(templates)
 
 env = Liquid2::Environment.new(loader: loader)
 
-t = env.parse(source)
+# t = env.parse(source)
+
+t = env.get_template("index")
 
 # pp t.ast
 
