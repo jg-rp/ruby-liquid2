@@ -4,16 +4,12 @@ require "json"
 require "liquid2"
 
 source = <<~LIQUID
-  {{ a | has: 2 }}
+  {%- liquid\n  liquid echo 'bar'\n  echo "foo"\n-%}
 LIQUID
 
 data = JSON.parse <<~DATA
   {
-        "a": [
-          1,
-          2,
-          3
-        ]
+        "a": "foo"
       }
 DATA
 

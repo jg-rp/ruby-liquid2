@@ -30,7 +30,7 @@ module Liquid2
   # every time `Template#render` is called.
   class RenderContext
     attr_reader :env, :template, :disabled_tags, :globals
-    attr_accessor :interrupts
+    attr_accessor :interrupts, :tag_namespace
 
     BUILT_IN = BuiltIn.new
 
@@ -259,13 +259,6 @@ module Liquid2
 
       carry = parent_buffer.is_a?(LimitedStringIO) ? parent_buffer.size : 0
       LimitedStringIO.new((@env.output_stream_limit || raise) - carry)
-    end
-
-    def cycle(key, length)
-      namespace = @tag_namespace[:cycles]
-      index = namespace[key]
-      namespace[key] += 1
-      index % length
     end
 
     def increment(name)

@@ -19,8 +19,8 @@ module Liquid2
       context.fetch(@head, @segments, node: self)
     end
 
-    # TODO: fix and optimize
-    def to_s = @head.to_s + @segments.map(&:to_s).join
+    # TODO: fix and optimize (store it on the instance)
+    def to_s = "#{@head}.#{@segments.map(&:to_s).join(".")}"
 
     def children
       if @head.is_a?(Path)

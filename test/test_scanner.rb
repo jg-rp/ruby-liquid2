@@ -86,20 +86,20 @@ class TestTokenize < Minitest::Spec
     },
     {
       name: "string, single quote, escape sequence",
-      source: "{{ 'Hello\\\n, world' }}",
+      source: "{{ 'Hello\\n, world' }}",
       want: [
         [:token_output_start, nil, 0],
-        [:token_single_quote_string, "Hello\\\n, world", 4],
+        [:token_single_quote_string, "Hello\n, world", 4],
         [:token_output_end, nil, 20]
 
       ]
     },
     {
       name: "string, double quote, escape sequence",
-      source: "{{ \"Hello\\\n, world\" }}",
+      source: "{{ \"Hello\\n, world\" }}",
       want: [
         [:token_output_start, nil, 0],
-        [:token_double_quote_string, "Hello\\\n, world", 4],
+        [:token_double_quote_string, "Hello\n, world", 4],
         [:token_output_end, nil, 20]
 
       ]

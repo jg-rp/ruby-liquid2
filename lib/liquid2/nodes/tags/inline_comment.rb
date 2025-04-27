@@ -16,7 +16,9 @@ module Liquid2
     def initialize(token, text)
       super(token)
       @text = text
-      # TODO: validate lines start with a hash
+      return unless /\n\s*[^#\s]/.match?(text)
+
+      raise LiquidSyntaxError.new("every line must start with a '#'", token)
     end
 
     def render(_context, _buffer) = 0

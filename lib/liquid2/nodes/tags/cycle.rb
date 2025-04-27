@@ -10,19 +10,14 @@ module Liquid2
     def self.parse(token, parser)
       items = [] # : Array[untyped]
       group_name = nil # : untyped?
+      named = false
       first = parser.parse_primary
 
       # Is the first expression followed by a colon? If so, it is a group name
       # followed by items to cycle.
       if parser.current_kind == :token_colon
-        raise LiquidSyntaxError.new("expected an identifier", token) unless first.is_a?(Path)
-
-        unless first.segments.empty?
-          raise LiquidSyntaxError.new("expected an identifier, found a path",
-                                      token)
-        end
-
-        group_name = first.head
+        group_name = first
+        named = true
         parser.next
       else
         items << first
@@ -33,30 +28,34 @@ module Liquid2
       items.push(*parser.parse_positional_arguments)
       parser.carry_whitespace_control
       parser.eat(:token_tag_end)
-      new(token, group_name, items)
+      new(token, group_name, items, named)
     end
 
     # @param name [Expression?]
     # @param items [Array<Expression>]
-    def initialize(token, name, items)
+    def initialize(token, name, items, named)
       super(token)
       @name = name
       @items = items
+      @named = named
       @blank = false
     end
 
     def render(context, buffer)
-      group_name = context.evaluate(@name || raise) if @name
-      group_name = "" if Liquid2.undefined?(group_name)
-      # TODO: explicit nil vs no group name given
-
       args = @items.map { |expr| context.evaluate(expr) }
-      key = "#{group_name}-#{args}"
-      index = context.cycle(key, args.length)
 
-      return if index >= args.length
+      key = if @named
+              context.evaluate(@name).to_s
+            else
+              @items.to_s
+            end
 
+      index = context.tag_namespace[:cycles][key]
       buffer << Liquid2.to_output_s(args[index])
+
+      index += 1
+      index = 0 if index >= @items.length
+      context.tag_namespace[:cycles][key] = index
     end
 
     def expressions = @items

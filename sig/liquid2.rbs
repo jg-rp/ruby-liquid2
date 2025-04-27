@@ -220,6 +220,8 @@ module Liquid2
 
     def lex_expression: () -> Symbol?
                       
+    def lex_doc: () -> Symbol?
+
     def lex_raw: () -> Symbol?
                
     def lex_block_comment: () -> Symbol?
@@ -801,7 +803,10 @@ module Liquid2
 
     attr_reader disabled_tags: (Array[String] | Set[String])
 
+    attr_reader tag_namespace: Hash[Symbol, untyped]
+
     attr_accessor interrupts: Array[:break | :continue]
+
 
     BUILT_IN: BuiltIn
 
@@ -1850,6 +1855,8 @@ module Liquid2
 
     @items: Array[untyped]
 
+    @named: bool
+
     @blank: bool
 
     # @param parser [Parser]
@@ -1858,7 +1865,7 @@ module Liquid2
 
     # @param name [Expression?]
     # @param items [Array<Expression>]
-    def initialize: ([Symbol, String?, Integer] token, untyped name, Array[untyped] items) -> void
+    def initialize: ([Symbol, String?, Integer] token, untyped name, Array[untyped] items, bool named) -> void
 
     def render: (RenderContext context, String buffer) -> void
   end

@@ -306,13 +306,36 @@ module Liquid2
         @start = @scanner.pos
       end
 
-      # TODO: handle nested comment blocks?
-      # TODO: handle raw tags inside comment blocks?
+      comment_depth = 1
+      raw_depth = 0
 
-      if @scanner.skip_until(/(\{%[+\-~]?\s*endcomment\s*[+\-~]?%\})/)
-        @scanner.pos -= @scanner.captures&.first&.length || raise
-        @tokens << [:token_comment, @source.byteslice(@start...@scanner.pos), @start]
-        @start = @scanner.pos
+      loop do
+        unless @scanner.skip_until(/(\{%[+\-~]?\s*(comment|raw|endcomment|endraw)\s*[+\-~]?%\})/)
+          break
+        end
+
+        tag_name = @scanner.captures&.last || raise
+
+        case tag_name
+        when "comment"
+          comment_depth += 1
+        when "raw"
+          raw_depth += 1
+        when "endraw"
+          raw_depth -= 1 if raw_depth.positive?
+        when "endcomment"
+          next if raw_depth.positive?
+
+          comment_depth -= 1
+          next if comment_depth.positive?
+
+          @scanner.pos -= @scanner.captures&.first&.length || raise
+          @tokens << [:token_comment, @source.byteslice(@start...@scanner.pos), @start]
+          @start = @scanner.pos
+          break
+        else
+          raise "unreachable"
+        end
       end
 
       :lex_markup

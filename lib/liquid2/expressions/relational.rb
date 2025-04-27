@@ -104,8 +104,11 @@ module Liquid2
   def self.contains(left, right)
     return false unless left.respond_to?(:include?)
 
-    right = Liquid2.to_s(right) if left.is_a?(String)
-    left.include?(right)
+    if left.is_a?(String)
+      right.nil? || Liquid2.undefined?(right) ? false : left.include?(Liquid2.to_s(right))
+    else
+      left.include?(right)
+    end
   rescue ::ArgumentError => e
     raise Liquid2::LiquidArgumentError, e.message
   end
