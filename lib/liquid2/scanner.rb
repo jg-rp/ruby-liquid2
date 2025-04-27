@@ -158,6 +158,8 @@ module Liquid2
             :lex_inside_inline_comment
           when "comment"
             :lex_block_comment
+          when "doc"
+            :lex_doc
           when "raw"
             :lex_raw
           when "liquid"
@@ -310,6 +312,28 @@ module Liquid2
       if @scanner.skip_until(/(\{%[+\-~]?\s*endcomment\s*[+\-~]?%\})/)
         @scanner.pos -= @scanner.captures&.first&.length || raise
         @tokens << [:token_comment, @source.byteslice(@start...@scanner.pos), @start]
+        @start = @scanner.pos
+      end
+
+      :lex_markup
+    end
+
+    def lex_doc
+      skip_trivia
+      accept_whitespace_control
+
+      case @scanner.scan(/[\}%]\}/)
+      when "}}"
+        @tokens << [:token_output_end, nil, @start]
+        @start = @scanner.pos
+      when "%}"
+        @tokens << [:token_tag_end, nil, @start]
+        @start = @scanner.pos
+      end
+
+      if @scanner.skip_until(/(\{%[+\-~]?\s*enddoc\s*[+\-~]?%\})/)
+        @scanner.pos -= @scanner.captures&.first&.length || raise
+        @tokens << [:token_doc, @source.byteslice(@start...@scanner.pos), @start]
         @start = @scanner.pos
       end
 

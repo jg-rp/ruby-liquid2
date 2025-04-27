@@ -76,9 +76,9 @@ module Liquid2
 
     @suppress_blank_control_flow_blocks: bool
 
-    @validate_filter_arguments: bool
-
     @default_trim: :whitespace_control_plus | :whitespace_control_minus | :whitespace_control_tilde
+
+    @shorthand_indexes: bool
 
     @undefined: singleton(Undefined)
 
@@ -106,7 +106,7 @@ module Liquid2
 
     attr_reader suppress_blank_control_flow_blocks: bool
 
-    attr_reader validate_filter_arguments: bool
+    attr_reader shorthand_indexes: bool
 
     attr_reader default_trim: :whitespace_control_plus | :whitespace_control_minus | :whitespace_control_tilde
 
@@ -1718,7 +1718,7 @@ end
 module Liquid2
   # The standard _echo_ tag.
   class EchoTag < Tag
-    @expression: Expression
+    @expression: Expression?
 
     @blank: bool
 
@@ -1726,7 +1726,7 @@ module Liquid2
     # @return [EchoTag]
     def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> EchoTag
 
-    def initialize: ([Symbol, String?, Integer] token, Expression expression) -> void
+    def initialize: ([Symbol, String?, Integer] token, Expression? expression) -> void
 
     def render: (RenderContext context, String buffer) -> void
   end
@@ -1877,6 +1877,21 @@ module Liquid2
     def initialize: ([Symbol, String?, Integer] token, Identifier name) -> void
 
     def render: (RenderContext context, String buffer) -> void
+  end
+end
+
+
+module Liquid2
+  # The standard _doc_ tag.
+  class DocTag < Tag
+    @text: String
+
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> DocTag
+
+    # @param text [String]
+    def initialize: ([Symbol, String?, Integer] token, String text) -> void
+
+    def render: (RenderContext _context, String _buffer) -> void
   end
 end
 

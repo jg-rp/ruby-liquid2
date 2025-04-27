@@ -621,7 +621,6 @@ module Liquid2
                   @pos -= 1
                   parse_path
                 when :token_double_quote_string, :token_single_quote_string
-                  # TODO: unescape
                   value || raise
                 else
                   raise LiquidSyntaxError.new(
@@ -638,6 +637,11 @@ module Liquid2
       kind, value = self.next
       case kind
       when :token_int
+        unless @env.shorthand_indexes
+          raise LiquidSyntaxError.new("indexes must be surrounded by square brackets",
+                                      previous)
+        end
+
         value.to_i
       when :token_word
         value || raise

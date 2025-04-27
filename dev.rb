@@ -4,11 +4,17 @@ require "json"
 require "liquid2"
 
 source = <<~LIQUID
-  {% assign x = y | append: z %}
+  {{ a | has: 2 }}
 LIQUID
 
 data = JSON.parse <<~DATA
-  {"you": "World", "something": " and Liquid"}
+  {
+        "a": [
+          1,
+          2,
+          3
+        ]
+      }
 DATA
 
 templates = JSON.parse <<~TEMPLATES
@@ -17,27 +23,20 @@ templates = JSON.parse <<~TEMPLATES
       }
 TEMPLATES
 
-# loader = Liquid2::HashLoader.new(templates)
+loader = Liquid2::HashLoader.new(templates)
 
-loader = Liquid2::CachingFileSystemLoader.new("test/golden_liquid/benchmark_fixtures/001/templates/")
-
-# scanner = StringScanner.new("")
-# Liquid2::Scanner.tokenize(source, scanner).each do |token|
-#   p token
-# end
+scanner = StringScanner.new("")
+Liquid2::Scanner.tokenize(source, scanner).each do |token|
+  p token
+end
 
 env = Liquid2::Environment.new(loader: loader)
 
-# t = env.parse(source)
+t = env.parse(source)
 
-t = env.get_template("index.liquid")
-u = env.get_template("index.liquid")
+pp t.ast
 
-# pp t.ast
-
-# # puts JSON.pretty_generate(t.ast.dump)
-
-# puts t.render(data)
+puts t.render(data)
 
 # analysis = Liquid2::StaticAnalysis.analyze(t, include_partials: false)
 

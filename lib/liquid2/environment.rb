@@ -18,6 +18,7 @@ require_relative "nodes/tags/capture"
 require_relative "nodes/tags/case"
 require_relative "nodes/tags/cycle"
 require_relative "nodes/tags/decrement"
+require_relative "nodes/tags/doc"
 require_relative "nodes/tags/echo"
 require_relative "nodes/tags/for"
 require_relative "nodes/tags/if"
@@ -38,7 +39,7 @@ module Liquid2
   class Environment
     attr_reader :mode, :tags, :local_namespace_limit, :context_depth_limit, :loop_iteration_limit,
                 :output_stream_limit, :filters, :auto_escape, :suppress_blank_control_flow_blocks,
-                :default_trim, :validate_filter_arguments
+                :default_trim, :shorthand_indexes
 
     def initialize(loader: nil, mode: :lax, globals: nil)
       # A mapping of tag names to objects responding to `parse`.
@@ -59,9 +60,9 @@ module Liquid2
 
       @suppress_blank_control_flow_blocks = true
 
-      @validate_filter_arguments = true
+      @default_trim = :whitespace_control_plus # TODO
 
-      @default_trim = :whitespace_control_plus
+      @shorthand_indexes = false
 
       @undefined = Undefined
 
@@ -126,6 +127,7 @@ module Liquid2
       @tags["continue"] = ContinueTag
       @tags["cycle"] = CycleTag
       @tags["decrement"] = DecrementTag
+      @tags["doc"] = DocTag
       @tags["echo"] = EchoTag
       @tags["for"] = ForTag
       @tags["if"] = IfTag

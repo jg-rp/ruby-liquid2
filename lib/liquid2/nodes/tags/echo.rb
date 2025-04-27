@@ -8,7 +8,9 @@ module Liquid2
     # @param parser [Parser]
     # @return [EchoTag]
     def self.parse(token, parser)
-      expression = parser.parse_filtered_expression
+      expression = unless %i[token_whitespace_control token_tag_end].include?(parser.current_kind)
+                     parser.parse_filtered_expression
+                   end
       parser.carry_whitespace_control
       parser.eat(:token_tag_end)
       new(token, expression)

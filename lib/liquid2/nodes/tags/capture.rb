@@ -25,7 +25,7 @@ module Liquid2
       @name = name
       @block = block
       @block.blank = false
-      @blank = false
+      @blank = true
     end
 
     def render(context, _buffer)
