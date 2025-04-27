@@ -1687,6 +1687,14 @@ module Liquid2
     def self.url_encode: (untyped left) -> String?
 
     def self.url_decode: (untyped left) -> String?
+                       
+    def self.base64_encode: (untyped left) -> String
+
+    def self.base64_decode: (untyped left) -> String?
+
+    def self.base64_url_safe_encode: (untyped left) -> String
+
+    def self.base64_url_safe_decode: (untyped left) -> String?
   end
 end
 

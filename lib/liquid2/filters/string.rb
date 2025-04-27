@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "base64"
 require "cgi"
 
 module Liquid2
@@ -180,6 +181,24 @@ module Liquid2
       end
 
       decoded
+    end
+
+    def self.base64_encode(left)
+      Base64.strict_encode64(Liquid2.to_s(left)).force_encoding(Encoding::UTF_8)
+    end
+
+    def self.base64_decode(left)
+      decoded = Base64.strict_decode64(Liquid2.to_s(left)).force_encoding(Encoding::UTF_8)
+      decoded if decoded.valid_encoding?
+    end
+
+    def self.base64_url_safe_encode(left)
+      Base64.urlsafe_encode64(Liquid2.to_s(left)).force_encoding(Encoding::UTF_8)
+    end
+
+    def self.base64_url_safe_decode(left)
+      decoded = Base64.urlsafe_decode64(Liquid2.to_s(left)).force_encoding(Encoding::UTF_8)
+      decoded if decoded.valid_encoding?
     end
   end
 end

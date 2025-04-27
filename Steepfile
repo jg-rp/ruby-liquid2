@@ -6,6 +6,7 @@ target :lib do
   signature "sig"
   check "lib"
 
+  library "base64"
   library "bigdecimal"
   library "cgi"
   library "json"
