@@ -8,7 +8,9 @@ class TestCachingFileSystemLoader < Minitest::Test
   make_my_diffs_pretty!
 
   def test_cache_templates
-    loader = Liquid2::CachingFileSystemLoader.new("test/cts/benchmark_fixtures/001/templates/")
+    loader = Liquid2::CachingFileSystemLoader.new(
+      "test/golden_liquid/benchmark_fixtures/001/templates/"
+    )
     env = Liquid2::Environment.new(loader: loader)
     template = env.get_template("index.liquid")
 

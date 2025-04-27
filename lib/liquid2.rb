@@ -63,6 +63,8 @@ module Liquid2
 
   def self.to_liquid_int(obj, default: 0)
     Float(obj).to_i
+  rescue ArgumentError, TypeError
+    default
   end
 
   # Return `true` if _obj_ is Liquid truthy.

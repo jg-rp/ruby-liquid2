@@ -1,33 +1,34 @@
 # frozen_string_literal: true
 
+require_relative "loader"
 require_relative "parser"
 require_relative "template"
 require_relative "undefined"
-require_relative "loader"
+require_relative "filters/array"
 require_relative "filters/date"
 require_relative "filters/default"
 require_relative "filters/math"
-require_relative "filters/array"
 require_relative "filters/size"
 require_relative "filters/slice"
 require_relative "filters/sort"
 require_relative "filters/string"
 require_relative "nodes/tags/assign"
-require_relative "nodes/tags/if"
-require_relative "nodes/tags/for"
-require_relative "nodes/tags/liquid"
-require_relative "nodes/tags/echo"
+require_relative "nodes/tags/block_comment"
 require_relative "nodes/tags/capture"
 require_relative "nodes/tags/case"
 require_relative "nodes/tags/cycle"
 require_relative "nodes/tags/decrement"
-require_relative "nodes/tags/increment"
+require_relative "nodes/tags/echo"
+require_relative "nodes/tags/for"
+require_relative "nodes/tags/if"
 require_relative "nodes/tags/include"
-require_relative "nodes/tags/raw"
-require_relative "nodes/tags/unless"
-require_relative "nodes/tags/block_comment"
+require_relative "nodes/tags/increment"
 require_relative "nodes/tags/inline_comment"
+require_relative "nodes/tags/liquid"
+require_relative "nodes/tags/raw"
 require_relative "nodes/tags/render"
+require_relative "nodes/tags/tablerow"
+require_relative "nodes/tags/unless"
 
 module Liquid2
   # Template parsing and rendering configuration.
@@ -116,24 +117,25 @@ module Liquid2
     end
 
     def setup_tags_and_filters
+      @tags["#"] = InlineComment
       @tags["assign"] = AssignTag
-      @tags["if"] = IfTag
-      @tags["for"] = ForTag
       @tags["break"] = BreakTag
-      @tags["continue"] = ContinueTag
-      @tags["liquid"] = LiquidTag
-      @tags["echo"] = EchoTag
       @tags["capture"] = CaptureTag
+      @tags["case"] = CaseTag
+      @tags["comment"] = BlockComment
+      @tags["continue"] = ContinueTag
       @tags["cycle"] = CycleTag
       @tags["decrement"] = DecrementTag
-      @tags["increment"] = IncrementTag
-      @tags["raw"] = RawTag
-      @tags["unless"] = UnlessTag
-      @tags["case"] = CaseTag
+      @tags["echo"] = EchoTag
+      @tags["for"] = ForTag
+      @tags["if"] = IfTag
       @tags["include"] = IncludeTag
-      @tags["comment"] = BlockComment
-      @tags["#"] = InlineComment
+      @tags["increment"] = IncrementTag
+      @tags["liquid"] = LiquidTag
+      @tags["raw"] = RawTag
       @tags["render"] = RenderTag
+      @tags["tablerow"] = TableRowTag
+      @tags["unless"] = UnlessTag
 
       register_filter("abs", Liquid2::Filters.method(:abs))
       register_filter("append", Liquid2::Filters.method(:append))

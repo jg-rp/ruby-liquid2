@@ -1947,6 +1947,84 @@ module Liquid2
 end
 
 module Liquid2
+  # The standard _tablerow_ tag.
+  class TableRowTag < Tag
+    @expression: untyped
+
+    @block: Block
+
+    @blank: bool
+
+    END_BLOCK: Set[String]
+
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> TableRowTag
+
+    def initialize: ([Symbol, String?, Integer] token, untyped expression, Block block) -> void
+
+    def render: (RenderContext context, String buffer) -> void
+
+    def children: (RenderContext _static_context, ?include_partials: bool) -> ::Array[untyped]
+
+    def expressions: () -> ::Array[untyped]
+
+    def block_scope: () -> ::Array[Identifier]
+  end
+
+  # `tablerow` loop helper variables.
+  class TableRow
+    @name: String
+
+    @length: Integer
+
+    @cols: Integer
+
+    @index: Integer
+
+    @row: Integer
+
+    @col: Integer
+
+    attr_reader name: String
+
+    attr_reader length: Integer
+
+    attr_reader col: Integer
+
+    attr_reader row: Integer
+
+    KEYS: Set[String]
+
+    def initialize: (String name, Integer length, Integer cols) -> void
+
+    def key?: (untyped key) -> bool
+
+    def []: (untyped key) -> (untyped | nil)
+
+    def fetch: (untyped key, ?::Symbol default) -> untyped
+
+    def next: () -> void
+
+    def index: () -> Integer
+
+    def index0: () -> Integer
+
+    def rindex: () -> Integer
+
+    def rindex0: () -> Integer
+
+    def first: () -> bool
+
+    def last: () -> bool
+
+    def col0: () -> Integer
+
+    def col_first: () -> bool
+
+    def col_last: () -> bool
+  end
+end
+
+module Liquid2
   # A lambda expression aka arrow function
   class Lambda < Expression
     @params: Array[Identifier]

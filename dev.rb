@@ -19,7 +19,7 @@ TEMPLATES
 
 # loader = Liquid2::HashLoader.new(templates)
 
-loader = Liquid2::CachingFileSystemLoader.new("test/cts/benchmark_fixtures/001/templates/")
+loader = Liquid2::CachingFileSystemLoader.new("test/golden_liquid/benchmark_fixtures/001/templates/")
 
 # scanner = StringScanner.new("")
 # Liquid2::Scanner.tokenize(source, scanner).each do |token|

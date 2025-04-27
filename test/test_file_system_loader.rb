@@ -6,7 +6,7 @@ class TestFileSystemLoader < Minitest::Test
   make_my_diffs_pretty!
 
   def test_load_template
-    loader = Liquid2::FileSystemLoader.new("test/cts/benchmark_fixtures/001/templates/")
+    loader = Liquid2::FileSystemLoader.new("test/golden_liquid/benchmark_fixtures/001/templates/")
     env = Liquid2::Environment.new(loader: loader)
     template = env.get_template("index.liquid")
 
@@ -15,7 +15,7 @@ class TestFileSystemLoader < Minitest::Test
   end
 
   def test_template_not_found
-    loader = Liquid2::FileSystemLoader.new("test/cts/benchmark_fixtures/001/templates/")
+    loader = Liquid2::FileSystemLoader.new("test/golden_liquid/benchmark_fixtures/001/templates/")
     env = Liquid2::Environment.new(loader: loader)
 
     assert_raises(Liquid2::LiquidTemplateNotFoundError) do
@@ -34,8 +34,8 @@ class TestFileSystemLoader < Minitest::Test
 
   def test_array_of_paths_to_search
     loader = Liquid2::FileSystemLoader.new([
-                                             "test/cts/benchmark_fixtures/002/templates/",
-                                             "test/cts/benchmark_fixtures/001/templates/"
+                                             "test/golden_liquid/benchmark_fixtures/002/templates/",
+                                             "test/golden_liquid/benchmark_fixtures/001/templates/"
                                            ])
 
     env = Liquid2::Environment.new(loader: loader)
@@ -53,7 +53,7 @@ class TestFileSystemLoader < Minitest::Test
   end
 
   def test_default_file_extension_is_nil
-    loader = Liquid2::FileSystemLoader.new("test/cts/benchmark_fixtures/001/templates/")
+    loader = Liquid2::FileSystemLoader.new("test/golden_liquid/benchmark_fixtures/001/templates/")
     env = Liquid2::Environment.new(loader: loader)
 
     assert_raises(Liquid2::LiquidTemplateNotFoundError) do
@@ -62,7 +62,7 @@ class TestFileSystemLoader < Minitest::Test
   end
 
   def test_set_default_file_extension
-    loader = Liquid2::FileSystemLoader.new("test/cts/benchmark_fixtures/001/templates/",
+    loader = Liquid2::FileSystemLoader.new("test/golden_liquid/benchmark_fixtures/001/templates/",
                                            default_extension: ".liquid")
 
     env = Liquid2::Environment.new(loader: loader)
@@ -73,7 +73,7 @@ class TestFileSystemLoader < Minitest::Test
   end
 
   def test_stay_in_search_path
-    loader = Liquid2::FileSystemLoader.new("test/cts/benchmark_fixtures/001/templates/")
+    loader = Liquid2::FileSystemLoader.new("test/golden_liquid/benchmark_fixtures/001/templates/")
     env = Liquid2::Environment.new(loader: loader)
 
     assert_raises(Liquid2::LiquidTemplateNotFoundError) do
@@ -82,7 +82,7 @@ class TestFileSystemLoader < Minitest::Test
   end
 
   def test_templates_are_not_cached
-    loader = Liquid2::FileSystemLoader.new("test/cts/benchmark_fixtures/001/templates/")
+    loader = Liquid2::FileSystemLoader.new("test/golden_liquid/benchmark_fixtures/001/templates/")
     env = Liquid2::Environment.new(loader: loader)
     template = env.get_template("index.liquid")
 

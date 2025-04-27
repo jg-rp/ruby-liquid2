@@ -41,7 +41,7 @@ OptionParser.new do |parser|
   parser.parse!
 end
 
-fixture = Fixture.new(Pathname.new("test/cts/benchmark_fixtures") + options[:fixture])
+fixture = Fixture.new(Pathname.new("test/golden_liquid/benchmark_fixtures") + options[:fixture])
 env = fixture.env
 source = fixture.templates["index.liquid"]
 template = env.get_template("index.liquid")

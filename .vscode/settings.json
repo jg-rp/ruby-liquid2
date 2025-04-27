@@ -21,6 +21,7 @@
     "rparen",
     "rpartition",
     "rstrip",
+    "tablerow",
     "truncatewords"
   ],
   "cSpell.enabledFileTypes": {
