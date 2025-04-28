@@ -37,6 +37,8 @@ module Liquid2
         when "u"
           code_point, index = Liquid2.decode_hex_char(value, index, token)
           unescaped << Liquid2.code_point_to_string(code_point, token)
+        when "$"
+          unescaped << "$"
         else
           raise LiquidSyntaxError.new("unknown escape sequence", token)
         end

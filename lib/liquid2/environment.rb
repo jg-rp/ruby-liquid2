@@ -184,6 +184,7 @@ module Liquid2
       register_filter("size", Liquid2::Filters.method(:size))
       register_filter("slice", Liquid2::Filters.method(:slice))
       register_filter("sort_natural", Liquid2::Filters.method(:sort_natural))
+      register_filter("sort_numeric", Liquid2::Filters.method(:sort_numeric))
       register_filter("sort", Liquid2::Filters.method(:sort))
       register_filter("split", Liquid2::Filters.method(:split))
       register_filter("strip_html", Liquid2::Filters.method(:strip_html))

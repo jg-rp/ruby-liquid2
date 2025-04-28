@@ -24,7 +24,7 @@ module Liquid2
   
   DEFAULT_ENVIRONMENT: Environment
 
-  def self.parse: (String source) -> Template
+  def self.parse: (String source, ?globals: Hash[String, untyped]?) -> Template
 
   def self.render: (String source, ?Hash[String, untyped]? data) -> String
 
