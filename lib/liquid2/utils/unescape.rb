@@ -112,7 +112,7 @@ module Liquid2
   end
 
   def self.code_point_to_string(code_point, token)
-    raise LiquidSyntaxError.new("invalid character", token) if code_point <= 0x1F
+    raise LiquidSyntaxError.new("invalid character", token) if code_point <= 8
 
     code_point.chr(Encoding::UTF_8)
   end

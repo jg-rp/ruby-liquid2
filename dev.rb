@@ -4,7 +4,7 @@ require "json"
 require "liquid2"
 
 source = <<~LIQUID
-  {%- liquid\n  liquid echo 'bar'\n  echo "foo"\n-%}
+  {{ a['\\u000c'] }}
 LIQUID
 
 data = JSON.parse <<~DATA
