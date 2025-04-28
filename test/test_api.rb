@@ -19,5 +19,14 @@ class TestAPI < Minitest::Test
     assert_equal("Hello, World!", template.render)
   end
 
-  # TODO: finish me
+  def test_template_globals_take_priority_over_environment_globals
+    env = Liquid2::Environment.new(
+      loader: Liquid2::HashLoader.new({ "index" => "Hello, {{ you }}!" }),
+      globals: { "you" => "World" }
+    )
+
+    template = env.parse("{% render 'index' %}", globals: { "you" => "there" })
+
+    assert_equal("Hello, there!", template.render)
+  end
 end

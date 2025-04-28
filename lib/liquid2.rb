@@ -14,6 +14,7 @@ require_relative "liquid2/utils/unescape"
 require_relative "liquid2/static_analysis"
 require_relative "liquid2/loaders/file_system_loader"
 
+# Liquid template engine.
 module Liquid2
   DEFAULT_ENVIRONMENT = Environment.new
 
@@ -45,8 +46,7 @@ module Liquid2
   end
 
   # Stringify an object for output. Use this when writing directly to an output buffer.
-  # TODO: forget auto_escape
-  def self.to_output_string(obj, auto_escape: false)
+  def self.to_output_string(obj)
     case obj
     when Array
       # Concatenate string representations of array elements.

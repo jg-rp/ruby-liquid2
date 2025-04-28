@@ -30,7 +30,7 @@ module Liquid2
 
   def self.to_liquid_string: (untyped obj) -> String
                            
-  def self.to_output_string: (untyped obj, ?auto_escape: bool) -> String
+  def self.to_output_string: (untyped obj) -> String
 
   def self.to_liquid_int: (untyped obj, ?default: ::Integer) -> Integer
 
@@ -62,10 +62,6 @@ module Liquid2
     # keyword argument.
     @filters: Hash[String, [_Filter, (Integer | nil)]]
 
-    @mode: :lax | :strict
-
-    @auto_escape: bool
-
     @local_namespace_limit: Integer?
 
     @context_depth_limit: Integer
@@ -76,19 +72,15 @@ module Liquid2
 
     @suppress_blank_control_flow_blocks: bool
 
-    @default_trim: :whitespace_control_plus | :whitespace_control_minus | :whitespace_control_tilde
-
     @shorthand_indexes: bool
 
     @undefined: singleton(Undefined)
 
     @loader: TemplateLoader
 
-    @globals: Hash[String, untyped]
+    @globals: Hash[String, untyped]?
 
     @scanner: StringScanner
-
-    attr_reader mode: :lax | :strict
 
     attr_reader tags: Hash[String, _Tag]
 
@@ -102,15 +94,11 @@ module Liquid2
 
     attr_reader filters: Hash[String, [_Filter, (Integer | nil)]]
 
-    attr_reader auto_escape: bool
-
     attr_reader suppress_blank_control_flow_blocks: bool
 
     attr_reader shorthand_indexes: bool
 
-    attr_reader default_trim: :whitespace_control_plus | :whitespace_control_minus | :whitespace_control_tilde
-
-    def initialize: (?loader: TemplateLoader?, ?mode: (:lax | :strict), ?globals: Hash[String, untyped]?) -> void
+    def initialize: (?context_depth_limit: ::Integer, ?globals: Hash[String, untyped]?, ?loader: TemplateLoader?, ?local_namespace_limit: Integer?, ?loop_iteration_limit: Integer?, ?output_stream_limit: Integer?, ?shorthand_indexes: bool, ?suppress_blank_control_flow_blocks: bool, ?undefined: singleton(Undefined)) -> void
 
     # @param source [String] template source text.
     # @return [Template]
@@ -139,7 +127,7 @@ module Liquid2
 
     def undefined: (String name, ?node: _HasToken?) -> Undefined
 
-    def trim: (String text, Symbol left_trim, Symbol right_trim) -> String
+    def trim: (String text, String? left_trim, String? right_trim) -> void
             
     # Load and parse a template using the configured template loader.
     # @param name [String] The template's name.
@@ -152,7 +140,7 @@ module Liquid2
     def get_template: (String name, ?globals: Hash[String, untyped]?, ?context: RenderContext?, **untyped) -> Template
                     
     # Merge environment globals with another namespace.
-    def make_globals: ((Hash[String, untyped] | nil) namespace) -> Hash[String, untyped]
+    def make_globals: ((Hash[String, untyped] | nil) namespace) -> Hash[String, untyped]?
   end
 end
 
@@ -249,7 +237,7 @@ module Liquid2
 
     @eof: [Symbol, String?, Integer]
 
-    @whitespace_carry: Symbol?
+    @whitespace_carry: String?
 
     # Parse Liquid template text into a syntax tree.
     # @param source [String]

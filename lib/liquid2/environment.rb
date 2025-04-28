@@ -37,12 +37,22 @@ module Liquid2
   # A Liquid::Environment is where you might register custom tags and filters,
   # or store global context data that should be available to all templates.
   class Environment
-    attr_reader :mode, :tags, :local_namespace_limit, :context_depth_limit, :loop_iteration_limit,
-                :output_stream_limit, :filters, :auto_escape, :suppress_blank_control_flow_blocks,
-                :default_trim, :shorthand_indexes
+    attr_reader :tags, :local_namespace_limit, :context_depth_limit, :loop_iteration_limit,
+                :output_stream_limit, :filters, :suppress_blank_control_flow_blocks,
+                :shorthand_indexes
 
-    def initialize(loader: nil, mode: :lax, globals: nil)
-      # A mapping of tag names to objects responding to `parse`.
+    def initialize(
+      context_depth_limit: 30,
+      globals: nil,
+      loader: nil,
+      local_namespace_limit: nil,
+      loop_iteration_limit: nil,
+      output_stream_limit: nil,
+      shorthand_indexes: false,
+      suppress_blank_control_flow_blocks: true,
+      undefined: Undefined
+    )
+      # A mapping of tag names to objects responding to `parse(token, parser)`.
       @tags = {}
 
       # A mapping of filter names to objects responding to `#call(left, ...)`,
@@ -50,27 +60,16 @@ module Liquid2
       # keyword argument.
       @filters = {}
 
-      @mode = mode
-      @auto_escape = false
-
-      @local_namespace_limit = nil
-      @context_depth_limit = 30
-      @loop_iteration_limit = nil
-      @output_stream_limit = nil
-
-      @suppress_blank_control_flow_blocks = true
-
-      @default_trim = :whitespace_control_plus # TODO
-
-      @shorthand_indexes = false
-
-      @undefined = Undefined
-
+      @context_depth_limit = context_depth_limit
+      @globals = globals
       @loader = loader || HashLoader.new({})
-
-      @globals = globals || {} # steep:ignore
-
+      @local_namespace_limit = local_namespace_limit
+      @loop_iteration_limit = loop_iteration_limit
+      @output_stream_limit = output_stream_limit
       @scanner = StringScanner.new("")
+      @shorthand_indexes = shorthand_indexes
+      @suppress_blank_control_flow_blocks = suppress_blank_control_flow_blocks
+      @undefined = undefined
 
       setup_tags_and_filters
     end
@@ -205,30 +204,21 @@ module Liquid2
       @undefined.new(name, node: node)
     end
 
+    # Trim _text_.
     def trim(text, left_trim, right_trim)
-      left_trim = @default_trim if left_trim == :whitespace_control_default
-      right_trim = @default_trim if right_trim == :whitespace_control_default
-
-      if left_trim == right_trim
-        return text.strip if left_trim == :whitespace_control_minus
-        return text.gsub(/\A[\r\n]+|[\r\n]+\Z/, "") if left_trim == :whitespace_control_tilde
-
-        return text
+      case left_trim
+      when "-"
+        text.lstrip!
+      when "~"
+        text.sub!(/\A[\r\n]+/, "")
       end
 
-      if left_trim == :whitespace_control_minus
-        text = text.lstrip
-      elsif left_trim == :whitespace_control_tilde
-        text = text.gsub(/\A[\r\n]+/, "")
+      case right_trim
+      when "-"
+        text.rstrip!
+      when "~"
+        text.sub!(/[\r\n]+\Z/, "")
       end
-
-      if right_trim == :whitespace_control_minus
-        text = text.rstrip
-      elsif right_trim == :whitespace_control_tilde
-        text = text.gsub(/[\r\n]+\Z/, "")
-      end
-
-      text
     end
 
     # Load and parse a template using the configured template loader.
@@ -248,7 +238,10 @@ module Liquid2
 
     # Merge environment globals with another namespace.
     def make_globals(namespace)
-      namespace.nil? ? @globals : @globals.merge(namespace)
+      return @globals if namespace.nil?
+      return namespace if @globals.nil?
+
+      (@globals || raise).merge(namespace)
     end
   end
 end

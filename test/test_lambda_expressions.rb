@@ -3,7 +3,7 @@
 require "json"
 require "test_helper"
 
-class TestCompliance < Minitest::Spec
+class TestLambdaExpressions < Minitest::Spec
   make_my_diffs_pretty!
 
   TEST_CASES = JSON.load_file("test/lambda.json")
@@ -15,7 +15,7 @@ class TestCompliance < Minitest::Spec
                    Liquid2::HashLoader.new(templates)
                  end
 
-        env = Liquid2::Environment.new(loader: loader, mode: :strict)
+        env = Liquid2::Environment.new(loader: loader)
         if test_case["invalid"]
           assert_raises Liquid2::LiquidError do
             env.parse(test_case["template"]).render(test_case["data"])

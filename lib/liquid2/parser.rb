@@ -147,7 +147,7 @@ module Liquid2
     # Advance the pointer if the current token is a whitespace control token, and
     # remember the token's value for the next text node.
     def carry_whitespace_control
-      @whitespace_carry = current_kind == :token_whitespace_control ? self.next[0] : nil
+      @whitespace_carry = current_kind == :token_whitespace_control ? self.next[1] : nil
     end
 
     # @return [Array[Node | String]]
@@ -160,9 +160,8 @@ module Liquid2
 
         case kind
         when :token_other
-          # TODO: handle `~` and `+`?
-          value&.lstrip! if @whitespace_carry
-          value&.rstrip! if peek_kind == :token_whitespace_control
+          rstrip = peek[1] if peek_kind == :token_whitespace_control
+          @env.trim(value || raise, @whitespace_carry, rstrip)
           nodes << (value || raise)
         when :token_output_start
           nodes << parse_output
@@ -192,9 +191,8 @@ module Liquid2
 
         case kind
         when :token_other
-          # TODO: handle `~` and `+`?
-          value&.lstrip! if @whitespace_carry
-          value&.rstrip! if peek_kind == :token_whitespace_control
+          rstrip = peek[1] if peek_kind == :token_whitespace_control
+          @env.trim(value || raise, @whitespace_carry, rstrip)
           nodes << (value || raise)
         when :token_output_start
           @pos += 1 if current_kind == :token_whitespace_control

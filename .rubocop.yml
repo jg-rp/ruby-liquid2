@@ -32,7 +32,7 @@ Metrics/CyclomaticComplexity:
   Max: 50
 
 Metrics/ParameterLists:
-  Max: 7
+  Enabled: false
 
 Metrics/ClassLength:
   Enabled: false
