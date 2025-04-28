@@ -1657,10 +1657,16 @@ module Liquid2
     def self.sort: (untyped left, ?untyped? key, context: RenderContext) -> Array[untyped]
 
     def self.sort_natural: (untyped left, ?untyped? key, context: RenderContext) -> Array[untyped]
+                         
+    def self.sort_numeric: (untyped left, ?untyped? key, context: RenderContext) -> Array[untyped]
 
     def self.nil_safe_compare: (untyped a, untyped b) -> (0 | 1 | -1)
 
     def self.nil_safe_casecmp: (untyped a, untyped b) -> (0 | 1 | -1)
+                             
+    def self.numeric_compare: (untyped left, untyped right) -> (0 | 1 | -1)
+
+    def self.ints: (untyped obj) -> Array[(Integer | Float | BigDecimal)]
 
     # Split _left_ on every occurrence of _pattern_.
     def self.split: (untyped left, untyped pattern) -> Array[String]
