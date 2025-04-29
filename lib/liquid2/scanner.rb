@@ -18,7 +18,7 @@ module Liquid2
     RE_WORD = /[\u0080-\uFFFFa-zA-Z_][\u0080-\uFFFFa-zA-Z0-9_-]*/
     RE_INT  = /-?\d+(?:[eE]\+?\d+)?/
     RE_FLOAT = /((?:-?\d+\.\d+(?:[eE][+-]?\d+)?)|(-?\d+[eE]-\d+))/
-    RE_PUNCTUATION = /\?|\[|\]|\|{1,2}|\.{1,2}|,|:|\(|\)|<[=>]?|>=?|=[=>]?|!=?/
+    RE_PUNCTUATION = /\?|\[|\]|\|{1,2}|\.{1,2}|,|:|\(|\)|[<>=!]+/
     RE_SINGLE_QUOTE_STRING_SPECIAL = /[\\'\$]/
     RE_DOUBLE_QUOTE_STRING_SPECIAL = /[\\"\$]/
 
@@ -216,7 +216,7 @@ module Liquid2
             @tokens << [:token_int, value, @start]
             @start = @scanner.pos
           elsif (value = @scanner.scan(RE_PUNCTUATION))
-            @tokens << [TOKEN_MAP[value] || raise, nil, @start]
+            @tokens << [TOKEN_MAP[value] || :token_unknown, value, @start]
             @start = @scanner.pos
           elsif (value = @scanner.scan(RE_WORD))
             @tokens << [TOKEN_MAP[value] || :token_word, value, @start]
@@ -238,6 +238,11 @@ module Liquid2
       else
         # Unexpected token
         return nil if @scanner.eos?
+
+        if (ch = @scanner.scan(/[\}%]/))
+          raise LiquidSyntaxError.new("missing \"}\" or \"%\" detected",
+                                      [:token_unknown, ch, @start])
+        end
 
         @tokens << [:token_unknown, @scanner.getch, @start]
       end

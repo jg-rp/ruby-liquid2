@@ -6,14 +6,17 @@ module Liquid2
     attr_reader :env, :ast, :name, :path, :globals, :overlay, :up_to_date
 
     # @param env [Environment]
+    # @param source [String]
     # @param ast [Array[Node | String]]
     # @param name [String] The template's name.
     # @param path [String?] The path or other qualifying data to _name_.
     # @param globals [_Namespace] Global template variables.
     # @param overlay [_Namespace] Additional template variables. Could be from front matter
     #   or other meta data store, for example.
-    def initialize(env, ast, name: "", path: nil, up_to_date: nil, globals: nil, overlay: nil)
+    def initialize(env, source, ast, name: "", path: nil, up_to_date: nil, globals: nil,
+                   overlay: nil)
       @env = env
+      @source = source
       @ast = ast
       @name = name
       @path = path
@@ -55,7 +58,7 @@ module Liquid2
 
           next unless (interrupt = context.interrupts.pop)
 
-          if !partial && block_scope
+          if !partial || block_scope
             raise LiquidSyntaxError.new("unexpected #{interrupt}",
                                         node.token) # steep:ignore
           end
@@ -64,6 +67,10 @@ module Liquid2
           break
         end
       end
+    rescue LiquidError => e
+      e.source = @source
+      e.template_name = @name unless @name.empty?
+      raise
     end
 
     # Merge template globals with another namespace.

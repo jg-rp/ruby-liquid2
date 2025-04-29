@@ -4,7 +4,7 @@ require "json"
 require "liquid2"
 
 source = <<~LIQUID
-  {% if true %}foo{% endunless %}
+  Hello, {{you}!
 LIQUID
 
 data = JSON.parse <<~DATA
@@ -21,10 +21,10 @@ TEMPLATES
 
 loader = Liquid2::HashLoader.new(templates)
 
-scanner = StringScanner.new("")
-Liquid2::Scanner.tokenize(source, scanner).each do |token|
-  p token
-end
+# scanner = StringScanner.new("")
+# Liquid2::Scanner.tokenize(source, scanner).each do |token|
+#   p token
+# end
 
 env = Liquid2::Environment.new(loader: loader)
 

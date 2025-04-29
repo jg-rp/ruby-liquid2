@@ -70,15 +70,15 @@ module Liquid2
             index = 0
             while (item = val[index])
               namespace[key] = item
-              template.render_with_context(context, buffer, partial: true, block_scope: true)
+              template.render_with_context(context, buffer, partial: true, block_scope: false)
               index += 1
             end
           else
             namespace[key] = val
-            template.render_with_context(context, buffer, partial: true, block_scope: true)
+            template.render_with_context(context, buffer, partial: true, block_scope: false)
           end
         else
-          template.render_with_context(context, buffer, partial: true, block_scope: true)
+          template.render_with_context(context, buffer, partial: true, block_scope: false)
         end
       end
     rescue LiquidTemplateNotFoundError => e

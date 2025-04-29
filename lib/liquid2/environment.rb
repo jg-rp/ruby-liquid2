@@ -79,6 +79,7 @@ module Liquid2
     # @return [Template]
     def parse(source, name: "", path: nil, up_to_date: nil, globals: nil, overlay: nil)
       Template.new(self,
+                   source,
                    Parser.parse(self, source, scanner: @scanner),
                    name: name, path: path, up_to_date: up_to_date,
                    globals: make_globals(globals), overlay: overlay)

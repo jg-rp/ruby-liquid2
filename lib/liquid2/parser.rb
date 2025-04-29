@@ -27,16 +27,19 @@ module Liquid2
     # @param source [String]
     # @return [Array[Node | String]]
     def self.parse(env, source, scanner: nil)
-      new(env, Liquid2::Scanner.tokenize(source, scanner || StringScanner.new(""))).parse
+      new(env,
+          Liquid2::Scanner.tokenize(source, scanner || StringScanner.new("")),
+          source.length).parse
     end
 
     # @param env [Environment]
     # @param tokens [Array[[Symbol, String?, Integer]]]
-    def initialize(env, tokens)
+    # @param length [Integer] Length of the source string.
+    def initialize(env, tokens, length)
       @env = env
       @tokens = tokens
       @pos = 0
-      @eof = [:token_eof, nil, tokens.length]
+      @eof = [:token_eof, nil, length - 1]
       @whitespace_carry = nil
     end
 
@@ -68,11 +71,12 @@ module Liquid2
 
     # Consume the next token if its kind matches _kind_, raise an error if it does not.
     # @param kind [Symbol]
+    # @param message [String?] An error message to use if the next token kind does not match _kind_.
     # @return [Token] The consumed token.
-    def eat(kind)
+    def eat(kind, message = nil)
       token = self.next
       unless token.first == kind
-        raise LiquidSyntaxError.new("expected #{kind}, found #{token.first}", token)
+        raise LiquidSyntaxError.new(message || "unexpected #{token.first}", token)
       end
 
       token
@@ -84,7 +88,7 @@ module Liquid2
     def eat_one_of(*kinds)
       token = self.next
       unless kinds.include? token.first
-        raise LiquidSyntaxError.new("expected #{kinds.first}, found #{token.first}", token)
+        raise LiquidSyntaxError.new("unexpected #{token.first}", token)
       end
 
       token
@@ -93,18 +97,18 @@ module Liquid2
     # @param name [String]
     # @return The :token_tag_name token.
     def eat_empty_tag(name)
-      eat(:token_tag_start)
+      eat(:token_tag_start, "expected tag #{name}")
       @pos += 1 if current_kind == :token_whitespace_control
-      name_token = eat(:token_tag_name)
+      name_token = eat(:token_tag_name, "expected tag #{name}")
 
       unless name == name_token[1]
         raise LiquidSyntaxError.new(
-          "expected tag #{name}, found #{name_token.first}:#{name_token[1]}", name_token
+          "unexpected tag #{name_token[1]}", name_token
         )
       end
 
       carry_whitespace_control
-      eat(:token_tag_end)
+      eat(:token_tag_end, "expected tag #{name}")
       name_token
     end
 
@@ -180,7 +184,7 @@ module Liquid2
         when :token_eof
           return nodes
         else
-          raise LiquidSyntaxError.new("unexpected token", previous)
+          raise LiquidSyntaxError.new("unexpected #{kind}", previous)
         end
       end
     end
@@ -244,7 +248,8 @@ module Liquid2
     # @return [LoopExpression]
     def parse_loop_expression
       identifier = parse_identifier
-      eat(:token_in)
+      eat(:token_in, "missing 'in'")
+      expect_expression
       enum = parse_primary
 
       reversed = false
@@ -314,7 +319,7 @@ module Liquid2
         when :token_whitespace_control, :token_tag_end
           break
         else
-          raise LiquidSyntaxError.new("unexpected token: #{current}", current)
+          raise LiquidSyntaxError.new("unexpected #{current_kind}", current)
         end
       end
 
@@ -360,7 +365,7 @@ module Liquid2
                parse_prefix_expression
              else
                unless looks_like_a_path && RESERVED_WORDS.include?(kind)
-                 raise LiquidSyntaxError.new("unexpected token #{current}", current)
+                 raise LiquidSyntaxError.new("unexpected #{current_kind}", current)
                end
 
                parse_path
@@ -370,8 +375,17 @@ module Liquid2
 
       loop do
         kind = current_kind
-        break if kind == :token_eof || (PRECEDENCES[kind] || Precedence::LOWEST) < precedence
-        return left unless BINARY_OPERATORS.member?(kind)
+
+        if kind == :token_unknown
+          raise LiquidSyntaxError.new("unexpected #{current[1]&.inspect || kind}",
+                                      current)
+        end
+
+        if kind == :token_eof ||
+           (PRECEDENCES[kind] || Precedence::LOWEST) < precedence ||
+           !BINARY_OPERATORS.member?(kind)
+          break
+        end
 
         left = parse_infix_expression(left)
       end
@@ -577,7 +591,7 @@ module Liquid2
 
     # @return [Node]
     def parse_tag
-      token = eat(:token_tag_name)
+      token = eat(:token_tag_name, "missing tag name")
 
       if (tag = @env.tags[token[1] || raise])
         tag.parse(token, self)
@@ -629,7 +643,7 @@ module Liquid2
                   value || raise
                 else
                   raise LiquidSyntaxError.new(
-                    "unexpected token in bracketed selector, #{current_kind}", current
+                    "unexpected #{kind}", previous
                   )
                 end
 
@@ -652,7 +666,7 @@ module Liquid2
         value || raise
       else
         unless RESERVED_WORDS.member?(kind)
-          raise LiquidSyntaxError.new("unexpected token in shorthand selector, #{kind}", previous)
+          raise LiquidSyntaxError.new("unexpected #{kind}", previous)
         end
 
         value || raise

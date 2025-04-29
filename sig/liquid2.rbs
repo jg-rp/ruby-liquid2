@@ -246,7 +246,7 @@ module Liquid2
 
     # @param env [Environment]
     # @param tokens [Array[[Symbol, String?, Integer]]]
-    def initialize: (Environment env, Array[[Symbol, String?, Integer]] tokens) -> void
+    def initialize: (Environment env, Array[[Symbol, String?, Integer]] tokens, Integer length) -> void
 
     # Return the current token without advancing the pointer.
     # An EOF token is returned if there are no tokens left.
@@ -270,7 +270,7 @@ module Liquid2
     # Consume the next token if its kind matches _kind_, raise an error if it does not.
     # @param kind [Symbol]
     # @return [Token] The consumed token.
-    def eat: (Symbol kind) -> [Symbol, String?, Integer]
+    def eat: (Symbol kind, ?String? message) -> [Symbol, String?, Integer]
 
     # Consume the next token if its kind is in _kinds_, raise an error if it does not.
     # @param kind [Symbol]
@@ -431,6 +431,8 @@ module Liquid2
   class Template
     @env: Environment
 
+    @source: String
+
     @ast: Array[Node | String]
 
     @name: String
@@ -466,7 +468,7 @@ module Liquid2
     # @param globals [Hash[String, untyped]] Global template variables.
     # @param overlay [Hash[String, untyped]] Additional template variables. Could be from front matter
     #   or other meta data store, for example.
-    def initialize: (Environment env, Array[Node | String] ast, ?name: String, ?path: String?, ?up_to_date: Proc::_Callable?, ?globals: Hash[String, untyped]?, ?overlay: Hash[String, untyped]?) -> void
+    def initialize: (Environment env, String source, Array[Node | String] ast, ?name: String, ?path: String?, ?up_to_date: Proc::_Callable?, ?globals: Hash[String, untyped]?, ?overlay: Hash[String, untyped]?) -> void
 
     def to_s: () -> String
             
