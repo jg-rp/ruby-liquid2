@@ -150,6 +150,13 @@ module Liquid2
       @whitespace_carry = current_kind == :token_whitespace_control ? self.next[1] : nil
     end
 
+    def expect_expression
+      return unless TERMINATE_EXPRESSION.include?(current_kind)
+
+      raise LiquidSyntaxError.new("missing expression",
+                                  current)
+    end
+
     # @return [Array[Node | String]]
     def parse
       nodes = [] # : Array[Node | String]
@@ -472,11 +479,11 @@ module Liquid2
       :token_or
     ]
 
-    TERMINATE_OUTPUT = Set[
+    TERMINATE_EXPRESSION = Set[
       :token_whitespace_control,
       :token_output_end,
+      :token_tag_end,
       :token_other,
-      :token_line_term
     ]
 
     TERMINATE_FILTER = Set[
@@ -575,7 +582,7 @@ module Liquid2
       if (tag = @env.tags[token[1] || raise])
         tag.parse(token, self)
       else
-        raise LiquidSyntaxError.new("unknown tag #{token[1].inspect}", token)
+        raise LiquidSyntaxError.new("unexpected tag #{token[1].inspect}", token)
       end
     end
 

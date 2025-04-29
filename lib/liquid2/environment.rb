@@ -82,6 +82,10 @@ module Liquid2
                    Parser.parse(self, source, scanner: @scanner),
                    name: name, path: path, up_to_date: up_to_date,
                    globals: make_globals(globals), overlay: overlay)
+    rescue LiquidError => e
+      e.source = source
+      e.template_name = name unless name.empty?
+      raise
     end
 
     # Parse and render template source text with _data_ as template variables.

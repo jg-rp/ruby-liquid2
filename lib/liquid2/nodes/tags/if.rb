@@ -12,6 +12,7 @@ module Liquid2
     # @param parser [Parser]
     # @return [IfTag]
     def self.parse(token, parser)
+      parser.expect_expression
       expression = BooleanExpression.new(parser.current, parser.parse_primary)
       parser.carry_whitespace_control
       parser.eat(:token_tag_end)
@@ -36,7 +37,7 @@ module Liquid2
       parser.eat(:token_tag_start)
       parser.skip_whitespace_control
       token = parser.eat(:token_tag_name)
-
+      parser.expect_expression
       expression = BooleanExpression.new(parser.current, parser.parse_primary)
       parser.carry_whitespace_control
       parser.eat(:token_tag_end)

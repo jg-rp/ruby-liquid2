@@ -302,6 +302,9 @@ module Liquid2
     # Advance the pointer if the current token is a whitespace control token, and
     # remember the token's value for the next text node.
     def carry_whitespace_control: () -> void
+                                
+    # Raise a syntax error if we're not at the start of an expression.
+    def expect_expression: () -> void
 
     # @return [Array[Node | String]]
     def parse: () -> Array[Node | String]
@@ -362,7 +365,7 @@ module Liquid2
 
     BINARY_OPERATORS: Set[Symbol]
 
-    TERMINATE_OUTPUT: Set[Symbol]
+    TERMINATE_EXPRESSION: Set[Symbol]
 
     TERMINATE_FILTER: Set[Symbol]
 
@@ -877,15 +880,27 @@ end
 module Liquid2
   # The base class for all Liquid errors.
   class LiquidError < StandardError
+    FULL_MESSAGE: bool
+
     @token: ([Symbol, String?, Integer] | nil)
 
     @template_name: String?
+
+    @source: String?
 
     attr_accessor token: ([Symbol, String?, Integer] | nil)
 
     attr_accessor template_name: (String | nil)
 
+    attr_accessor source: (String | nil)
+
     def initialize: (String message, ?[Symbol, String?, Integer]? token) -> void
+                  
+    def detailed_message: (?highlight: bool, **untyped kwargs) -> String
+
+    def full_message: (?highlight: bool, ?order: ::Symbol) -> String
+
+    def error_context: (String source, Integer index) -> [Integer, Integer, String]
   end
 
   class LiquidSyntaxError < LiquidError

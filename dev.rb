@@ -4,7 +4,7 @@ require "json"
 require "liquid2"
 
 source = <<~LIQUID
-  {{ a['\\u000c'] }}
+  {% if true %}foo{% endunless %}
 LIQUID
 
 data = JSON.parse <<~DATA

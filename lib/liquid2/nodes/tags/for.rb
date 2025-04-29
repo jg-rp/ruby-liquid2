@@ -8,6 +8,7 @@ module Liquid2
     END_BLOCK = Set["endfor", "else"]
 
     def self.parse(token, parser)
+      parser.expect_expression
       expression = parser.parse_loop_expression
       parser.carry_whitespace_control
       parser.eat(:token_tag_end)
