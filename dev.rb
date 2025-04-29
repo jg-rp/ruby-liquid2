@@ -4,7 +4,7 @@ require "json"
 require "liquid2"
 
 source = <<~LIQUID
-  Hello, {{you}!
+  {% include 42 with product['some-tags'] %}
 LIQUID
 
 data = JSON.parse <<~DATA

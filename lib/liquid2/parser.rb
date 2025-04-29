@@ -430,16 +430,16 @@ module Liquid2
     end
 
     # Parse comma name/value pairs.
-    # Leading commas should be consumed by the caller.
+    # Leading commas should be consumed by the caller, if allowed.
     # @return [Array<KeywordArgument>]
     def parse_keyword_arguments
       args = [] # : Array[KeywordArgument]
 
       loop do
-        break unless current_kind == :token_word && KEYWORD_ARGUMENT_DELIMITERS.member?(peek_kind)
+        break if TERMINATE_EXPRESSION.member?(current_kind)
 
-        word = self.next
-        @pos += 1
+        word = eat(:token_word)
+        eat_one_of(:token_assign, :token_colon)
         val = parse_primary
         args << KeywordArgument.new(word, word[1] || raise, val)
 
@@ -641,6 +641,10 @@ module Liquid2
                   parse_path
                 when :token_double_quote_string, :token_single_quote_string
                   value || raise
+                when :token_rbracket
+                  raise LiquidSyntaxError.new(
+                    "empty bracketed segment", previous
+                  )
                 else
                   raise LiquidSyntaxError.new(
                     "unexpected #{kind}", previous

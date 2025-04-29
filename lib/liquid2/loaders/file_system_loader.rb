@@ -35,7 +35,10 @@ module Liquid2
 
       # Don't alow template names to escape the search path with "../".
       template_path.each_filename do |part|
-        raise LiquidTemplateNotFoundError.new(template_name.to_s, nil) if part == ".."
+        if part == ".."
+          raise LiquidTemplateNotFoundError.new("template not found #{template_name}",
+                                                nil)
+        end
       end
 
       # Search each path in turn.
@@ -44,7 +47,7 @@ module Liquid2
         return source_path if source_path.file?
       end
 
-      raise LiquidTemplateNotFoundError.new(template_name.to_s, nil)
+      raise LiquidTemplateNotFoundError.new("template not found #{template_name}", nil)
     end
   end
 

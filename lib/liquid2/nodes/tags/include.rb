@@ -83,7 +83,7 @@ module Liquid2
       end
     rescue LiquidTemplateNotFoundError => e
       e.token = @token
-      e.template_name = context.template.full_name
+      e.template_name = context.template.full_name unless context.template.full_name.empty?
       raise e
     end
 

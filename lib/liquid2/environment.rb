@@ -237,7 +237,7 @@ module Liquid2
     def get_template(name, globals: nil, context: nil, **kwargs)
       @loader.load(self, name, globals: globals, context: context, **kwargs)
     rescue LiquidError => e
-      e.template_name = name unless e.template_name
+      e.template_name = name unless e.template_name || e.is_a?(LiquidTemplateNotFoundError)
       raise e
     end
 

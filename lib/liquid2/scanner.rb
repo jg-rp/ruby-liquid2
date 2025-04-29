@@ -467,6 +467,7 @@ module Liquid2
     # Scan a string literal surrounded by single quotes.
     # Assumes the opening quote has already been consumed and emitted.
     def scan_string(quote, symbol, pattern)
+      start_of_string = @start - 1
       needs_unescaping = false
 
       loop do
@@ -517,7 +518,8 @@ module Liquid2
               break
             when nil
               # End of scanner. Unclosed expression or string literal.
-              break
+              raise LiquidSyntaxError.new("unclosed string literal or template string expression",
+                                          [symbol, nil, start_of_string])
             else
               @scanner.pos -= 1
               if (value = @scanner.scan(RE_FLOAT))
@@ -539,11 +541,8 @@ module Liquid2
           end
         when nil
           # End of scanner. Unclosed string literal.
-          token = [symbol, @source.byteslice(@start...@scanner.pos - 1), @start] # : [Symbol, String, Integer]
-          token[1] = Liquid2.unescape_string(token[1], quote, token) if needs_unescaping
-          @tokens << token
-          @start = @scanner.pos
-          return
+          raise LiquidSyntaxError.new("unclosed string literal or template string expression",
+                                      [symbol, nil, start_of_string])
         end
       end
     end

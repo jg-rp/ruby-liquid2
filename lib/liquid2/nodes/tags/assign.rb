@@ -9,7 +9,7 @@ module Liquid2
     # @return [AssignTag]
     def self.parse(token, parser)
       name = parser.parse_identifier(trailing_question: false)
-      parser.eat(:token_assign, "missing assignment operator")
+      parser.eat(:token_assign, "malformed identifier or missing assignment operator")
       expression = parser.parse_filtered_expression
       parser.carry_whitespace_control
       parser.eat(:token_tag_end)

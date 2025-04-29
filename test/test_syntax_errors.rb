@@ -90,7 +90,7 @@ class TestLiquidSyntaxErrors < Minitest::Test
 
   def test_missing_assignment_operator
     source = "{% assign x 5 %}"
-    message = "missing assignment operator"
+    message = "malformed identifier or missing assignment operator"
     error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
     assert_equal(message, error.message)
   end
@@ -189,6 +189,55 @@ class TestLiquidSyntaxErrors < Minitest::Test
   def test_missing_tag_closing_bracket
     source = "{% assign x = 42 %"
     message = "missing \"}\" or \"%\" detected"
+    error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
+    assert_equal(message, error.message)
+  end
+
+  def test_missing_closing_quote_for_template_string
+    source = "{{ \"Hello, ${you} }}"
+    message = "unclosed string literal or template string expression"
+    error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
+    assert_equal(message, error.message)
+  end
+
+  def test_missing_closing_bracket_in_template_string
+    source = "{{ \"Hello, ${you\" }}"
+    message = "unclosed string literal or template string expression"
+    error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
+    assert_equal(message, error.message)
+  end
+
+  def test_path_empty_brackets
+    source = "{{ a.b[] }}"
+    message = "empty bracketed segment"
+    error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
+    assert_equal(message, error.message)
+  end
+
+  def test_path_unbalanced_brackets
+    source = "{{ a.b['foo']] }}"
+    message = "unexpected token_rbracket"
+    error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
+    assert_equal(message, error.message)
+  end
+
+  def test_consecutive_commas_in_positional_argument_list
+    source = "{% cycle a,, b %}"
+    message = "unexpected token_comma"
+    error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
+    assert_equal(message, error.message)
+  end
+
+  def test_consecutive_commas_in_keyword_argument_list
+    source = "{% include 'foo' you='world',, some='thing' %}"
+    message = "unexpected token_comma"
+    error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
+    assert_equal(message, error.message)
+  end
+
+  def test_assign_to_bad_identifier
+    source = "{% assign foo+bar = 'hello there'%}{{ foo+bar }}"
+    message = "malformed identifier or missing assignment operator"
     error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
     assert_equal(message, error.message)
   end

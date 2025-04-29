@@ -52,7 +52,7 @@ module Liquid2
       if (text = @templates[name])
         TemplateSource.new(source: text, name: name)
       else
-        raise LiquidTemplateNotFoundError, name
+        raise LiquidTemplateNotFoundError.new("template not found #{name}", nil)
       end
     end
   end
