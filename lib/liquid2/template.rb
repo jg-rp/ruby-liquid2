@@ -75,7 +75,8 @@ module Liquid2
 
     # Merge template globals with another namespace.
     def make_globals(namespace)
-      namespace.nil? ? @globals : @globals.merge(namespace)
+      # TODO: optimize
+      @globals.merge(@overlay || {}, namespace || {})
     end
 
     def up_to_date?

@@ -2296,3 +2296,11 @@ module Liquid2
     def cache_key: (String name, ?context: RenderContext?, **untyped kwargs) -> String
   end
 end
+
+module Liquid2
+  # Liquid filters and helper methods.
+  module Filters
+    # Return _left_ serialized in JSON format.
+    def self.json: (untyped left, ?pretty: bool) -> String
+  end
+end

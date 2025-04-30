@@ -8,6 +8,7 @@ require_relative "filters/array"
 require_relative "filters/date"
 require_relative "filters/default"
 require_relative "filters/math"
+require_relative "filters/json"
 require_relative "filters/size"
 require_relative "filters/slice"
 require_relative "filters/sort"
@@ -167,6 +168,7 @@ module Liquid2
       register_filter("floor", Liquid2::Filters.method(:floor))
       register_filter("has", Liquid2::Filters.method(:has))
       register_filter("join", Liquid2::Filters.method(:join))
+      register_filter("json", Liquid2::Filters.method(:json))
       register_filter("last", Liquid2::Filters.method(:last))
       register_filter("lstrip", Liquid2::Filters.method(:lstrip))
       register_filter("map", Liquid2::Filters.method(:map))

@@ -31,20 +31,47 @@ templates = JSON.parse <<~TEMPLATES
       }
 TEMPLATES
 
-loader = Liquid2::HashLoader.new(templates)
+class MockLoader < Liquid2::HashLoader
+  def initialize(templates, matter)
+    super(templates)
+    @matter = matter
+  end
 
-scanner = StringScanner.new("")
-Liquid2::Scanner.tokenize(source, scanner).each do |token|
-  p token
+  def get_source(env, name, context: nil, **kwargs)
+    source = super
+    Liquid2::TemplateSource.new(source: source.source, name: source.name, matter: @matter[name])
+  end
 end
+
+loader = MockLoader.new(
+  {
+    "some" => "Hello, {{ you }}{{ username }}!",
+    "other" => "Goodbye, {{ you }}{{ username }}.",
+    "thing" => "{{ you }}{{ username }}"
+  },
+  {
+    "some" => { "you" => "World" },
+    "other" => { "username" => "Smith" }
+  }
+)
 
 env = Liquid2::Environment.new(loader: loader)
+template = env.get_template("some")
 
-t = env.parse(source)
+p template.render
 
-t.comments.map(&:text).each do |s|
-  puts "> #{s.inspect}"
-end
+# scanner = StringScanner.new("")
+# Liquid2::Scanner.tokenize(source, scanner).each do |token|
+#   p token
+# end
+
+# env = Liquid2::Environment.new(loader: loader)
+
+# t = env.parse(source)
+
+# t.comments.map(&:text).each do |s|
+#   puts "> #{s.inspect}"
+# end
 
 # pp t.ast
 
