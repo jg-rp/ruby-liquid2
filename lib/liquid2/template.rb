@@ -81,5 +81,25 @@ module Liquid2
     def up_to_date?
       @up_to_date&.call
     end
+
+    def comments
+      context = RenderContext.new(self)
+      nodes = [] # : Array[BlockComment | InlineComment | Comment]
+
+      # @type var visit: ^(Node) -> void
+      visit = lambda do |node|
+        if node.is_a?(BlockComment) || node.is_a?(InlineComment) || node.is_a?(Comment)
+          nodes << node
+        end
+
+        node.children(context, include_partials: false).each do |child|
+          visit.call(child) if child.is_a?(Node)
+        end
+      end
+
+      @ast.each { |node| visit.call(node) if node.is_a?(Node) }
+
+      nodes
+    end
   end
 end

@@ -486,6 +486,8 @@ module Liquid2
     def make_globals: (Hash[String, untyped]? namespace) -> Hash[String, untyped]
                     
     def up_to_date?: () -> bool?
+                   
+    def comments: () -> Array[BlockComment | InlineComment | Comment]
   end
 
   # Liquid template source text and meta data.
@@ -1414,6 +1416,8 @@ module Liquid2
   class Comment < Node
     @text: String
 
+    attr_reader text: String
+
     # @param text [String]
     def initialize: ([Symbol, String?, Integer] token, String text) -> void
 
@@ -1755,6 +1759,8 @@ module Liquid2
   class InlineComment < Tag
     @text: String
 
+    attr_reader text: String
+
     def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> InlineComment
 
     # @param text [String]
@@ -1786,6 +1792,8 @@ module Liquid2
   # The standard _comment_ tag.
   class BlockComment < Tag
     @text: String
+
+    attr_reader text: String
 
     def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> BlockComment
 

@@ -151,20 +151,27 @@ module Liquid2
         if (tag_name = @scanner.scan(/(?:[a-z][a-z_0-9]*|#)/))
           @tokens << [:token_tag_name, tag_name, @start]
           @start = @scanner.pos
-          skip_trivia
 
           case tag_name
           when "#"
+            # Don't skip trivia for inline comments.
+            # This is for consistency with other types of comments that include
+            # leading whitespace.
             :lex_inside_inline_comment
           when "comment"
+            skip_trivia
             :lex_block_comment
           when "doc"
+            skip_trivia
             :lex_doc
           when "raw"
+            skip_trivia
             :lex_raw
           when "liquid"
+            skip_trivia
             :lex_line_statements
           else
+            skip_trivia
             :lex_expression
           end
         else

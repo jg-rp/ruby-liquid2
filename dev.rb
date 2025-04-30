@@ -4,7 +4,19 @@ require "json"
 require "liquid2"
 
 source = <<~LIQUID
-  Hello, {## some comment {# other comment #} ##}{{ you }}!
+  {# hello #}
+  {% if false %}
+  {#
+  # foo bar
+  # foo bar
+  #}
+  {% endif %}
+  {% for x in (1..3) %}
+  {% if true %}
+  {# goodbye #}
+  {% endif %}
+  {% endfor %}
+  {# world #}
 LIQUID
 
 data = JSON.parse <<~DATA
@@ -26,9 +38,13 @@ Liquid2::Scanner.tokenize(source, scanner).each do |token|
   p token
 end
 
-# env = Liquid2::Environment.new(loader: loader)
+env = Liquid2::Environment.new(loader: loader)
 
-# t = env.parse(source)
+t = env.parse(source)
+
+t.comments.map(&:text).each do |s|
+  puts "> #{s.inspect}"
+end
 
 # pp t.ast
 
