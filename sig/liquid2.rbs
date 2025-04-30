@@ -212,6 +212,8 @@ module Liquid2
 
     def lex_raw: () -> Symbol?
                
+    def lex_comment: () -> Symbol?
+               
     def lex_block_comment: () -> Symbol?
 
     def lex_inside_inline_comment: () -> Symbol?

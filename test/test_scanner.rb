@@ -103,10 +103,52 @@ class TestTokenize < Minitest::Spec
         [:token_output_end, nil, 20]
 
       ]
+    },
+    {
+      name: "comment",
+      source: "Hello, {# some comment {{ foo }} #}{{ you }}!",
+      want: [
+        [:token_other, "Hello, ", 0],
+        [:token_comment_start, "{#", 7],
+        [:token_comment, " some comment {{ foo }} ", 9],
+        [:token_comment_end, "#}", 33],
+        [:token_output_start, nil, 35],
+        [:token_word, "you", 38],
+        [:token_output_end, nil, 42],
+        [:token_other, "!", 44]
+      ]
+    },
+    {
+      name: "comment with whitespace control",
+      source: "Hello, {#- some comment {{ foo }} +#}{{ you }}!",
+      want: [
+        [:token_other, "Hello, ", 0],
+        [:token_comment_start, "{#", 7],
+        [:token_whitespace_control, "-", 9],
+        [:token_comment, " some comment {{ foo }} ", 10],
+        [:token_whitespace_control, "+", 34],
+        [:token_comment_end, "#}", 35],
+        [:token_output_start, nil, 37],
+        [:token_word, "you", 40],
+        [:token_output_end, nil, 44],
+        [:token_other, "!", 46]
+      ]
+    },
+    {
+      name: "comment, nested",
+      source: "Hello, {## some comment {# other comment #} ##}{{ you }}!",
+      want: [
+        [:token_other, "Hello, ", 0],
+        [:token_comment_start, "{##", 7],
+        [:token_comment, " some comment {# other comment #} ", 10],
+        [:token_comment_end, "##}", 44],
+        [:token_output_start, nil, 47],
+        [:token_word, "you", 50],
+        [:token_output_end, nil, 54],
+        [:token_other, "!", 56]
+      ]
     }
   ].freeze
-
-  # TODO: finish me
 
   scanner = StringScanner.new("")
 

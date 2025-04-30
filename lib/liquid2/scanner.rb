@@ -135,7 +135,7 @@ module Liquid2
     def lex_markup
       case @scanner.scan(RE_MARKUP_START)
       when "{#"
-        raise "TODO"
+        :lex_comment
       when "{{"
         @tokens << [:token_output_start, nil, @start]
         @start = @scanner.pos
@@ -175,7 +175,6 @@ module Liquid2
       else
         if @scanner.skip_until(/\{[\{%#]/)
           @scanner.pos -= 2
-          # TODO: benchmark byteslice range vs length
           @tokens << [:token_other, @source.byteslice(@start...@scanner.pos), @start]
           @start = @scanner.pos
           :lex_markup
@@ -251,8 +250,46 @@ module Liquid2
       :lex_markup
     end
 
+    def lex_comment
+      hash_count = 1
+
+      if (hashes = @scanner.scan(/#+/))
+        hash_count += hashes.length
+      end
+
+      @tokens << [:token_comment_start, @source.byteslice(@start...@scanner.pos), @start]
+      @start = @scanner.pos
+
+      wc = accept_whitespace_control
+
+      if @scanner.skip_until(/([+\-~]?)(\#{#{hash_count}}\})/)
+        @scanner.pos -= @scanner[0]&.length || 0
+        @tokens << [:token_comment, @source.byteslice(@start...@scanner.pos), @start]
+        @start = @scanner.pos
+
+        if (ch = @scanner[1]) && !ch.empty?
+          @tokens << [:token_whitespace_control, ch, @start]
+          @start = @scanner.pos += 1
+        end
+
+        if (end_comment = @scanner[2])
+          @scanner.pos += end_comment.length
+          @tokens << [:token_comment_end, @source.byteslice(@start...@scanner.pos), @start]
+          @start = @scanner.pos
+        end
+      else
+        # Fix the last one or two emitted tokens. They are not the start of a comment.
+        @tokens.pop if wc
+        @tokens.pop
+        start = (@tokens.pop || raise).last
+        @tokens << [:token_other, @source.byteslice(start...@scanner.pos), start]
+      end
+
+      :lex_markup
+    end
+
     def lex_inside_inline_comment
-      if @scanner.skip_until(/(-)?%\}/)
+      if @scanner.skip_until(/([+\-~])?%\}/)
         @scanner.pos -= @scanner.captures&.first.nil? ? 2 : 3
         @tokens << [:token_comment, @source.byteslice(@start...@scanner.pos), @start]
         @start = @scanner.pos
@@ -379,7 +416,6 @@ module Liquid2
         @tokens << [:token_tag_name, tag_name, @start]
         @start = @scanner.pos
 
-        # TODO: handle block comment
         if tag_name == "#" && @scanner.scan_until(/([\r\n]+|-?%\})/)
           @scanner.pos -= @scanner.captures&.first&.length || raise
           @tokens << [:token_comment, @source.byteslice(@start...@scanner.pos), @start]

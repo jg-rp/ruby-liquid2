@@ -6,6 +6,8 @@ require:
 AllCops:
   TargetRubyVersion: 3.0
   NewCops: enable
+  Exclude:
+    - "test/golden_liquid"
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes

@@ -179,8 +179,7 @@ module Liquid2
         when :token_tag_start
           nodes << parse_tag
         when :token_comment_start
-          raise "TODO"
-          # nodes << parse_comment
+          nodes << parse_comment
         when :token_eof
           return nodes
         else
@@ -219,7 +218,6 @@ module Liquid2
         when :token_comment_start
           nodes << parse_comment
         when :token_eof
-          # TODO: raise
           break
         else
           raise LiquidSyntaxError.new("unexpected token: #{token.inspect}", previous)
@@ -694,8 +692,7 @@ module Liquid2
         items << parse_primary
       end
 
-      # TODO: incorrect token
-      ArrayLiteral.new(token, items)
+      ArrayLiteral.new(left.respond_to?(:token) ? left.token : token, items)
     end
 
     # @return [Node]
@@ -900,7 +897,7 @@ module Liquid2
       segments << token[1] unless (token[1] || raise).empty?
 
       # TODO: Does this mean consecutive literal strings are implicitly combined into one?
-      # If there is at least on :token_string_interpol_start following the first string.
+      # If there is at least one :token_string_interpol_start following the first string.
       loop do
         case current_kind
         when :token_string_interpol_start

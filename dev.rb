@@ -4,7 +4,7 @@ require "json"
 require "liquid2"
 
 source = <<~LIQUID
-  {% include 42 with product['some-tags'] %}
+  Hello, {## some comment {# other comment #} ##}{{ you }}!
 LIQUID
 
 data = JSON.parse <<~DATA
@@ -21,18 +21,18 @@ TEMPLATES
 
 loader = Liquid2::HashLoader.new(templates)
 
-# scanner = StringScanner.new("")
-# Liquid2::Scanner.tokenize(source, scanner).each do |token|
-#   p token
-# end
+scanner = StringScanner.new("")
+Liquid2::Scanner.tokenize(source, scanner).each do |token|
+  p token
+end
 
-env = Liquid2::Environment.new(loader: loader)
+# env = Liquid2::Environment.new(loader: loader)
 
-t = env.parse(source)
+# t = env.parse(source)
 
-pp t.ast
+# pp t.ast
 
-puts t.render(data)
+# puts t.render(data)
 
 # analysis = Liquid2::StaticAnalysis.analyze(t, include_partials: false)
 
