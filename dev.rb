@@ -4,19 +4,13 @@ require "json"
 require "liquid2"
 
 source = <<~LIQUID
-  {# hello #}
-  {% if false %}
-  {#
-  # foo bar
-  # foo bar
-  #}
-  {% endif %}
-  {% for x in (1..3) %}
-  {% if true %}
-  {# goodbye #}
-  {% endif %}
+  Hello, {{ you }}!
+  {% assign x = 'foo' | upcase %}
+  {% for ch in x %}
+      - {{ ch }}
   {% endfor %}
-  {# world #}
+  Goodbye, {{ you.first_name | capitalize }} {{ you.last_name }}
+  Goodbye, {{ you.first_name }} {{ you.last_name }}
 LIQUID
 
 data = JSON.parse <<~DATA

@@ -21,7 +21,7 @@ module Liquid2
       # @type var template: Liquid2::Template
       # @type var cached_template: Liquid2::Template
       if (cached_template = @cache[key])
-        if @auto_reload && !cached_template.up_to_date?
+        if @auto_reload && cached_template.up_to_date? == false
           template = super
           @cache[key] = template
           template

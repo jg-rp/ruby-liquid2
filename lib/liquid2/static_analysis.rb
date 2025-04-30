@@ -75,7 +75,9 @@ module Liquid2
       protected
 
       def segments_to_s(segments)
-        segments.map do |segment|
+        head, *rest = segments
+
+        head.to_s + rest.map do |segment|
           case segment
           when Array
             "[#{segments_to_s(segment)}]"

@@ -3,7 +3,7 @@
 module Liquid2
   # A compiled template bound to a Liquid environment and ready to be rendered.
   class Template
-    attr_reader :env, :ast, :name, :path, :globals, :overlay, :up_to_date
+    attr_reader :env, :ast, :name, :path, :globals, :overlay, :up_to_date, :source
 
     # @param env [Environment]
     # @param source [String]
@@ -32,15 +32,14 @@ module Liquid2
       @name + @path.to_s
     end
 
+    # Render this template with data from _globals_ added to the render context.
+    # @param globals [Hash[::String, untyped]]
+    # @return [String]
     def render(globals = nil)
       buf = +""
       context = RenderContext.new(self, globals: make_globals(globals))
       render_with_context(context, buf)
       buf
-    end
-
-    def analyze(include_partials: false)
-      Liquid2::StaticAnalysis.analyze(self, include_partials: include_partials)
     end
 
     def render_with_context(context, buffer, partial: false, block_scope: false, namespace: nil)
@@ -79,8 +78,17 @@ module Liquid2
       @globals.merge(@overlay || {}, namespace || {})
     end
 
+    # Return `false` if this template is stale and needs to be loaded again.
+    # `nil` is returned if an `up_to_date` proc is not available.
     def up_to_date?
       @up_to_date&.call
+    end
+
+    # Statically analyze this template and report variable, tag and filter usage.
+    # @param include_partials [bool]
+    # @return [Liquid2::StaticAnalysis::Result]
+    def analyze(include_partials: false)
+      Liquid2::StaticAnalysis.analyze(self, include_partials: include_partials)
     end
 
     # Return an array of comment nodes found in this template.
@@ -111,6 +119,62 @@ module Liquid2
       @ast.each { |node| visit.call(node) if node.is_a?(Node) }
 
       nodes
+    end
+
+    # Return an array of variables used in this template, without path segments.
+    # @param include_partials [bool]
+    # @return [Array[String]]
+    def variables(include_partials: false)
+      analyze(include_partials: include_partials).variables.keys
+    end
+
+    # Return an array of variables used in this template, including path segments.
+    # @param include_partials [bool]
+    # @return [Array[String]]
+    def variable_paths(include_partials: false)
+      analyze(include_partials: include_partials).variables.values.flatten.map(&:to_s).uniq
+    end
+
+    # Return an array of variables used in this template, each as an array of segments.
+    # @param include_partials [bool]
+    # @return [Array[Array[String | Integer | Segment]]]
+    def variable_segments(include_partials: false)
+      analyze(include_partials: include_partials).variables.values.flatten.map(&:segments).uniq
+    end
+
+    # Return an array of global variables used in this template, without path segments.
+    # @param include_partials [bool]
+    # @return [Array[String]]
+    def global_variables(include_partials: false)
+      analyze(include_partials: include_partials).globals.keys
+    end
+
+    # Return an array of global variables used in this template, including path segments.
+    # @param include_partials [bool]
+    # @return [Array[String]]
+    def global_variable_paths(include_partials: false)
+      analyze(include_partials: include_partials).globals.values.flatten.map(&:to_s).uniq
+    end
+
+    # Return an array of global variables used in this template, each as an array of segments.
+    # @param include_partials [bool]
+    # @return [Array[Array[String | Integer | Segment]]]
+    def global_variable_segments(include_partials: false)
+      analyze(include_partials: include_partials).globals.values.flatten.map(&:segments).uniq
+    end
+
+    # Return the names of all filters used in this template.
+    # @param include_partials [bool]
+    # @return [Array[String]]
+    def filter_names(include_partials: false)
+      analyze(include_partials: include_partials).filters.keys
+    end
+
+    # Return the names of all tags used in this template.
+    # @param include_partials [bool]
+    # @return [Array[String]]
+    def tag_names(include_partials: false)
+      analyze(include_partials: include_partials).tags.keys
     end
   end
 end
