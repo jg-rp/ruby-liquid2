@@ -82,6 +82,16 @@ module Liquid2
       @up_to_date&.call
     end
 
+    # Return an array of comment nodes found in this template.
+    #
+    # Comment nodes have `token` and `text` attributes. Use `template.comments.map(&:text)`
+    # to get an array of comment strings. Each comment string includes leading and trailing
+    # whitespace.
+    #
+    # Note that this method does not try to load included or render templates when looking.
+    # for comment nodes.
+    #
+    # @return [Array[BlockComment | InlineComment | Comment]]
     def comments
       context = RenderContext.new(self)
       nodes = [] # : Array[BlockComment | InlineComment | Comment]
