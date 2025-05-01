@@ -27,6 +27,8 @@ module Liquid2
       array = @expression.evaluate(context)
       name = @expression.identifier.name
 
+      context.raise_for_loop_limit(length: array.length)
+
       cols = if @expression.cols
                Liquid2.to_liquid_int(context.evaluate(@expression.cols))
              else

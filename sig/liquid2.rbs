@@ -905,7 +905,9 @@ module Liquid2
     # Get or set the stop index of a for loop.
     def stop_index: (untyped key, ?index: untyped?) -> untyped
 
-    def raise_for_loop_limit: (?length: ::Integer) -> (nil | untyped)
+    def raise_for_loop_limit: (?length: ::Integer) -> void
+                            
+    def raise_for_output_limit: (Integer length) -> void
 
     def get_output_buffer: (untyped parent_buffer) -> untyped
 

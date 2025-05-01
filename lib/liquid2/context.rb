@@ -254,6 +254,12 @@ module Liquid2
       raise LiquidResourceLimitError, "loop iteration limit reached"
     end
 
+    def raise_for_output_limit(length)
+      return unless @env.output_stream_limit && (@env.output_stream_limit || raise) < length
+
+      raise LiquidResourceLimitError, "output limit reached"
+    end
+
     def get_output_buffer(parent_buffer)
       return StringIO.new unless @env.output_stream_limit
 
@@ -277,11 +283,11 @@ module Liquid2
 
     def assign_score(value)
       case value
-      in String
+      when String
         value.bytesize
-      in Array
+      when Array
         value.sum(1) { |item| assign_score(item) } + 1
-      in Hash
+      when Hash
         value.sum(1) { |k, v| assign_score(k) + assign_score(v) }
       else
         1

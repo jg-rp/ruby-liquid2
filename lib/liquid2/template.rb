@@ -55,6 +55,8 @@ module Liquid2
             node.render_with_disabled_tag_check(context, buffer)
           end
 
+          context.raise_for_output_limit(buffer.bytesize)
+
           next unless (interrupt = context.interrupts.pop)
 
           if !partial || block_scope

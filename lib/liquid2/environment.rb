@@ -37,6 +37,8 @@ module Liquid2
   #
   # A Liquid::Environment is where you might register custom tags and filters,
   # or store global context data that should be available to all templates.
+  #
+  # `Liquid2.parse(source)` is equivalent to `Liquid2::Environment.new.parse(source)`.
   class Environment
     attr_reader :tags, :local_namespace_limit, :context_depth_limit, :loop_iteration_limit,
                 :output_stream_limit, :filters, :suppress_blank_control_flow_blocks,
@@ -61,17 +63,48 @@ module Liquid2
       # keyword argument.
       @filters = {}
 
+      # The maximum number of times a render context can be extended or copied before
+      # a Liquid2::LiquidResourceLimitError is raised.
       @context_depth_limit = context_depth_limit
+
+      # Variables that are available to all templates rendered from this environment.
       @globals = globals
+
+      # An instance of `Liquid2::Loader`. A template loader is responsible for finding and
+      # reading templates for `{% include %}` and `{% render %}` tags, or when calling
+      # `Liquid2::Environment.get_template(name)`.
       @loader = loader || HashLoader.new({})
+
+      # The maximum allowed "size" of the template local namespace (variables from `assign`
+      # and `capture` tags) before a Liquid2::LiquidResourceLimitError is raised.
       @local_namespace_limit = local_namespace_limit
+
+      # The maximum number of loop iterations allowed before a `LiquidResourceLimitError`
+      # is raised.
       @loop_iteration_limit = loop_iteration_limit
+
+      # The maximum number of bytes that can be written to a template's output buffer
+      # before a `LiquidResourceLimitError` is raised.
       @output_stream_limit = output_stream_limit
+
+      # We reuse the same string scanner when parsing templates for improved performance.
+      # TODO: Is this going to cause issues in multi threaded environments?
       @scanner = StringScanner.new("")
+
+      # When `true`, allow shorthand dotted array indexes as well as bracketed indexes
+      # in variable paths. Defaults to `false`.
       @shorthand_indexes = shorthand_indexes
+
+      # When `true`, suppress blank control flow block output, so as not to include
+      # unnecessary whitespace. Defaults to `true`.
       @suppress_blank_control_flow_blocks = suppress_blank_control_flow_blocks
+
+      # An instance of `Liquid2::Undefined` used to represent template variables that
+      # don't exist.
       @undefined = undefined
 
+      # Override `setup_tags_and_filters` in environment subclasses to configure custom
+      # tags and/or filters.
       setup_tags_and_filters
     end
 

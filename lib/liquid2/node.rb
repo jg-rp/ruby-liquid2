@@ -82,6 +82,8 @@ module Liquid2
         else
           node.render_with_disabled_tag_check(context, buffer)
         end
+
+        context.raise_for_output_limit(buffer.bytesize)
         return unless context.interrupts.empty?
       end
     end
