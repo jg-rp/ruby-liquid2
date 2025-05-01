@@ -4,6 +4,21 @@
 Liquid templates for Ruby, with some extra features.
 </p>
 
+<p align="center">
+  <a href="https://github.com/jg-rp/ruby-liquid2/blob/main/LICENSE.txt">
+    <img alt="GitHub License" src="https://img.shields.io/github/license/jg-rp/ruby-liquid2">
+  </a>
+  <a href="https://github.com/jg-rp/ruby-liquid2/actions">
+    <img src="https://img.shields.io/github/actions/workflow/status/jg-rp/ruby-liquid2/main.yml?branch=main&label=tests&style=flat-square" alt="Tests">
+  </a>
+  <br>
+  <a href="https://rubygems.org/gems/liquid2">
+    <img alt="Gem Version" src="https://img.shields.io/gem/v/liquid2?style=flat-square">
+  </a>
+  <a href="https://github.com/jg-rp/ruby-liquid2">
+    <img alt="Static Badge" src="https://img.shields.io/badge/Ruby-3.1%20%7C%203.2%20%7C%203.3%20%7C%203.4-CC342D?style=flat-square">
+  </a>
+</p>
 ---
 
 **Table of Contents**
@@ -16,7 +31,17 @@ Liquid templates for Ruby, with some extra features.
 
 ## Install
 
-TODO
+Add `'liquid2'` to your Gemfile:
+
+```
+gem 'liquid2', '~> 0.1.1'
+```
+
+Or
+
+```
+gem install liquid2
+```
 
 ## Example
 
@@ -31,7 +56,7 @@ puts template.render("you" => "Liquid")  # Hello, Liquid!
 ## Links
 
 - Change log: https://github.com/jg-rp/ruby-liquid2/blob/main/CHANGELOG.md
-- RubyGems: TODO
+- RubyGems: https://rubygems.org/gems/liquid2
 - Source code: https://github.com/jg-rp/ruby-liquid2
 - Issue tracker: https://github.com/jg-rp/ruby-liquid2/issues
 
