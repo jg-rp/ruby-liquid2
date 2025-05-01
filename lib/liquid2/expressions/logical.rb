@@ -3,6 +3,7 @@
 require_relative "../expression"
 
 module Liquid2
+  # A negated expression.
   class LogicalNot < Expression
     # @param expr [Expression]
     def initialize(token, expr)
@@ -17,6 +18,7 @@ module Liquid2
     def children = [@expr]
   end
 
+  # Logical conjunction.
   class LogicalAnd < Expression
     # @param left [Expression]
     # @param right [Expression]
@@ -34,6 +36,7 @@ module Liquid2
     def children = [@left, @right]
   end
 
+  # Logical disjunction.
   class LogicalOr < Expression
     # @param left [Expression]
     # @param right [Expression]

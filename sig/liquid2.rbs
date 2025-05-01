@@ -1412,12 +1412,12 @@ module Liquid2
   end
 
   # Test _left_ and _right_ for Liquid equality.
-  def self.eq: (untyped left, untyped right) -> bool
+  def self.eq?: (untyped left, untyped right) -> bool
 
   # Return `true` if _left_ is considered less than _right_.
-  def self.lt: (untyped left, untyped right) -> bool
+  def self.lt?: (untyped left, untyped right) -> bool
 
-  def self.contains: (untyped left, untyped right) -> bool
+  def self.contains?: (untyped left, untyped right) -> bool
 end
 
 module Liquid2

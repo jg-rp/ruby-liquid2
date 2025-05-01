@@ -144,7 +144,7 @@ Either branch can use filters with the usual single pipe character (`|`), like `
 
 #### Lambda expressions
 
-Many built-in filters that operate on arrays now accept lambda expressions arguments. For example, we can use the `where` filter to select values according to an arbitrary Boolean expression.
+Many built-in filters that operate on arrays now accept lambda expression arguments. For example, we can use the `where` filter to select values according to an arbitrary Boolean expression.
 
 ```liquid2
 {% assign coding_pages = pages | where: page => page.tags contains 'coding' %}

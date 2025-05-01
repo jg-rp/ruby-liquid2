@@ -14,8 +14,10 @@ class Fixture
   def initialize(path)
     @root = path
     @name = @root.basename.to_s
+    # rubocop:disable Style/StringConcatenation
     @data = JSON.parse((@root + "data.json").read)
     @templates = (@root + "templates").glob("*liquid").to_h { |p| [p.basename.to_s, p.read] }
+    # rubocop:enable Style/StringConcatenation
   end
 
   def env
@@ -45,15 +47,15 @@ end
 
 fixture = Fixture.new(Pathname.new("test/golden_liquid/benchmark_fixtures") + options[:fixture])
 env = fixture.env
-source = fixture.templates["index.liquid"]
+# source = fixture.templates["index.liquid"]
 template = env.get_template("index.liquid")
 
 n = 1000
 
 report = MemoryProfiler.report do
   n.times do
-    # template.render
-    Liquid2.tokenize(source)
+    template.render
+    # Liquid2.tokenize(source)
   end
 end
 

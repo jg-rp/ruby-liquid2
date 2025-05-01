@@ -517,7 +517,8 @@ module Liquid2
         @scanner.pos -= 1 if @scanner.skip_until(pattern)
         case @scanner.get_byte
         when quote
-          token = [symbol, @source.byteslice(@start...@scanner.pos - 1), @start] # : [Symbol, String, Integer]
+          # @type var token: [Symbol, String, Integer]
+          token = [symbol, @source.byteslice(@start...@scanner.pos - 1) || raise, @start]
           token[1] = Liquid2.unescape_string(token[1], quote, token) if needs_unescaping
           @tokens << token
           @start = @scanner.pos
@@ -533,7 +534,8 @@ module Liquid2
           # The start of a `${` expression.
           # Emit what we have so far. This could be empty if the template string
           # starts with `${`.
-          token = [symbol, @source.byteslice(@start...@scanner.pos - 1), @start] # : [Symbol, String, Integer]
+          # @type var token: [Symbol, String, Integer]
+          token = [symbol, @source.byteslice(@start...@scanner.pos - 1) || raise, @start]
           token[1] = Liquid2.unescape_string(token[1], quote, token) if needs_unescaping
           @tokens << token
 

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Liquid2
+module Liquid2 # :nodoc:
   # Replace escape sequences with their equivalent Unicode code point.
   # This is a bit like Ruby's String#undump, but assumes surrounding quotes have been removed
   # and follows JSON escaping semantics.

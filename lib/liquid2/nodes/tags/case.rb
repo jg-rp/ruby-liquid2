@@ -97,7 +97,7 @@ module Liquid2
 
     def render(context, buffer)
       left = context.evaluate(@left)
-      if @conditions.map { |right| Liquid2.eq(left, context.evaluate(right)) }.any?
+      if @conditions.map { |right| Liquid2.eq?(left, context.evaluate(right)) }.any?
         @block.render(context, buffer)
         true
       else

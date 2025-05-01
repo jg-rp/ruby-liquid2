@@ -8,8 +8,8 @@ Minitest::TestTask.create
 require "rubocop/rake_task"
 
 RuboCop::RakeTask.new do |task|
-  task.requires << "rubocop-minitest"
-  task.requires << "rubocop-rake"
+  task.plugins << "rubocop-minitest"
+  task.plugins << "rubocop-rake"
   task.plugins << "rubocop-performance"
 end
 

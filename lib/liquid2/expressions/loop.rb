@@ -27,9 +27,7 @@ module Liquid2
       # @type var array: Array[untyped]
       array = if obj.is_a?(Array)
                 obj
-              elsif obj.is_a?(Hash)
-                obj.to_a
-              elsif obj.is_a?(Range)
+              elsif obj.is_a?(Hash) || obj.is_a?(Range)
                 # TODO: special big range slicing
                 obj.to_a
               elsif obj.is_a?(String)

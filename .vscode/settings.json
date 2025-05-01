@@ -18,6 +18,7 @@
     "lparen",
     "lstrip",
     "ndigits",
+    "nodoc",
     "parentloop",
     "rparen",
     "rpartition",

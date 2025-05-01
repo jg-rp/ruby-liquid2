@@ -3,6 +3,7 @@
 require_relative "../expression"
 
 module Liquid2
+  # A single word identifier.
   class Identifier < Expression
     attr_reader :name
 

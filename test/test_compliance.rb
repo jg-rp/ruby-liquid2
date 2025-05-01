@@ -8,6 +8,7 @@ class TestCompliance < Minitest::Spec
 
   TEST_CASES = JSON.load_file("test/golden_liquid/golden_liquid.json")
 
+  # rubocop:disable Layout/LineLength
   SKIP = Set[
     "tags, unless, extra elsif blocks are ignored",
     "tags, unless, extra else blocks are ignored",
@@ -67,7 +68,8 @@ class TestCompliance < Minitest::Spec
     "tags, if, not is not a valid operator",
     "tags, liquid, liquid tag in liquid tag",
     "tags, liquid, nested liquid in liquid tag"
-].freeze
+  ].freeze
+  # rubocop:enable Layout/LineLength
 
   describe "golden liquid" do
     TEST_CASES["tests"].reject { |t| SKIP.include?(t["name"]) }.each do |test_case|

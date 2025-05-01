@@ -3,6 +3,7 @@
 require_relative "../expression"
 
 module Liquid2
+  # A keyword argument with a name and a value.
   class KeywordArgument < Expression
     attr_reader :value, :name, :sym
 

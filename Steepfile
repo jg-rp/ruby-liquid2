@@ -16,7 +16,7 @@ target :lib do
   library "pathname"
   library "monitor"
 
-  # configure_code_diagnostics(D::Ruby.default)      # `default` diagnostics setting (applies by default)
+  # configure_code_diagnostics(D::Ruby.default)      # `default` diagnostics setting
   # configure_code_diagnostics(D::Ruby.strict)       # `strict` diagnostics setting
   # configure_code_diagnostics(D::Ruby.lenient)      # `lenient` diagnostics setting
   # configure_code_diagnostics(D::Ruby.silent)       # `silent` diagnostics setting

@@ -3,6 +3,7 @@
 require_relative "../expression"
 
 module Liquid2
+  # A primary expression with optional filters.
   class FilteredExpression < Expression
     attr_reader :filters
 
@@ -25,6 +26,7 @@ module Liquid2
     def children =[@left, *@filters]
   end
 
+  # An inline conditional expression.
   class TernaryExpression < Expression
     attr_reader :filters, :tail_filters
 
@@ -74,6 +76,7 @@ module Liquid2
     end
   end
 
+  # A Liquid filter with a name and array of arguments.
   class Filter < Expression
     attr_reader :name, :args
 
