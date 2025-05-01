@@ -118,7 +118,7 @@ module Liquid2
       "rindex0",
       "first",
       "last",
-      "parentloop",
+      "parentloop"
     ]
 
     def initialize(name, length, parent_loop)

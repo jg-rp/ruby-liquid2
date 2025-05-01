@@ -495,7 +495,7 @@ module Liquid2
       :token_whitespace_control,
       :token_output_end,
       :token_tag_end,
-      :token_other,
+      :token_other
     ]
 
     TERMINATE_FILTER = Set[
@@ -558,7 +558,7 @@ module Liquid2
       :token_as,
       :token_for,
       :token_blank,
-      :token_empty,
+      :token_empty
     ]
 
     LOOP_KEYWORDS = Set[
