@@ -19,6 +19,7 @@ Liquid templates for Ruby, with some extra features.
     <img alt="Static Badge" src="https://img.shields.io/badge/Ruby-3.1%20%7C%203.2%20%7C%203.3%20%7C%203.4-CC342D?style=flat-square">
   </a>
 </p>
+
 ---
 
 **Table of Contents**
