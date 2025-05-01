@@ -50,8 +50,8 @@ module Liquid2
 
       context.loop(namespace, forloop) do
         index = 0
-        while (item = array[index])
-          namespace[name] = item
+        while index < array.length
+          namespace[name] = array[index]
           index += 1
           forloop.next
           @block.render(context, buffer)

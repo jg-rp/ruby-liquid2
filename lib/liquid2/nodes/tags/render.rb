@@ -82,8 +82,8 @@ module Liquid2
           namespace["forloop"] = forloop
 
           index = 0
-          while (item = val[index])
-            namespace[key] = item
+          while index < val.length
+            namespace[key] = val[index]
             index += 1
             forloop.next
             template.render_with_context(ctx, buffer, partial: true, block_scope: true)

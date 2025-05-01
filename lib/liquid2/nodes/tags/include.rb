@@ -68,8 +68,8 @@ module Liquid2
           if val.is_a?(Array)
             context.raise_for_loop_limit(length: val.size)
             index = 0
-            while (item = val[index])
-              namespace[key] = item
+            while index < val.length
+              namespace[key] = val[index]
               template.render_with_context(context, buffer, partial: true, block_scope: false)
               index += 1
             end

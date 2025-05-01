@@ -42,8 +42,8 @@ module Liquid2
 
       context.extend(namespace) do
         index = 0
-        while (item = array[index])
-          namespace[name] = item
+        while index < array.length
+          namespace[name] = array[index]
           index += 1
           drop.next
 
