@@ -804,7 +804,7 @@ module Liquid2
             args << parse_arrow_function
           else
             # A positional argument that is a path.
-            args << parse_path
+            args << parse_primary
           end
         when :token_lparen
           # A grouped expression or range or arrow function

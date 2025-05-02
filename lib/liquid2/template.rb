@@ -123,6 +123,30 @@ module Liquid2
       nodes
     end
 
+    # Return an array of `{% doc %}` nodes found in this template.
+    #
+    # Each instance of `Liquid2::DocTag` has a `token` and `text` attribute. Use
+    # `Template#docs.map(&:text)` to get an array of doc strings.
+    #
+    # @return [Array[DocTag]]
+    def docs
+      context = RenderContext.new(self)
+      nodes = [] # : Array[DocTag]
+
+      # @type var visit: ^(Node) -> void
+      visit = lambda do |node|
+        nodes << node if node.is_a?(DocTag)
+
+        node.children(context, include_partials: false).each do |child|
+          visit.call(child) if child.is_a?(Node)
+        end
+      end
+
+      @ast.each { |node| visit.call(node) if node.is_a?(Node) }
+
+      nodes
+    end
+
     # Return an array of variables used in this template, without path segments.
     # @param include_partials [bool]
     # @return [Array[String]]

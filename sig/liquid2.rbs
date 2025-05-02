@@ -497,6 +497,8 @@ module Liquid2
     
     def comments: () -> Array[BlockComment | InlineComment | Comment]
                 
+    def docs: () -> Array[DocTag]
+                
     # Return an array of variables used in this template, without path segments.
     # @param include_partials [bool]
     # @return [Array[String]]
@@ -1963,6 +1965,8 @@ module Liquid2
   # The standard _doc_ tag.
   class DocTag < Tag
     @text: String
+
+    attr_reader text: String
 
     def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> DocTag
 

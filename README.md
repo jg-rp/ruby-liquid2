@@ -71,7 +71,7 @@ For those already familiar with Liquid, here's a quick description of the featur
 
 #### "Proper" string literal parsing
 
-String literals can contain markup delimiters (`{{`, `}}`, `{%`, `%}`, `{#` and `#}`) and c-like escape sequences without interfering with template parsing. Escape sequences follow JSON string syntax and semantics, with the addition of single quoted strings and the `\'` escape sequence.
+String literals can contain markup delimiters (`{{`, `}}`, `{%`, `%}`, `{#` and `#}`) without interfering with template parsing, and c-like escape sequences. Escape sequences follow JSON string syntax and semantics, with the addition of single quoted strings and the `\'` escape sequence.
 
 ```liquid
 {% assign x = "Hi \uD83D\uDE00!" %}
@@ -143,7 +143,7 @@ In this example, `{% if not user %}` is equivalent to `{% unless user %}`, howev
 
 #### Inline conditional and relational expressions
 
-In most expressions where you'd normally provide a literal (string, integer, float, true, false, nil/null) or variable name/path (foo.bar[0]), you can now use an inline conditional or relational expression.
+In most expressions where you'd normally provide a literal (string, integer, float, `true`, `false`, `nil`/`null`) or variable name/path (`foo.bar[0]`), you can now use an inline conditional or relational expression.
 
 See [Shopify/liquid #1922](https://github.com/Shopify/liquid/pull/1922) and [jg-rp/liquid #175](https://github.com/jg-rp/liquid/pull/175).
 
@@ -178,7 +178,7 @@ Many built-in filters that operate on arrays now accept lambda expression argume
 
 #### Dedicated comment syntax
 
-Comments surrounded by `{#` and `#}` are enabled by default. Additional `#`'s can be added to comment out blocks of markup that already contain comments, as long as hashes are balanced.
+Text surrounded by `{#` and `#}` are comments. Additional `#`'s can be added to comment out blocks of markup that already contain comments, as long as hashes are balanced.
 
 ```liquid2
 {## comment this out for now
@@ -279,7 +279,7 @@ See [`environment.rb`](https://github.com/jg-rp/ruby-liquid2/blob/main/lib/liqui
 
 #### Tags and filters
 
-All builtin tags an filters are registered with a new `Liquid2::Environment` by default. You can register or remove tags and/or filters using `Environment#register_filter`, `Environment#delete_filter`, `Environment#register_tag` and `Environment#delete_tag`, or override `Environment#setup_tags_and_filters` in an `Environment` subclass.
+All builtin tags and filters are registered with a new `Liquid2::Environment` by default. You can register or remove tags and/or filters using `Environment#register_filter`, `Environment#delete_filter`, `Environment#register_tag` and `Environment#delete_tag`, or override `Environment#setup_tags_and_filters` in an `Environment` subclass.
 
 ```ruby
 require "liquid2"
@@ -299,11 +299,11 @@ env = MyEnvironment.new
 # ...
 ```
 
-See [`environment.rb`](https://github.com/jg-rp/ruby-liquid2/blob/main/lib/liquid2/environment.rb) for a list of builtin tags and filters, and [`lib/liquid2/filters`](https://github.com/jg-rp/ruby-liquid2/tree/main/lib/liquid2/filters) for example filter implementations, and [`lib/liquid/nodes/tags`](https://github.com/jg-rp/ruby-liquid2/tree/main/lib/liquid2/nodes/tags) for example tag implementations.
+See [`environment.rb`](https://github.com/jg-rp/ruby-liquid2/blob/main/lib/liquid2/environment.rb) for a list of builtin tags and filters, [`lib/liquid2/filters`](https://github.com/jg-rp/ruby-liquid2/tree/main/lib/liquid2/filters) for example filter implementations, and [`lib/liquid/nodes/tags`](https://github.com/jg-rp/ruby-liquid2/tree/main/lib/liquid2/nodes/tags) for example tag implementations.
 
 #### Undefined
 
-The default _undefined_ type is an instance of `Liquid2::Undefined`. It is silently ignored and, when rendered, produces an empty string. Passing `Liquid2::StrictUndefined` when initializing a `Liquid2::Environment` will cause all uses of an undefined template variable to raise a `Liquid2::UndefinedError`.
+The default _undefined_ type is an instance of `Liquid2::Undefined`. It is silently ignored and, when rendered, produces an empty string. Passing `undefined: Liquid2::StrictUndefined` when initializing a `Liquid2::Environment` will cause all uses of an undefined template variable to raise a `Liquid2::UndefinedError`.
 
 ```ruby
 require "liquid2"
@@ -330,6 +330,80 @@ puts template.render # Hello, foo!
 Setting `falsy_undefined: false` when initializing a `Liquid2::Environment` will cause instances of `Liquid2::StrictUndefined` to raise an error when tested for truthiness.
 
 There's also `Liquid2::StrictDefaultUndefined`, which behaves like `StrictUndefined` but plays nicely with the `default` filter.
+
+### Static analysis
+
+Instances of `Liquid2::Template` include several methods for statically analyzing the template's syntax tree and reporting tag, filter and variable usage.
+
+`Template#variables` returns an array of variables used in the template. Notice that we get the _root segment_ only, excluding segments that make up a path to a variable.
+
+```ruby
+require "liquid2"
+
+source = <<~LIQUID
+  Hello, {{ you }}!
+  {% assign x = 'foo' | upcase %}
+
+  {% for ch in x %}
+      - {{ ch }}
+  {% endfor %}
+
+  Goodbye, {{ you.first_name | capitalize }} {{ you.last_name }}
+  Goodbye, {{ you.first_name }} {{ you.last_name }}
+LIQUID
+
+template = Liquid2.parse(source)
+p template.variables # ["you", "x", "ch"]
+```
+
+`Template#variable_paths` is similar, but includes all segments for each variable/path.
+
+```ruby
+# ... continued from above
+p template.variable_paths # ["you", "you.first_name", "you.last_name", "x", "ch"]
+```
+
+And `Template#variable_segments` does the same, but returns each variable/path as an array of segments instead of a string.
+
+```ruby
+# ... continued from above
+p template.variable_segments # [["you"], ["you", "first_name"], ["you", "last_name"], ["x"], ["ch"]]
+```
+
+Sometimes you'll only be interested in variables that are not in scope from previous tags (like `assign` and `capture`) or temporary block scope variables (like `forloop`). We call such variables "global" and provide `Template#global_variables`, `Template#global_variable_paths` and `Template#global_variable_segments`.
+
+```ruby
+# ... continued from above
+p template.global_variables # ["you"]
+```
+
+`Template#tags` and `Template#filters` return an array of tag and filter names used in the template.
+
+```ruby
+# ... continued from above
+p template.filter_names # ["upcase", "capitalize"]
+p template.tag_names # ["assign", "for"]
+```
+
+Finally there's `Template#comments` and `Template#docs`, which return instances of comments nodes and `DocTag` nodes, respectively. Each node has a `token` attribute, including a start index, and a `text` attribute, which is the comment or doc text.
+
+```ruby
+require "liquid2"
+
+source = <<~LIQUID
+  {% doc %}
+    Some doc comment
+  {% enddoc %}
+  {% assign x = 42 %}
+
+  {# note y could be nil #}
+  {{ x | plus: y or 7 }}
+LIQUID
+
+template = Liquid2.parse(source)
+p template.docs.map(&:text) # ["\n  Some doc comment\n"]
+p template.comments.map(&:text) # [" note y could be nil "]
+```
 
 ### Drops
 

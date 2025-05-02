@@ -5,6 +5,8 @@ require_relative "../../tag"
 module Liquid2
   # The standard _doc_ tag.
   class DocTag < Tag
+    attr_reader :text
+
     def self.parse(token, parser)
       parser.carry_whitespace_control
       parser.eat(:token_tag_end)
