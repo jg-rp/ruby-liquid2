@@ -42,8 +42,28 @@ module Liquid2
   class Environment
     attr_reader :tags, :local_namespace_limit, :context_depth_limit, :loop_iteration_limit,
                 :output_stream_limit, :filters, :suppress_blank_control_flow_blocks,
-                :shorthand_indexes
+                :shorthand_indexes, :falsy_undefined
 
+    # @param context_depth_limit [Integer] The maximum number of times a render context can
+    #   be extended or copied before a `Liquid2::LiquidResourceLimitError`` is raised.
+    # @param globals [Hash[String, untyped]?] Variables that are available to all templates
+    #   rendered from this environment.
+    # @param loader [Liquid2::Loader] An instance of `Liquid2::Loader`. A template loader
+    #   is responsible for finding and reading templates for `{% include %}` and
+    #   `{% render %}` tags, or when calling `Liquid2::Environment.get_template(name)`.
+    # @param local_namespace_limit [Integer?] The maximum allowed "size" of the template
+    #   local namespace (variables from `assign` and `capture` tags) before a
+    #   `Liquid2::LiquidResourceLimitError`` is raised.
+    # @param loop_iteration_limit [Integer?] The maximum number of loop iterations allowed
+    #   before a `LiquidResourceLimitError` is raised.
+    # @param output_stream_limit [Integer?] The maximum number of bytes that can be written
+    #   to a template's output buffer before a `LiquidResourceLimitError` is raised.
+    # @param shorthand_indexes [bool] When `true`, allow shorthand dotted array indexes as
+    #   well as bracketed indexes in variable paths. Defaults to `false`.
+    # @param suppress_blank_control_flow_blocks [bool] When `true`, suppress blank control
+    #   flow block output, so as not to include unnecessary whitespace. Defaults to `true`.
+    # @param undefined [singleton(Liquid2::Undefined)] A singleton returning an instance of
+    #   `Liquid2::Undefined`, which is used to represent template variables that don't exist.
     def initialize(
       context_depth_limit: 30,
       globals: nil,
@@ -53,7 +73,8 @@ module Liquid2
       output_stream_limit: nil,
       shorthand_indexes: false,
       suppress_blank_control_flow_blocks: true,
-      undefined: Undefined
+      undefined: Undefined,
+      falsy_undefined: true
     )
       # A mapping of tag names to objects responding to `parse(token, parser)`.
       @tags = {}
@@ -99,9 +120,13 @@ module Liquid2
       # unnecessary whitespace. Defaults to `true`.
       @suppress_blank_control_flow_blocks = suppress_blank_control_flow_blocks
 
-      # An instance of `Liquid2::Undefined` used to represent template variables that
-      # don't exist.
+      # A singleton returning an instance of `Liquid2::Undefined`, which is used to
+      # represent template variables that don't exist.
       @undefined = undefined
+
+      # When `true` (the default), undefined variables are considered falsy and do not
+      # raise an error when tested for truthiness.
+      @falsy_undefined = falsy_undefined
 
       # Override `setup_tags_and_filters` in environment subclasses to configure custom
       # tags and/or filters.
@@ -153,6 +178,20 @@ module Liquid2
     #    if _name_ did not exist in the filter register.
     def delete_filter(name)
       @filters.delete(name)
+    end
+
+    # Add or replace a tag.
+    # @param name [String] The tag's name, as used by template authors.
+    # @param tag [responds to parse: ([Symbol, String?, Integer], Parser) -> Tag]
+    def register_tag(name, tag)
+      @tags[name] = tag
+    end
+
+    # Remove a tag from the tag register.
+    # @param name [String] The name of the tag.
+    # @return [_Tag | nil]
+    def delete_tag(name)
+      @tags.delete(name)
     end
 
     def setup_tags_and_filters

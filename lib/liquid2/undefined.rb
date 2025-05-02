@@ -43,81 +43,81 @@ module Liquid2
     def respond_to_missing? = true
 
     def method_missing(...)
-      raise UndefinedError.new(@message, @node)
+      raise UndefinedError.new(@message, @node.token)
     end
 
     def [](...)
-      raise UndefinedError.new(@message, @node)
+      raise UndefinedError.new(@message, @node.token)
     end
 
     def key?(...)
-      raise UndefinedError.new(@message, @node)
+      raise UndefinedError.new(@message, @node.token)
     end
 
     def include?(...)
-      raise UndefinedError.new(@message, @node)
+      raise UndefinedError.new(@message, @node.token)
     end
 
     def member?(...)
-      raise UndefinedError.new(@message, @node)
+      raise UndefinedError.new(@message, @node.token)
     end
 
     def fetch(...)
-      raise UndefinedError.new(@message, @node)
+      raise UndefinedError.new(@message, @node.token)
     end
 
     def !
-      raise UndefinedError.new(@message, @node)
+      raise UndefinedError.new(@message, @node.token)
     end
 
     def ==(_other)
-      raise UndefinedError.new(@message, @node)
+      raise UndefinedError.new(@message, @node.token)
     end
 
     def !=(_other)
-      raise UndefinedError.new(@message, @node)
+      raise UndefinedError.new(@message, @node.token)
     end
 
     alias eql? ==
 
     def size
-      raise UndefinedError.new(@message, @node)
+      raise UndefinedError.new(@message, @node.token)
     end
 
     def length
-      raise UndefinedError.new(@message, @node)
+      raise UndefinedError.new(@message, @node.token)
     end
 
     def to_s
-      raise UndefinedError.new(@message, @node)
+      raise UndefinedError.new(@message, @node.token)
     end
 
     def to_i
-      raise UndefinedError.new(@message, @node)
+      raise UndefinedError.new(@message, @node.token)
     end
 
     def to_f
-      raise UndefinedError.new(@message, @node)
+      raise UndefinedError.new(@message, @node.token)
     end
 
     def each(...)
-      raise UndefinedError.new(@message, @node)
+      raise UndefinedError.new(@message, @node.token)
     end
 
     def each_with_index(...)
-      raise UndefinedError.new(@message, @node)
+      raise UndefinedError.new(@message, @node.token)
     end
 
     def join(...)
-      raise UndefinedError.new(@message, @node)
+      raise UndefinedError.new(@message, @node.token)
     end
 
     def to_liquid(_context)
-      raise UndefinedError.new(@message, @node)
+      raise UndefinedError.new(@message, @node.token)
     end
 
     def poke
-      raise UndefinedError.new(@message, @node)
+      raise UndefinedError.new(@message, @node.token)
     end
   end
 

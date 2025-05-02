@@ -76,6 +76,8 @@ module Liquid2
 
     @undefined: singleton(Undefined)
 
+    @falsy_undefined: bool
+
     @loader: TemplateLoader
 
     @globals: Hash[String, untyped]?
@@ -98,7 +100,9 @@ module Liquid2
 
     attr_reader shorthand_indexes: bool
 
-    def initialize: (?context_depth_limit: ::Integer, ?globals: Hash[String, untyped]?, ?loader: TemplateLoader?, ?local_namespace_limit: Integer?, ?loop_iteration_limit: Integer?, ?output_stream_limit: Integer?, ?shorthand_indexes: bool, ?suppress_blank_control_flow_blocks: bool, ?undefined: singleton(Undefined)) -> void
+    attr_reader falsy_undefined: bool
+
+    def initialize: (?context_depth_limit: ::Integer, ?globals: Hash[String, untyped]?, ?loader: TemplateLoader?, ?local_namespace_limit: Integer?, ?loop_iteration_limit: Integer?, ?output_stream_limit: Integer?, ?shorthand_indexes: bool, ?suppress_blank_control_flow_blocks: bool, ?undefined: singleton(Undefined), ?falsy_undefined: bool) -> void
 
     # @param source [String] template source text.
     # @return [Template]
@@ -122,6 +126,10 @@ module Liquid2
     # @return [callable | nil] The callable implementing the removed filter, or nil
     #    if _name_ did not exist in the filter register.
     def delete_filter: (String name) -> ([_Filter, (Integer | nil)] | nil)
+
+    def register_tag: (String name, _Tag tag) -> void
+                    
+    def delete_tag: (String name) -> (_Tag | nil) 
 
     def setup_tags_and_filters: () -> void
 

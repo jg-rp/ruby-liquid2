@@ -6,7 +6,7 @@ Liquid templates for Ruby, with some extra features.
 
 <p align="center">
   <a href="https://github.com/jg-rp/ruby-liquid2/blob/main/LICENSE.txt">
-    <img alt="GitHub License" src="https://img.shields.io/github/license/jg-rp/ruby-liquid2">
+    <img alt="GitHub License" src="https://img.shields.io/github/license/jg-rp/ruby-liquid2?style=flat-square">
   </a>
   <a href="https://github.com/jg-rp/ruby-liquid2/actions">
     <img src="https://img.shields.io/github/actions/workflow/status/jg-rp/ruby-liquid2/main.yml?branch=main&label=tests&style=flat-square" alt="Tests">
@@ -28,7 +28,7 @@ Liquid templates for Ruby, with some extra features.
 - [Example](#example)
 - [Links](#links)
 - [About](#about)
-- [Usage](#usage)
+- [API](#api)
 
 ## Install
 
@@ -150,7 +150,7 @@ See [Shopify/liquid #1922](https://github.com/Shopify/liquid/pull/1922) and [jg-
 These two templates are equivalent.
 
 ```liquid
-{{ user.name || "guest" }}
+{{ user.name or "guest" }}
 ```
 
 ```liquid
@@ -216,7 +216,122 @@ Here we use `~` to remove the newline after the opening `for` tag, but preserve 
 
 Integer and float literals can use scientific notation, like `1.2e3` or `1e-2`.
 
-## Usage
+## API
+
+### Liquid2.render
+
+`self.render: (String source, ?Hash[String, untyped]? data) -> String`
+
+Parse and render Liquid template _source_ using the default Liquid environment. If _data_ is given, hash keys will be available as template variables with their associated values.
+
+```ruby
+require "liquid2"
+
+puts Liquid2.render("Hello, {{ you }}!", "you" => "World")  # Hello, World!
+```
+
+This is a convenience method equivalent to `Liquid2::DEFAULT_ENVIRONMENT.parse(source).render(data)`.
+
+### Liquid2.parse
+
+`self.parse: (String source, ?globals: Hash[String, untyped]?) -> Template`
+
+Parse or "compile" Liquid template _source_ using the default Liquid environment. The resulting `Liquid2::Template` instance has a `render(data)` methods, which can be called multiple times with different data.
+
+```ruby
+require "liquid2"
+
+template = Liquid2.parse("Hello, {{ you }}!")
+puts template.render("you" => "World") # Hello, World!
+puts template.render("you" => "Liquid") # Hello, Liquid!
+```
+
+If the _globals_ keyword argument is given, that data will be _pinned_ to the template and will be available as template variables every time you call `Template#render`. Pinned data will be merged with data passed to `Template#render`, with `render` arguments taking priority over pinned data if there's a name conflict.
+
+`Liquid2.render(source)` is a convenience method equivalent to `Liquid2::DEFAULT_ENVIRONMENT.parse(source)` or `Liquid2::Environment.new.parse(source)`.
+
+### Configure
+
+Both `Liquid2.parse` and `Liquid2.render` are convenience methods that use the default `Liquid2::Environment`. Often you'll want to configure an environment, then load and render template from that.
+
+```ruby
+require "liquid2"
+
+env = Liquid2::Environment.new(loader: Liquid2::CachingFileSystemLoader.new("templates/"))
+template = env.parse("Hello, {{ you }}!")
+template.render("you" => "World") # Hello, World!
+```
+
+Assuming you've configured a template loader, `Environment#get_template(name)`, the `{% render %}` tag and the `{% include %}` tag will use that `Liquid2::Loader` to find, read and parse templates. This example will look for templates in a relative folder on your file system called `templates`.
+
+```ruby
+require "liquid2"
+
+env = Liquid2::Environment.new(loader: Liquid2::CachingFileSystemLoader.new("templates/"))
+template = env.get_template("index.liquid")
+another_template = env.parse("{% render 'index.liquid' %}")
+# ...
+```
+
+We'd expect a `Liquid2::LiquidTemplateNotFoundError` if `index.liquid` does not exist in the folder `templates/`.
+
+See [`environment.rb`](https://github.com/jg-rp/ruby-liquid2/blob/main/lib/liquid2/environment.rb) for all `Liquid2::Environment` options. Builtin template loaders are [`HashLoader`](https://github.com/jg-rp/ruby-liquid2/blob/main/lib/liquid2/loader.rb), [`FileSystemLoader`](https://github.com/jg-rp/ruby-liquid2/blob/main/lib/liquid2/loaders/file_system_loader.rb) and `CachingFileSystemLoader`. You are encouraged to implement your own template loaders to read template source text from a database or parse front matter, for example.
+
+#### Tags and filters
+
+All builtin tags an filters are registered with a new `Liquid2::Environment` by default. You can register or remove tags and/or filters using `Environment#register_filter`, `Environment#delete_filter`, `Environment#register_tag` and `Environment#delete_tag`, or override `Environment#setup_tags_and_filters` in an `Environment` subclass.
+
+```ruby
+require "liquid2"
+
+class MyEnv < Liquid2::Environment
+  def setup_tags_and_filters
+    super
+    delete_filter("base64_decode")
+    delete_filter("base64_encode")
+    delete_filter("base64_url_safe_decode")
+    delete_filter("base64_url_safe_encode")
+    register_tag("with", WithTag)
+  end
+end
+
+env = MyEnvironment.new
+# ...
+```
+
+See [`environment.rb`](https://github.com/jg-rp/ruby-liquid2/blob/main/lib/liquid2/environment.rb) for a list of builtin tags and filters, and [`lib/liquid2/filters`](https://github.com/jg-rp/ruby-liquid2/tree/main/lib/liquid2/filters) for example filter implementations, and [`lib/liquid/nodes/tags`](https://github.com/jg-rp/ruby-liquid2/tree/main/lib/liquid2/nodes/tags) for example tag implementations.
+
+#### Undefined
+
+The default _undefined_ type is an instance of `Liquid2::Undefined`. It is silently ignored and, when rendered, produces an empty string. Passing `Liquid2::StrictUndefined` when initializing a `Liquid2::Environment` will cause all uses of an undefined template variable to raise a `Liquid2::UndefinedError`.
+
+```ruby
+require "liquid2"
+
+env = Liquid2::Environment.new(undefined: Liquid2::StrictUndefined)
+template = env.parse("Hello, {{ nosuchthing }}!")
+puts template.render
+#   -> "Hello, {{ nosuchthing }}!":1:10
+#   |
+# 1 | Hello, {{ nosuchthing }}!
+#   |           ^^^^^^^^^^^ "nosuchthing" is undefined
+```
+
+By default, instances of `Liquid2::StrictUndefined` are considered falsy when tested for truthiness, without raises an error.
+
+```ruby
+require "liquid2"
+
+env = Liquid2::Environment.new(undefined: Liquid2::StrictUndefined)
+template = env.parse("Hello, {{ nosuchthing or 'foo' }}!")
+puts template.render # Hello, foo!
+```
+
+Setting `falsy_undefined: false` when initializing a `Liquid2::Environment` will cause instances of `Liquid2::StrictUndefined` to raise an error when tested for truthiness.
+
+There's also `Liquid2::StrictDefaultUndefined`, which behaves like `StrictUndefined` but plays nicely with the `default` filter.
+
+### Drops
 
 TODO
 

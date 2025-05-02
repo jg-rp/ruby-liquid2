@@ -73,6 +73,8 @@ module Liquid2
   # @param obj [Object]
   # @return [bool]
   def self.truthy?(context, obj)
+    return false if context.env.falsy_undefined && undefined?(obj)
+
     obj = obj.to_liquid(context) if obj.respond_to?(:to_liquid)
     !!obj
   end

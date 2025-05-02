@@ -10,3 +10,4 @@
 .vscode
 .stackprof*
 flamegraph*
+dev*
