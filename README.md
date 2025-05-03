@@ -377,7 +377,7 @@ Sometimes you'll only be interested in variables that are not in scope from prev
 p template.global_variables # ["you"]
 ```
 
-`Template#tags` and `Template#filters` return an array of tag and filter names used in the template.
+`Template#tag_names` and `Template#filter_names` return an array of tag and filter names used in the template.
 
 ```ruby
 # ... continued from above
@@ -407,7 +407,124 @@ p template.comments.map(&:text) # [" note y could be nil "]
 
 ### Drops
 
-TODO
+Our "drop" interface defines the methods used by Liquid2 when non-primitive values appear as variables in templates. Primitive types are strings, integers, floats, `true`, `false`, `nil`/`null`, hashes, arrays and the special `blank` and `empty` objects. All other objects are accessed using the drop interface.
+
+#### To string
+
+`to_s` is called when outputting a drop.
+
+```ruby
+require "liquid2"
+
+class MyDrop
+  def to_s
+    "Hi!"
+  end
+end
+
+puts Liquid2.render("{{ thing }}", "thing" => MyDrop.new) # Hi!
+```
+
+#### Item fetching and method calling
+
+We use `[](key)` and `key?(key)` both for fetching items from a collection-like object and/or calling methods. Notice that `baz` is not called in this example.
+
+```ruby
+require "liquid2"
+
+class MyDrop
+  INVOCABLE = Set["foo", "bar"]
+
+  def [](key)
+    send(key) if INVOCABLE.member?(key)
+  end
+
+  def key?(key)
+    INVOCABLE.member?(key)
+  end
+
+  def foo = 42
+  def bar = "Hello!"
+  def baz = "not public"
+end
+
+puts Liquid2.render("{{ thing.foo }} {{ thing.baz }}", "thing" => MyDrop.new) # 42
+```
+
+#### Enumerating drops
+
+Any `Enumerable` will work with the `{% for %}` tag and filters that operate on arrays.
+
+```ruby
+require "liquid2"
+
+class MyDrop
+  include Enumerable
+
+  def each
+    yield "foo"
+    yield "bar"
+    yield 42
+  end
+end
+
+puts Liquid2.render("{% for x in y %}{{ x }},{% endfor %}", "y" => MyDrop.new) # foo,bar,42,
+```
+
+#### First, last and size
+
+If an object responds to `first`, `last` or `size`, those methods will be called by the `first`, `last` and `size` filters, and the special `.first`, `.last` or `.size` attributes.
+
+```ruby
+require "liquid2"
+
+class MyDrop
+  def first
+    42
+  end
+end
+
+puts Liquid2.render("{{ x.first }} {{ x | first }}", "x" => MyDrop.new) # 42 42
+```
+
+#### Lazy slicing
+
+If an object responds to `slice`, Liquid will call it with `start`, `length` and `reversed` arguments when evaluating it as a `for` loop target. `slice` takes priority over `is_a?(Enumerable)` and is intended for lazily loading items when slicing large collections.
+
+```ruby
+require "liquid2"
+
+class MyDrop
+  def initialize(*items)
+    @items = items
+  end
+
+  def slice(start, length, reversed)
+    # Pretend items are coming from a database or over a network.
+    array = @items.slice(start || 0, length || @items.length)
+    reversed ? array.reverse! : array
+  end
+end
+
+puts Liquid2.render("{% for x in y offset: 2, limit: 5 %}{{ x }},{% endfor %}", "y" => MyDrop.new) # 2,3,4,5,6,
+```
+
+#### Truthiness, comparisons and path segments
+
+If an object responds to `to_liquid(context)`, `to_liquid` will be called and the result used when testing drops for truthiness, comparing a drop to another value or when using the drop as a variable path segment.
+
+```ruby
+require "liquid2"
+
+class MyDrop
+  # @param context [RenderContext]
+  def to_liquid(_context)
+    "foo"
+  end
+end
+
+puts Liquid2.render("{% if x == 'foo' %}true{% else %}false{% endif %}", "x" => MyDrop.new) # true
+```
 
 ## Development
 

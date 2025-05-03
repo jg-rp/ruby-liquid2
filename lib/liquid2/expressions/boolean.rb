@@ -12,7 +12,8 @@ module Liquid2
     end
 
     def evaluate(context)
-      Liquid2.truthy?(context, context.evaluate(@expr))
+      value = context.evaluate(@expr)
+      Liquid2.truthy?(context, value.respond_to?(:to_liquid) ? value.to_liquid(context) : value)
     end
 
     def children = [@expr]

@@ -33,11 +33,13 @@ module Liquid2
               elsif obj.is_a?(String)
                 # TODO: optionally enable/disable string iteration
                 obj.each_char.to_a
-              elsif obj.respond_to?(:each)
-                # TODO: special lazy drop slicing
-                # #each and #slice is our enumerable drop interface
-                # TODO: or just #to_a
-                obj.each.to_a
+              elsif obj.respond_to?(:slice)
+                # Special lazy drop slicing
+                return obj.slice(context.evaluate(@offset),
+                                 context.evaluate(@limit),
+                                 @reversed) || EMPTY_ENUM
+              elsif obj.is_a?(Enumerable) # rubocop:disable Lint/DuplicateBranch
+                obj.to_a
               else
                 EMPTY_ENUM
               end
