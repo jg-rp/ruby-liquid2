@@ -29,6 +29,7 @@ Liquid templates for Ruby, with some extra features.
 - [Links](#links)
 - [About](#about)
 - [API](#api)
+- [Contributing](#contributing)
 
 ## Install
 
@@ -42,6 +43,12 @@ Or
 
 ```
 gem install liquid2
+```
+
+Or
+
+```
+bundle add liquid2
 ```
 
 ## Example
@@ -63,7 +70,7 @@ puts template.render("you" => "Liquid")  # Hello, Liquid!
 
 ## About
 
-This project aims to be mostly compatible with [Shopify/liquid](https://github.com/Shopify/liquid), but with fewer quirks and some new features.
+This project's template syntax aims to be mostly compatible with [Shopify/liquid](https://github.com/Shopify/liquid), but with fewer quirks and some new features. The [Ruby API](#api) is quite different.
 
 For those already familiar with Liquid, here's a quick description of the features added in Liquid2. Also see [test/test_compliance.rb](https://github.com/jg-rp/ruby-liquid2/blob/main/test/test_compliance.rb) for a list of [golden tests](https://github.com/jg-rp/golden-liquid) that we skip.
 
@@ -317,7 +324,7 @@ puts template.render
 #   |           ^^^^^^^^^^^ "nosuchthing" is undefined
 ```
 
-By default, instances of `Liquid2::StrictUndefined` are considered falsy when tested for truthiness, without raises an error.
+By default, instances of `Liquid2::StrictUndefined` are considered falsy when tested for truthiness, without raising an error.
 
 ```ruby
 require "liquid2"
@@ -528,11 +535,43 @@ puts Liquid2.render("{% if x == 'foo' %}true{% else %}false{% endif %}", "x" => 
 
 ## Development
 
-TODO
+The [golden liquid](https://github.com/jg-rp/golden-liquid) test suite is included in this repository as a Git [submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules). Clone this project and initialize the submodule with something like:
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+```shell
+$ git clone git@github.com:jg-rp/ruby-liquid2.git
+$ cd ruby-liquid2
+$ git submodule update --init
+```
 
-## Contributing
+We use [Bundler](https://bundler.io/) and [Rake](https://ruby.github.io/rake/). Install development dependencies with:
+
+```
+bundle install
+```
+
+Run tests with:
+
+```
+bundle exec rake test
+```
+
+Lint with:
+
+```
+bundle exec rubocop
+```
+
+And type check with:
+
+```
+bundle exec steep
+```
+
+Run one of the benchmarks with:
+
+```
+bundle exec ruby performance/benchmark.rb
+```
 
 ### Profiling
 
@@ -542,6 +581,14 @@ Dump profile data with `bundle exec ruby performance/profile.rb`, then generate 
 
 ```
 bundle exec stackprof --d3-flamegraph .stackprof-cpu-parse.dump > flamegraph-cpu-parse.html
+```
+
+#### Memory profile
+
+Print memory usage to the terminal.
+
+```
+bundle exec ruby performance/memory_profile.rb
 ```
 
 ## License

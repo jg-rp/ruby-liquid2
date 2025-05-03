@@ -42,6 +42,7 @@ GEM
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
     logger (1.7.0)
+    memory_profiler (1.1.0)
     minitest (5.25.5)
     minitest-fail-fast (0.1.0)
       minitest (~> 5)
@@ -123,6 +124,7 @@ DEPENDENCIES
   benchmark-ips (~> 2.14)
   bigdecimal (~> 3.1)
   liquid2!
+  memory_profiler (~> 1.1)
   minitest (~> 5.16)
   minitest-fail-fast (~> 0.1.0)
   rake (~> 13.0)

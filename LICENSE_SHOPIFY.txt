@@ -1,3 +1,11 @@
+This project is not affiliated with Shopify, but we do reference
+Shopify/liquid frequently and have used code from Shopify/liquid.
+A copy of the Shopify/liquid license is included below.
+
+See https://github.com/Shopify/liquid.
+
+---
+
 Copyright (c) 2005, 2006 Tobias Luetke
 
 Permission is hereby granted, free of charge, to any person obtaining
