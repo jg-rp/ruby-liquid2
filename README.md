@@ -406,8 +406,8 @@ LIQUID
 template = Liquid2.parse(source)
 macro_tags, call_tags = template.macros
 
-p macro_tags.map(&:name).uniq # ["foo"]
-p call_tags.map(&:name).uniq # ["foo", "bar"]
+p macro_tags.map(&:macro_name).uniq # ["foo"]
+p call_tags.map(&:macro_name).uniq # ["foo", "bar"]
 ```
 
 Finally there's `Template#comments` and `Template#docs`, which return instances of comments nodes and `DocTag` nodes, respectively. Each node has a `token` attribute, including a start index, and a `text` attribute, which is the comment or doc text.
