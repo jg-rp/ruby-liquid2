@@ -147,6 +147,29 @@ module Liquid2
       nodes
     end
 
+    # Return arrays of `{% macro %}` and `{% call %}` tags found in this template.
+    # @param include_partials [bool]
+    # @return [Array[MacroTag], Array[CallTag]]
+    def macros(include_partials: false)
+      context = RenderContext.new(self)
+      macro_nodes = [] # : Array[MacroTag]
+      call_nodes = [] # : Array[CallTag]
+
+      # @type var visit: ^(Node) -> void
+      visit = lambda do |node|
+        macro_nodes << node if node.is_a?(MacroTag)
+        call_nodes << node if node.is_a?(CallTag)
+
+        node.children(context, include_partials: include_partials).each do |child|
+          visit.call(child) if child.is_a?(Node)
+        end
+      end
+
+      @ast.each { |node| visit.call(node) if node.is_a?(Node) }
+
+      [macro_nodes, call_nodes]
+    end
+
     # Return an array of variables used in this template, without path segments.
     # @param include_partials [bool]
     # @return [Array[String]]

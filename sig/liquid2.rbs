@@ -344,6 +344,8 @@ module Liquid2
     def parse_string: () -> String
 
     def parse_identifier: (?trailing_question: bool) -> Identifier
+                        
+    def parse_name: () -> String
 
     # Parse comma separated expression.
     # Leading commas should be consumed by the caller.
@@ -354,6 +356,10 @@ module Liquid2
     # Leading commas should be consumed by the caller.
     # @return [Array<KeywordArgument>]
     def parse_keyword_arguments: () -> Array[KeywordArgument]
+                               
+    def parse_parameters: () -> Hash[String, Parameter]
+                        
+    def parse_arguments: () -> [Array[untyped], Array[KeywordArgument]]
 
     class Precedence
       LOWEST: 1
@@ -498,6 +504,8 @@ module Liquid2
     def comments: () -> Array[BlockComment | InlineComment | Comment]
                 
     def docs: () -> Array[DocTag]
+            
+    def macros: (?include_partials: bool) -> [Array[MacroTag], Array[CallTag]]
                 
     # Return an array of variables used in this template, without path segments.
     # @param include_partials [bool]
@@ -1120,6 +1128,26 @@ module Liquid2
     attr_reader sym: Symbol
 
     attr_reader value: untyped
+
+    # @param name [Token]
+    # @param value [Expression]
+    def initialize: ([Symbol, String?, Integer] token, String name, untyped value) -> void
+
+    def evaluate: (RenderContext context) -> [String, untyped]
+  end
+
+  class Parameter < Expression
+    @name: String
+
+    @sym: Symbol
+
+    @value: untyped
+
+    attr_reader name: String
+
+    attr_reader sym: Symbol
+
+    attr_reader value: (untyped | :undefined)
 
     # @param name [Token]
     # @param value [Expression]
@@ -2356,5 +2384,61 @@ module Liquid2
   module Filters
     # Return _left_ serialized in JSON format.
     def self.json: (untyped left, ?pretty: bool) -> String
+  end
+end
+
+module Liquid2
+  # The _macro_ tag.
+  class MacroTag < Tag
+    @name: String
+
+    @params: Hash[String, Parameter]
+
+    @block: Block
+
+    @blank: bool
+
+    END_BLOCK: Set[String]
+
+    attr_reader name: String
+
+    attr_reader params: Hash[String, Parameter]
+
+    attr_reader Block: Block
+
+    # @param parser [Parser]
+    # @return [MacroTag]
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> MacroTag
+
+    def initialize: ([Symbol, String?, Integer] token, String name, Hash[String, Parameter] params, Block block) -> void
+
+    def render: (RenderContext context, String _buffer) -> void
+  end
+
+  # The _call_ tag.
+  class CallTag < Tag
+    @name: String
+
+    @args: Array[untyped]
+
+    @kwargs: Array[KeywordArgument]
+
+    @blank: bool
+
+    DISABLED_TAGS: Set[String]
+
+    attr_reader name: String
+
+    attr_reader args: Array[untyped]
+
+    attr_reader kwargs: Array[KeywordArgument]
+
+    # @param parser [Parser]
+    # @return [CallTag]
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> CallTag
+
+    def initialize: ([Symbol, String?, Integer] token, String name, Array[untyped] args, Array[KeywordArgument] kwargs) -> void
+
+    def render: (RenderContext context, String buffer) -> void
   end
 end

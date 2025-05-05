@@ -22,4 +22,24 @@ module Liquid2
 
     def children = [@value]
   end
+
+  # A macro parameter with a name and optional default value.
+  class Parameter < Expression
+    attr_reader :value, :name, :sym
+
+    # @param name [String]
+    # @param value [Expression?]
+    def initialize(token, name, value)
+      super(token)
+      @name = name
+      @sym = name.to_sym
+      @value = value
+    end
+
+    def evaluate(context)
+      [@name, context.evaluate(@value)]
+    end
+
+    def children = [@value]
+  end
 end

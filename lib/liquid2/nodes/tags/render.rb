@@ -12,8 +12,6 @@ module Liquid2
     # @return [RenderTag]
     def self.parse(token, parser)
       name = parser.parse_string
-      raise LiquidTypeError, "expected a string literal" unless name.is_a?(String)
-
       repeat = false
       var = nil # : Expression?
       as = nil # : Identifier?
