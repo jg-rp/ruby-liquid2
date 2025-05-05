@@ -2390,7 +2390,7 @@ end
 module Liquid2
   # The _macro_ tag.
   class MacroTag < Tag
-    @name: String
+    @macro_name: String
 
     @params: Hash[String, Parameter]
 
@@ -2400,7 +2400,7 @@ module Liquid2
 
     END_BLOCK: Set[String]
 
-    attr_reader name: String
+    attr_reader macro_name: String
 
     attr_reader params: Hash[String, Parameter]
 
@@ -2417,7 +2417,7 @@ module Liquid2
 
   # The _call_ tag.
   class CallTag < Tag
-    @name: String
+    @macro_name: String
 
     @args: Array[untyped]
 
@@ -2427,7 +2427,7 @@ module Liquid2
 
     DISABLED_TAGS: Set[String]
 
-    attr_reader name: String
+    attr_reader macro_name: String
 
     attr_reader args: Array[untyped]
 

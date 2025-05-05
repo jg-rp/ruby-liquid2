@@ -200,5 +200,34 @@ class TestStaticAnalysis < Minitest::Test
     )
   end
 
+  def test_macro_and_call
+    source = <<~LIQUID
+      {% macro 'foo', you: 'World', arg: n %}
+      Hello, {{ you }}!
+      {% endmacro %}
+      {% call 'foo' %}
+      {% assign x = 'you' %}
+      {% call 'foo', you: x %}
+    LIQUID
+
+    assert_analysis(
+      Liquid2.parse(source),
+      locals: { "x" => [Var.new(["x"], Span.new("", 100))] },
+      globals: {
+        "n" => [Var.new(["n"], Span.new("", 35))]
+      },
+      variables: {
+        "n" => [Var.new(["n"], Span.new("", 35))],
+        "you" => [Var.new(["you"], Span.new("", 50))],
+        "x" => [Var.new(["x"], Span.new("", 133))]
+      },
+      tags: {
+        "macro" => [Span.new("", 3)],
+        "call" => [Span.new("", 76), Span.new("", 116)],
+        "assign" => [Span.new("", 93)]
+      }
+    )
+  end
+
   # TODO: finish me
 end

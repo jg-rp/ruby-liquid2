@@ -80,8 +80,8 @@ class TestStaticAnalysisHelpers < Minitest::Test
     assert_equal(1, macro_tags.length)
     assert_equal(2, call_tags.length)
 
-    macro_names = macro_tags.map(&:name)
-    call_names = call_tags.map(&:name)
+    macro_names = macro_tags.map(&:macro_name)
+    call_names = call_tags.map(&:macro_name)
 
     assert_equal(["func"], macro_names)
     assert_equal(%w[func nosuchthing], call_names)

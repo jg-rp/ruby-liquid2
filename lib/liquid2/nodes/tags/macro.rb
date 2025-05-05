@@ -5,7 +5,7 @@ require_relative "../../tag"
 module Liquid2
   # The _macro_ tag.
   class MacroTag < Tag
-    attr_reader :name, :params, :block
+    attr_reader :macro_name, :params, :block
 
     END_BLOCK = Set["endmacro"]
 
@@ -25,7 +25,7 @@ module Liquid2
 
     def initialize(token, name, params, block)
       super(token)
-      @name = name
+      @macro_name = name
       @params = params
       @block = block
       @blank = true
@@ -34,7 +34,7 @@ module Liquid2
     def render(context, _buffer)
       # Macro tags don't render or evaluate anything, just store their arguments list
       # and block on the render context so it can be called later by a `call` tag.
-      context.tag_namespace[:macros][@name] = [@params, @block]
+      context.tag_namespace[:macros][@macro_name] = [@params, @block]
     end
 
     def children(_static_context, include_partials: true) = [@block]
@@ -51,7 +51,7 @@ module Liquid2
 
   # The _call_ tag.
   class CallTag < Tag
-    attr_reader :name, :args, :kwargs
+    attr_reader :macro_name, :args, :kwargs
 
     DISABLED_TAGS = Set["include", "block"]
 
@@ -68,7 +68,7 @@ module Liquid2
 
     def initialize(token, name, args, kwargs)
       super(token)
-      @name = name
+      @macro_name = name
       @args = args
       @kwargs = kwargs
       @blank = false
@@ -77,10 +77,10 @@ module Liquid2
     def render(context, buffer)
       # @type var params: Hash[String, Parameter]?
       # @type var block: Block
-      params, block = context.tag_namespace[:macros][@name]
+      params, block = context.tag_namespace[:macros][@macro_name]
 
       unless params
-        buffer << Liquid2.to_output_string(context.env.undefined(@name, node: self))
+        buffer << Liquid2.to_output_string(context.env.undefined(@macro_name, node: self))
         return
       end
 
