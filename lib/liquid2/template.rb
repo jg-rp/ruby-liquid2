@@ -59,6 +59,8 @@ module Liquid2
 
           next unless (interrupt = context.interrupts.pop)
 
+          break if interrupt == :stop_render
+
           if !partial || block_scope
             raise LiquidSyntaxError.new("unexpected #{interrupt}",
                                         node.token) # steep:ignore

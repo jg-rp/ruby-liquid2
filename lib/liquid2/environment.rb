@@ -21,6 +21,7 @@ require_relative "nodes/tags/cycle"
 require_relative "nodes/tags/decrement"
 require_relative "nodes/tags/doc"
 require_relative "nodes/tags/echo"
+require_relative "nodes/tags/extends"
 require_relative "nodes/tags/for"
 require_relative "nodes/tags/if"
 require_relative "nodes/tags/include"
@@ -207,6 +208,8 @@ module Liquid2
       @tags["decrement"] = DecrementTag
       @tags["doc"] = DocTag
       @tags["echo"] = EchoTag
+      @tags["extends"] = ExtendsTag
+      @tags["block"] = BlockTag
       @tags["for"] = ForTag
       @tags["if"] = IfTag
       @tags["include"] = IncludeTag

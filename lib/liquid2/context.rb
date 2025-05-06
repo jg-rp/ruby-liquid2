@@ -208,13 +208,17 @@ module Liquid2
                 ReadOnlyChainHash.new(@globals, namespace)
               end
 
-      self.class.new(template || @template,
-                     globals: scope,
-                     disabled_tags: disabled_tags,
-                     copy_depth: @copy_depth + 1,
-                     parent: self,
-                     loop_carry: loop_carry,
-                     local_namespace_carry: @assign_score)
+      context = self.class.new(template || @template,
+                               globals: scope,
+                               disabled_tags: disabled_tags,
+                               copy_depth: @copy_depth + 1,
+                               parent: self,
+                               loop_carry: loop_carry,
+                               local_namespace_carry: @assign_score)
+
+      # XXX: bit of a hack
+      context.tag_namespace[:extends] = @tag_namespace[:extends]
+      context
     end
 
     # Push a new namespace and forloop for the duration of a block.
