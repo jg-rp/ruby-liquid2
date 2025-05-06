@@ -27,6 +27,7 @@ require_relative "nodes/tags/include"
 require_relative "nodes/tags/increment"
 require_relative "nodes/tags/inline_comment"
 require_relative "nodes/tags/liquid"
+require_relative "nodes/tags/macro"
 require_relative "nodes/tags/raw"
 require_relative "nodes/tags/render"
 require_relative "nodes/tags/tablerow"
@@ -211,6 +212,8 @@ module Liquid2
       @tags["include"] = IncludeTag
       @tags["increment"] = IncrementTag
       @tags["liquid"] = LiquidTag
+      @tags["macro"] = MacroTag
+      @tags["call"] = CallTag
       @tags["raw"] = RawTag
       @tags["render"] = RenderTag
       @tags["tablerow"] = TableRowTag

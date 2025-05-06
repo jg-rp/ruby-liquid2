@@ -171,10 +171,12 @@ module Liquid2
       template_ = @template
       @template = template if template
       @scope << namespace
-      yield
-    ensure
-      @template = template_
-      @scope.pop
+      begin
+        yield
+      ensure
+        @template = template_
+        @scope.pop
+      end
     end
 
     # Copy this render context and add _namespace_ to the new scope.
@@ -222,10 +224,12 @@ module Liquid2
       raise_for_loop_limit(length: forloop.length)
       @loops << forloop
       @scope << namespace
-      yield
-    ensure
-      @scope.pop
-      @loops.pop
+      begin
+        yield
+      ensure
+        @scope.pop
+        @loops.pop
+      end
     end
 
     # Return the last ForLoop obj if one is available, or an instance of Undefined otherwise.

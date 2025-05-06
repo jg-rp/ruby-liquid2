@@ -396,7 +396,7 @@ module Liquid2
     # @raises [LiquidTypeError].
     def parse_string
       node = parse_primary
-      raise LiquidTypeError, "expected a string" unless node.is_a?(String)
+      raise LiquidTypeError, "expected a string literal" unless node.is_a?(String)
 
       node
     end
@@ -409,6 +409,23 @@ module Liquid2
       end
 
       Identifier.new(token)
+    end
+
+    # Parse a string literals or unquoted word.
+    def parse_name
+      case current_kind
+      when :token_word
+        parse_identifier.name
+      when :token_single_quote_string, :token_double_quote_string
+        node = parse_string_literal
+        unless node.is_a?(String)
+          raise LiquidSyntaxError.new("names can't be template strings", node.token)
+        end
+
+        node
+      else
+        raise LiquidSyntaxError.new("expected a string literal or unquoted word", current)
+      end
     end
 
     # Parse comma separated expression.
@@ -427,7 +444,7 @@ module Liquid2
       args
     end
 
-    # Parse comma name/value pairs.
+    # Parse comma separated name/value pairs.
     # Leading commas should be consumed by the caller, if allowed.
     # @return [Array<KeywordArgument>]
     def parse_keyword_arguments
@@ -438,8 +455,7 @@ module Liquid2
 
         word = eat(:token_word)
         eat_one_of(:token_assign, :token_colon)
-        val = parse_primary
-        args << KeywordArgument.new(word, word[1] || raise, val)
+        args << KeywordArgument.new(word, word[1] || raise, parse_primary)
 
         break unless current_kind == :token_comma
 
@@ -447,6 +463,68 @@ module Liquid2
       end
 
       args
+    end
+
+    # Parse comma separated parameter names with optional default expressions.
+    # Leading commas should be consumed by the caller, if allowed.
+    # @return [Hash[String, Parameter]]
+    def parse_parameters
+      args = {} # : Hash[String, Parameter]
+
+      loop do
+        break if TERMINATE_EXPRESSION.member?(current_kind)
+
+        word = eat(:token_word)
+        name = word[1] || raise
+
+        case current_kind
+        when :token_assign, :token_colon
+          @pos += 1
+          args[name] = Parameter.new(word, name, parse_primary)
+          @pos += 1 if current_kind == :token_comma
+        when :comma
+          args[name] = Parameter.new(word, name, :undefined)
+          @pos += 1
+        else
+          args[name] = Parameter.new(word, name, :undefined)
+          break
+        end
+      end
+
+      args
+    end
+
+    # Parse mixed positional and keyword arguments.
+    # Leading commas should be consumed by the caller, if allowed.
+    # @return [[Array[untyped], Array[KeywordArgument]]]
+    def parse_arguments
+      args = [] # : Array[untyped]
+      kwargs = [] # : Array[KeywordArgument]
+
+      loop do
+        break if TERMINATE_EXPRESSION.member?(current_kind)
+
+        case current_kind
+        when :token_word
+          if KEYWORD_ARGUMENT_DELIMITERS.include?(peek_kind)
+            token = self.next
+            @pos += 1 # = or :
+            kwargs << KeywordArgument.new(token, token[1] || raise, parse_primary)
+          else
+            # A positional argument
+            args << parse_primary
+          end
+        else
+          # A positional argument
+          args << parse_primary
+        end
+
+        break unless current_kind == :token_comma
+
+        @pos += 1
+      end
+
+      [args, kwargs]
     end
 
     protected

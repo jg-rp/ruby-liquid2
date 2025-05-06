@@ -66,4 +66,24 @@ class TestStaticAnalysisHelpers < Minitest::Test
   def test_get_tag_names
     assert_equal(%w[assign for], TEMPLATE.tag_names)
   end
+
+  def test_get_macros
+    source = <<~LIQUID.chomp
+      {% macro func, you=a.b %}Hello, {{ you }}!{% endmacro -%}
+      {% call func %}
+      {% call nosuchthing, you='Liquid' %}
+    LIQUID
+
+    template = Liquid2.parse(source)
+    macro_tags, call_tags = template.macros
+
+    assert_equal(1, macro_tags.length)
+    assert_equal(2, call_tags.length)
+
+    macro_names = macro_tags.map(&:macro_name)
+    call_names = call_tags.map(&:macro_name)
+
+    assert_equal(["func"], macro_names)
+    assert_equal(%w[func nosuchthing], call_names)
+  end
 end

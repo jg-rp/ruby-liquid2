@@ -29,7 +29,7 @@ Liquid templates for Ruby, with some extra features.
 - [Links](#links)
 - [About](#about)
 - [API](#api)
-- [Contributing](#contributing)
+- [Development](#development)
 
 ## Install
 
@@ -390,6 +390,24 @@ p template.global_variables # ["you"]
 # ... continued from above
 p template.filter_names # ["upcase", "capitalize"]
 p template.tag_names # ["assign", "for"]
+```
+
+`Template#macros` returns arrays of `{% macro %}` and `{% call %}` tags found in the template.
+
+```ruby
+require "liquid2"
+
+source = <<~LIQUID
+  {% macro foo, you %}Hello, {{ you }}!{% endmacro -%}
+  {% call foo, 'World' %}
+  {% call bar, 'Liquid' %}
+LIQUID
+
+template = Liquid2.parse(source)
+macro_tags, call_tags = template.macros
+
+p macro_tags.map(&:macro_name).uniq # ["foo"]
+p call_tags.map(&:macro_name).uniq # ["foo", "bar"]
 ```
 
 Finally there's `Template#comments` and `Template#docs`, which return instances of comments nodes and `DocTag` nodes, respectively. Each node has a `token` attribute, including a start index, and a `text` attribute, which is the comment or doc text.
