@@ -848,7 +848,7 @@ module Liquid2
     @loops: Array[ForLoop]
 
     # A stack of interrupts used to signal breaking and continuing `for` loops.
-    @interrupts: Array[:break | :continue]
+    @interrupts: Array[Symbol]
 
     attr_reader env: Environment
 
@@ -860,7 +860,7 @@ module Liquid2
 
     attr_reader tag_namespace: Hash[Symbol, untyped]
 
-    attr_accessor interrupts: Array[:break | :continue]
+    attr_accessor interrupts: Array[Symbol]
 
 
     BUILT_IN: BuiltIn
@@ -929,16 +929,13 @@ module Liquid2
 
     def get_output_buffer: (untyped parent_buffer) -> untyped
 
-    # Mark _string_ as "safe" if auto escape is enabled.
-    def markup: (untyped string) -> untyped
-
     def cycle: (untyped key, untyped length) -> untyped
 
-    def increment: (untyped name) -> untyped
+    def increment: (untyped name) -> Integer
 
-    def decrement: (untyped name) -> untyped
+    def decrement: (untyped name) -> Integer
 
-    def assign_score: (untyped value) -> untyped
+    def assign_score: (untyped value) -> Integer
 
   end
 end

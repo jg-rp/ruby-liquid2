@@ -494,7 +494,7 @@ module Liquid2
       args
     end
 
-    # Parse positional and keyword arguments.
+    # Parse mixed positional and keyword arguments.
     # Leading commas should be consumed by the caller, if allowed.
     # @return [[Array[untyped], Array[KeywordArgument]]]
     def parse_arguments

@@ -9,6 +9,7 @@ module Liquid2
 
     END_BLOCK = Set["endmacro"]
 
+    # @param token [[Symbol, String?, Integer]]
     # @param parser [Parser]
     # @return [MacroTag]
     def self.parse(token, parser)
@@ -32,7 +33,7 @@ module Liquid2
     end
 
     def render(context, _buffer)
-      # Macro tags don't render or evaluate anything, just store their arguments list
+      # Macro tags don't render or evaluate anything, just store their parameter list
       # and block on the render context so it can be called later by a `call` tag.
       context.tag_namespace[:macros][@macro_name] = [@params, @block]
     end
@@ -55,6 +56,7 @@ module Liquid2
 
     DISABLED_TAGS = Set["include", "block"]
 
+    # @param token [[Symbol, String?, Integer]]
     # @param parser [Parser]
     # @return [CallTag]
     def self.parse(token, parser)
