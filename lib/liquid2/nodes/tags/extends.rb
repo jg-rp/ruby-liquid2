@@ -25,7 +25,9 @@ module Liquid2
 
     def render(context, buffer)
       base_template = stack_blocks(context, context.template)
-      base_template&.render_with_context(context, buffer)
+      context.extend({}, template: base_template) do
+        base_template&.render_with_context(context, buffer)
+      end
       context.tag_namespace[:extends].clear
       context.interrupts << :stop_render
     end
@@ -187,7 +189,7 @@ module Liquid2
       if stack.empty?
         # This base block is being rendered directly.
         if @required
-          raise RequiredBlockError.new("block #{@block_name.inspect} must be overridden",
+          raise RequiredBlockError.new("block #{@block_name.inspect} is required",
                                        @token)
         end
 
@@ -201,7 +203,7 @@ module Liquid2
       block_tag, required, template_name, parent = stack.first
 
       if required
-        raise RequiredBlockError.new("block #{@block_name.inspect} must be overridden", @token,
+        raise RequiredBlockError.new("block #{@block_name.inspect} is required", @token,
                                      template_name: template_name)
       end
 

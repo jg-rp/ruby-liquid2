@@ -475,6 +475,8 @@ module Liquid2
 
     attr_reader up_to_date: Proc::_Callable?
 
+    attr_reader source: String
+
     # @param env [Environment]
     # @param ast [RootNode]
     # @param name [String] The template's name.
@@ -852,7 +854,7 @@ module Liquid2
 
     attr_reader env: Environment
 
-    attr_reader template: Template
+    attr_accessor template: Template
 
     attr_reader globals: _Namespace
 
