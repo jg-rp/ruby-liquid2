@@ -47,7 +47,7 @@ module Liquid2
     # @param args [Array<KeywordArgument> | nil]
     def initialize(token, name, repeat, var, as, args)
       super(token)
-      @name = name
+      @template_name = name
       @repeat = repeat
       @var = var
       @as = as
@@ -56,7 +56,7 @@ module Liquid2
     end
 
     def render(context, buffer)
-      name = context.evaluate(@name)
+      name = context.evaluate(@template_name)
       template = context.env.get_template(name.to_s, context: context, tag: :include)
       namespace = @args.to_h { |arg| [arg.name, context.evaluate(arg.value)] }
 
@@ -90,7 +90,7 @@ module Liquid2
     def children(static_context, include_partials: true)
       return [] unless include_partials
 
-      name = static_context.evaluate(@name)
+      name = static_context.evaluate(@template_name)
       template = static_context.env.get_template(name.to_s, context: static_context, tag: :include)
       template.ast
     rescue LiquidTemplateNotFoundError => e
@@ -100,7 +100,7 @@ module Liquid2
     end
 
     def expressions
-      exprs = [@name]
+      exprs = [@template_name]
       exprs << @var if @var
       exprs.concat(@args.map(&:value))
       exprs
@@ -112,12 +112,12 @@ module Liquid2
       if @var
         if @as
           scope << @as # steep:ignore
-        elsif @name.is_a?(String)
-          scope << Identifier.new([:token_word, @name.split(".").first, @token.last])
+        elsif @template_name.is_a?(String)
+          scope << Identifier.new([:token_word, @template_name.split(".").first, @token.last])
         end
       end
 
-      Partial.new(@name, :shared, scope)
+      Partial.new(@template_name, :shared, scope)
     end
   end
 end

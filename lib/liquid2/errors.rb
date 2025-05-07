@@ -7,10 +7,10 @@ module Liquid2
 
     FULL_MESSAGE = ((RUBY_VERSION.split(".")&.map(&:to_i) <=> [3, 2, 0]) || -1) < 1
 
-    def initialize(message, token = nil)
+    def initialize(message, token = nil, template_name: nil)
       super(message)
       @token = token
-      @template_name = nil
+      @template_name = template_name
       @source = nil
     end
 
@@ -76,4 +76,6 @@ module Liquid2
   class LiquidResourceLimitError < LiquidError; end
   class UndefinedError < LiquidError; end
   class DisabledTagError < LiquidError; end
+  class TemplateInheritanceError < LiquidError; end
+  class RequiredBlockError < TemplateInheritanceError; end
 end

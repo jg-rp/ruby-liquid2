@@ -29,8 +29,8 @@ module Liquid2
   # Per render contextual information. A new RenderContext is created automatically
   # every time `Template#render` is called.
   class RenderContext
-    attr_reader :env, :template, :disabled_tags, :globals
-    attr_accessor :interrupts, :tag_namespace
+    attr_reader :env, :disabled_tags, :globals
+    attr_accessor :interrupts, :tag_namespace, :template
 
     BUILT_IN = BuiltIn.new
 
@@ -173,6 +173,10 @@ module Liquid2
       @scope << namespace
       begin
         yield
+      rescue LiquidError => e
+        e.template_name = template.full_name if template && !e.template_name
+        e.source = template.source if template && !e.source
+        raise
       ensure
         @template = template_
         @scope.pop
@@ -208,13 +212,17 @@ module Liquid2
                 ReadOnlyChainHash.new(@globals, namespace)
               end
 
-      self.class.new(template || @template,
-                     globals: scope,
-                     disabled_tags: disabled_tags,
-                     copy_depth: @copy_depth + 1,
-                     parent: self,
-                     loop_carry: loop_carry,
-                     local_namespace_carry: @assign_score)
+      context = self.class.new(template || @template,
+                               globals: scope,
+                               disabled_tags: disabled_tags,
+                               copy_depth: @copy_depth + 1,
+                               parent: self,
+                               loop_carry: loop_carry,
+                               local_namespace_carry: @assign_score)
+
+      # XXX: bit of a hack
+      context.tag_namespace[:extends] = @tag_namespace[:extends]
+      context
     end
 
     # Push a new namespace and forloop for the duration of a block.

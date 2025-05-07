@@ -21,6 +21,7 @@ require_relative "nodes/tags/cycle"
 require_relative "nodes/tags/decrement"
 require_relative "nodes/tags/doc"
 require_relative "nodes/tags/echo"
+require_relative "nodes/tags/extends"
 require_relative "nodes/tags/for"
 require_relative "nodes/tags/if"
 require_relative "nodes/tags/include"
@@ -144,8 +145,8 @@ module Liquid2
                    name: name, path: path, up_to_date: up_to_date,
                    globals: make_globals(globals), overlay: overlay)
     rescue LiquidError => e
-      e.source = source
-      e.template_name = name unless name.empty?
+      e.source = source unless e.source
+      e.template_name = name unless e.template_name || name.empty?
       raise
     end
 
@@ -207,6 +208,8 @@ module Liquid2
       @tags["decrement"] = DecrementTag
       @tags["doc"] = DocTag
       @tags["echo"] = EchoTag
+      @tags["extends"] = ExtendsTag
+      @tags["block"] = BlockTag
       @tags["for"] = ForTag
       @tags["if"] = IfTag
       @tags["include"] = IncludeTag

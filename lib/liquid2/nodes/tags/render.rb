@@ -49,7 +49,7 @@ module Liquid2
     # @param args [Array<KeywordArgument> | nil]
     def initialize(token, name, repeat, var, as, args)
       super(token)
-      @name = name
+      @template_name = name
       @repeat = repeat
       @var = var
       @as = as&.name
@@ -58,7 +58,7 @@ module Liquid2
     end
 
     def render(context, buffer)
-      template = context.env.get_template(@name, context: context, tag: :render)
+      template = context.env.get_template(@template_name, context: context, tag: :render)
       namespace = @args.to_h { |arg| [arg.name, context.evaluate(arg.value)] }
 
       ctx = context.copy(namespace,
@@ -94,7 +94,7 @@ module Liquid2
         template.render_with_context(ctx, buffer, partial: true, block_scope: true)
       end
     rescue LiquidTemplateNotFoundError => e
-      e.token = @name
+      e.token = @template_name
       e.template_name = context.template.full_name
       raise e
     end
@@ -102,7 +102,7 @@ module Liquid2
     def children(static_context, include_partials: true)
       return [] unless include_partials
 
-      name = static_context.evaluate(@name)
+      name = static_context.evaluate(@template_name)
       template = static_context.env.get_template(name.to_s, context: static_context, tag: :include)
       template.ast
     rescue LiquidTemplateNotFoundError => e
@@ -112,7 +112,7 @@ module Liquid2
     end
 
     def expressions
-      exprs = [@name]
+      exprs = [@template_name]
       exprs << @var if @var
       exprs.concat(@args.map(&:value))
       exprs
@@ -124,12 +124,12 @@ module Liquid2
       if @var
         if @as
           scope << @as # steep:ignore
-        elsif @name.is_a?(String)
-          scope << Identifier.new([:token_word, @name.split(".").first, @token.last])
+        elsif @template_name.is_a?(String)
+          scope << Identifier.new([:token_word, @template_name.split(".").first, @token.last])
         end
       end
 
-      Partial.new(@name, :isolated, scope)
+      Partial.new(@template_name, :isolated, scope)
     end
   end
 end

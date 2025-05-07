@@ -31,6 +31,7 @@ module Liquid2
     def load(env, name, globals: nil, context: nil, **kwargs)
       data = get_source(env, name, context: context, **kwargs)
       path = Pathname.new(data.name)
+      # FIXME: name and path
       env.parse(data.source,
                 name: path.basename.to_s,
                 path: data.name,

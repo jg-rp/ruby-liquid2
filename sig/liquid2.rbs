@@ -475,6 +475,8 @@ module Liquid2
 
     attr_reader up_to_date: Proc::_Callable?
 
+    attr_reader source: String
+
     # @param env [Environment]
     # @param ast [RootNode]
     # @param name [String] The template's name.
@@ -852,7 +854,7 @@ module Liquid2
 
     attr_reader env: Environment
 
-    attr_reader template: Template
+    attr_accessor template: Template
 
     attr_reader globals: _Namespace
 
@@ -957,7 +959,7 @@ module Liquid2
 
     attr_accessor source: (String | nil)
 
-    def initialize: (String message, ?[Symbol, String?, Integer]? token) -> void
+    def initialize: (String message, ?[Symbol, String?, Integer]? token, ?template_name: String?) -> void
                   
     def detailed_message: (?highlight: bool, **untyped kwargs) -> String
 
@@ -988,6 +990,12 @@ module Liquid2
   end
 
   class DisabledTagError < LiquidError
+  end
+
+  class TemplateInheritanceError < LiquidError
+  end
+
+  class RequiredBlockError < TemplateInheritanceError
   end
 
   # The standard _for_ tag.
@@ -2021,7 +2029,7 @@ end
 module Liquid2
   # The standard _include_ tag.
   class IncludeTag < Tag
-    @name: untyped
+    @template_name: untyped
 
     @repeat: bool
 
@@ -2051,7 +2059,7 @@ module Liquid2
 
   # The standard _render_ tag.
   class RenderTag < Tag
-    @name: untyped
+    @template_name: untyped
 
     @repeat: bool
 
@@ -2437,5 +2445,83 @@ module Liquid2
     def initialize: ([Symbol, String?, Integer] token, String name, Array[untyped] args, Array[KeywordArgument] kwargs) -> void
 
     def render: (RenderContext context, String buffer) -> void
+  end
+end
+
+module Liquid2
+  # The _extends_ tag.
+  class ExtendsTag < Tag
+    @template_name: String
+
+    @blank: bool
+
+    attr_reader template_name: String
+
+    # @param token [[Symbol, String?, Integer]]
+    # @param parser [Parser]
+    # @return [ExtendsTag]
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> ExtendsTag
+
+    def initialize: ([Symbol, String?, Integer] token, String name) -> void
+
+    def render: (RenderContext context, String buffer) -> void
+
+    def stack_blocks: (RenderContext context, Template template) -> Template?
+
+    def inheritance_nodes: (RenderContext context, Template template) -> [Array[ExtendsTag], Array[BlockTag]]
+  end
+
+  # The _block_ tag.
+  class BlockTag < Tag
+    @block_name: String
+
+    @block: Block
+
+    @required: bool
+
+    @blank: bool
+
+    END_BLOCK: Set[String]
+
+    attr_reader block_name: String
+
+    attr_reader block: Block
+
+    attr_reader required: bool
+
+    # @param token [[Symbol, String?, Integer]]
+    # @param parser [Parser]
+    # @return [BlockTag]
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> BlockTag
+
+    def initialize: ([Symbol, String?, Integer] token, String name, Block block, required: bool) -> void
+
+    def render: (RenderContext context, String buffer) -> void
+  end
+
+  class BlockDrop
+    @token: [Symbol, String?, Integer]
+
+    @context: RenderContext
+
+    @buffer: String
+
+    @name: String
+
+    @parent: [BlockTag, bool, Template, untyped?]?
+
+    attr_reader token: [Symbol, String?, Integer]
+
+    # @param token [[Symbol, String?, Integer]]
+    # @param context [RenderContext]
+    # @param name [String]
+    # @param parent [[BlockTag, bool, String, Block?]?]
+    def initialize: ([Symbol, String?, Integer] token, RenderContext context, String name, untyped parent) -> void
+
+    def to_s: () -> ::String
+
+    def key?: (untyped key) -> bool
+
+    def []: (untyped key) -> untyped
   end
 end
