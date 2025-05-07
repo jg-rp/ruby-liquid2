@@ -223,6 +223,12 @@ Here we use `~` to remove the newline after the opening `for` tag, but preserve 
 
 Integer and float literals can use scientific notation, like `1.2e3` or `1e-2`.
 
+#### Extra tags and filters
+
+Liquid2 includes implementations of `{% extends %}` and `{% block %}` for template inheritance, and `{% macro %}` and `{% call %}` for defining parameterized blocks.
+
+There's also built-in implementations of `sort_numeric` and `json` filters.
+
 ## API
 
 ### Liquid2.render
@@ -243,7 +249,7 @@ This is a convenience method equivalent to `Liquid2::DEFAULT_ENVIRONMENT.parse(s
 
 `self.parse: (String source, ?globals: Hash[String, untyped]?) -> Template`
 
-Parse or "compile" Liquid template _source_ using the default Liquid environment. The resulting `Liquid2::Template` instance has a `render(data)` methods, which can be called multiple times with different data.
+Parse or "compile" Liquid template _source_ using the default Liquid environment. The resulting `Liquid2::Template` instance has a `render(data)` method, which can be called multiple times with different data.
 
 ```ruby
 require "liquid2"
