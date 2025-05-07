@@ -129,4 +129,87 @@ class TestTemplateInheritance < Minitest::Test
     error = assert_raises(Liquid2::RequiredBlockError) { template.render }
     assert_equal(message, error.message)
   end
+
+  def test_too_many_extends
+    source = "{% extends 'foo' %}{% extends 'bar' %}"
+    message = "too many 'extends' tags"
+    template = Liquid2.parse(source)
+    error = assert_raises(Liquid2::TemplateInheritanceError) { template.render }
+    assert_equal(message, error.message)
+  end
+
+  def test_too_bad_block_name
+    source = "{% extends 'foo' %}"
+    partials = { "foo" => "{% block 47 %}{% endblock %}" }
+    message = "expected a string literal or unquoted word"
+    env = Liquid2::Environment.new(loader: Liquid2::HashLoader.new(partials))
+    template = env.parse(source)
+    error = assert_raises(Liquid2::LiquidSyntaxError) { template.render }
+    assert_equal(message, error.message)
+  end
+
+  def test_undefined_block_drop_property
+    source = "{% extends 'foo' %}{% block bar %}{{ block.nosuchthing }} and sue{% endblock %}"
+    partials = { "foo" => "hello, {% block bar %}{{ you }}{% endblock %}" }
+    message = "block.nosuchthing is undefined"
+    env = Liquid2::Environment.new(loader: Liquid2::HashLoader.new(partials),
+                                   undefined: Liquid2::StrictUndefined)
+    template = env.parse(source)
+    error = assert_raises(Liquid2::UndefinedError) { template.render }
+    assert_equal(message, error.message)
+  end
+
+  def test_no_super_block
+    source = "hello, {% block bar %}{{ block.super }}{{ you }}{% endblock %}"
+    message = "block.super is undefined"
+    env = Liquid2::Environment.new(undefined: Liquid2::StrictUndefined)
+    template = env.parse(source)
+    error = assert_raises(Liquid2::UndefinedError) { template.render }
+    assert_equal(message, error.message)
+  end
+
+  def test_duplicate_block_names
+    source = "{% extends 'foo' %}{% block bar %}{% endblock %}{% block bar %}{% endblock %}"
+    partials = { "foo" => "{% block bar %}{% endblock %}" }
+    message = "duplicate block \"bar\""
+    env = Liquid2::Environment.new(loader: Liquid2::HashLoader.new(partials))
+    template = env.parse(source)
+    error = assert_raises(Liquid2::TemplateInheritanceError) { template.render }
+    assert_equal(message, error.message)
+  end
+
+  def test_override_nested_block_and_outer_block
+    source = <<~LIQUID.chomp
+      {% extends "foo" %}
+      {% block title %}Home{% endblock %}
+      {% block head %}{{ block.super }}Hello{% endblock %}
+    LIQUID
+
+    partials = {
+      "foo" => <<~LIQUID.chomp
+        {% block head %}
+        <title>{% block title %}{% endblock %} - Welcome</title>
+        {% endblock %}
+      LIQUID
+    }
+
+    expect = "\n<title>Home - Welcome</title>\nHello"
+    env = Liquid2::Environment.new(loader: Liquid2::HashLoader.new(partials))
+    template = env.parse(source)
+
+    assert_equal(expect, template.render)
+  end
+
+  def test_recursive_extends
+    partials = {
+      "some" => "{% extends 'other' %}",
+      "other" => "{% extends 'some' %}"
+    }
+
+    message = "circular extends \"other\""
+    env = Liquid2::Environment.new(loader: Liquid2::HashLoader.new(partials))
+    template = env.get_template("some")
+    error = assert_raises(Liquid2::TemplateInheritanceError) { template.render }
+    assert_equal(message, error.message)
+  end
 end

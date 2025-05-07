@@ -2508,7 +2508,7 @@ module Liquid2
 
     @name: String
 
-    @parent: [BlockTag, bool, String, untyped?]?
+    @parent: [BlockTag, bool, Template, untyped?]?
 
     attr_reader token: [Symbol, String?, Integer]
 

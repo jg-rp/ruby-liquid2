@@ -39,7 +39,7 @@ module Liquid2
   class StrictUndefined < Undefined
     def initialize(name, node: nil)
       super
-      @message = "#{name.inspect} is undefined"
+      @message = "#{@node.is_a?(Path) ? @node : name.inspect} is undefined"
     end
 
     def respond_to_missing? = true

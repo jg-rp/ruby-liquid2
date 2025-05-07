@@ -86,9 +86,9 @@ module Liquid2
 
           stack = stacks[block.block_name]
           required = !stack.empty? && !block.required ? false : block.required
-          # [block, required, template name, parent]
-          # [BlockTag, bool, String, untyped?]
-          stack << [block, required, template_name, nil]
+          # [block, required, template, parent]
+          # [BlockTag, bool, Template, untyped?]
+          stack << [block, required, template_, nil]
           # Populate parent block.
           stack[-2][-1] = stack.last if stack.length > 1
         end
@@ -183,7 +183,7 @@ module Liquid2
     end
 
     def render(context, buffer)
-      # @type var stack: Array[[BlockTag, bool, String, untyped?]]
+      # @type var stack: Array[[BlockTag, bool, Template, untyped?]]
       stack = context.tag_namespace[:extends][@block_name]
 
       if stack.empty?
@@ -200,16 +200,27 @@ module Liquid2
         return
       end
 
-      block_tag, required, template_name, parent = stack.first
+      block_tag, required, template, parent = stack.first
 
       if required
         raise RequiredBlockError.new("block #{@block_name.inspect} is required", @token,
-                                     template_name: template_name)
+                                     template_name: template.path || template.name)
       end
 
       namespace = { "block" => BlockDrop.new(token, context, @block_name, parent) }
-      block_context = context.copy(namespace, carry_loop_iterations: true, block_scope: true)
-      block_tag.block.render(block_context, buffer)
+
+      block_context = context.copy(namespace,
+                                   carry_loop_iterations: true,
+                                   block_scope: true,
+                                   template: template)
+
+      begin
+        block_tag.block.render(block_context, buffer)
+      rescue LiquidError => e
+        e.template_name = template.path || template.name
+        e.source = template.source
+        raise
+      end
     end
 
     def children(_static_context, include_partials: true)
@@ -228,7 +239,7 @@ module Liquid2
     # @param token [[Symbol, String?, Integer]]
     # @param context [RenderContext]
     # @param name [String]
-    # @param parent [[BlockTag, bool, String, Block?]?]
+    # @param parent [[BlockTag, bool, Template, Block?]?]
     def initialize(token, context, name, parent)
       @token = token
       @context = context
@@ -239,17 +250,17 @@ module Liquid2
     def to_s = "BlockDrop(#{@name})"
 
     def key?(key)
-      key == "super"
+      key == "super" && @parent
     end
 
     def [](key)
-      return @context.env.undefined(key, node: self) if key != "super" || @parent.nil?
+      return nil if key != "super" || @parent.nil?
 
       parent = @parent || raise
       buf = +""
       namespace = { "block" => BlockDrop.new(parent.first.token,
                                              @context,
-                                             parent[2],
+                                             parent[2].path || parent[2].name,
                                              parent.last) }
       @context.extend(namespace) do
         parent.first.block.render(@context, buf)

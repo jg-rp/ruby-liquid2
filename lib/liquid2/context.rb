@@ -173,6 +173,10 @@ module Liquid2
       @scope << namespace
       begin
         yield
+      rescue LiquidError => e
+        e.template_name = template.full_name if template && !e.template_name
+        e.source = template.source if template && !e.source
+        raise
       ensure
         @template = template_
         @scope.pop

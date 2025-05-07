@@ -145,8 +145,8 @@ module Liquid2
                    name: name, path: path, up_to_date: up_to_date,
                    globals: make_globals(globals), overlay: overlay)
     rescue LiquidError => e
-      e.source = source
-      e.template_name = name unless name.empty?
+      e.source = source unless e.source
+      e.template_name = name unless e.template_name || name.empty?
       raise
     end
 
