@@ -3,6 +3,8 @@
 module Liquid2
   # Liquid filters and helper methods.
   module Filters
+    INFINITY_ARRAY = [Float::INFINITY].freeze # : [Float]
+
     def self.sort(left, key = nil, context:)
       left = Liquid2::Filters.to_enumerable(left)
 
@@ -82,12 +84,11 @@ module Liquid2
     end
 
     def self.ints(obj)
-      case obj
-      when Integer, Float, BigDecimal
+      if obj.is_a?(Integer) || obj.is_a?(Float) || obj.is_a?(BigDecimal)
         [obj]
       else
-        numeric = obj.to_s.scan(/-?\d+/)
-        return [Float::INFINITY] if numeric.empty?
+        numeric = obj.to_s.scan(/(?<=\.)0+|-?\d+/)
+        return INFINITY_ARRAY if numeric.empty?
 
         numeric.map(&:to_i)
       end

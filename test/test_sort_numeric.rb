@@ -33,6 +33,13 @@ class TestSortNumeric < Minitest::Test
     assert_equal([1.01, 1.1, 2.3, 3.5, 10.1], sorted)
   end
 
+  def test_array_of_string_floats
+    left = ["10.1", "3.5", "2.3", "1.1", "1.01"]
+    sorted = Liquid2::Filters.sort_numeric(left, context: MOCK_RENDER_CONTEXT)
+
+    assert_equal(["1.01", "1.1", "2.3", "3.5", "10.1"], sorted)
+  end
+
   def test_negative_strings
     left = ["1", "-1"]
     sorted = Liquid2::Filters.sort_numeric(left, context: MOCK_RENDER_CONTEXT)
