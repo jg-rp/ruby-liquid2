@@ -2527,3 +2527,31 @@ module Liquid2
     def []: (untyped key) -> untyped
   end
 end
+
+module Liquid2
+  class WithTag < Tag
+    @args: Array[KeywordArgument]
+
+    @block: Block
+
+    @blank: bool
+
+    END_BLOCK: Set[String]
+
+    # @param token [[Symbol, String?, Integer]]
+    # @param parser [Parser]
+    # @return [WithTag]
+    def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> WithTag
+
+    # @param token [[Symbol, String?, Integer]]
+    # @param args [Array[KeywordArgument]]
+    # @param block [Block]
+    def initialize: ([Symbol, String?, Integer] token, Array[KeywordArgument] args, Block block) -> void
+
+    def render: (RenderContext context, String buffer) -> void
+
+    def children: (untyped _static_context, ?include_partials: bool) -> ::Array[Node]
+
+    def block_scope: () -> Array[Identifier]
+  end
+end
