@@ -225,7 +225,7 @@ Integer and float literals can use scientific notation, like `1.2e3` or `1e-2`.
 
 #### Extra tags and filters
 
-Liquid2 includes implementations of `{% extends %}` and `{% block %}` for template inheritance, and `{% macro %}` and `{% call %}` for defining parameterized blocks.
+Liquid2 includes implementations of `{% extends %}` and `{% block %}` for template inheritance, `{% with %}` for block scoped variables and `{% macro %}` and `{% call %}` for defining parameterized blocks.
 
 There's also built-in implementations of `sort_numeric` and `json` filters.
 

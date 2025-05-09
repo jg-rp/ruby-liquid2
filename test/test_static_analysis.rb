@@ -229,5 +229,33 @@ class TestStaticAnalysis < Minitest::Test
     )
   end
 
+  def test_with
+    source = <<~LIQUID.chomp
+      {% with a: 1, b: 3.4 -%}
+      {{ a }} + {{ b }} = {{ a | plus: b }}
+      {%- endwith -%}
+      {{ a }}
+    LIQUID
+
+    assert_analysis(
+      Liquid2.parse(source),
+      locals: {},
+      globals: { "a" => [Var.new(["a"], Span.new("", 82))] },
+      variables: {
+        "a" => [
+          Var.new(["a"], Span.new("", 28)),
+          Var.new(["a"], Span.new("", 48)),
+          Var.new(["a"], Span.new("", 82))
+        ],
+        "b" => [
+          Var.new(["b"], Span.new("", 38)),
+          Var.new(["b"], Span.new("", 58))
+        ]
+      },
+      tags: { "with" => [Span.new("", 3)] },
+      filters: { "plus" => [Span.new("", 52)] }
+    )
+  end
+
   # TODO: finish me
 end

@@ -33,6 +33,7 @@ require_relative "nodes/tags/raw"
 require_relative "nodes/tags/render"
 require_relative "nodes/tags/tablerow"
 require_relative "nodes/tags/unless"
+require_relative "nodes/tags/with"
 
 module Liquid2
   # Template parsing and rendering configuration.
@@ -221,6 +222,7 @@ module Liquid2
       @tags["render"] = RenderTag
       @tags["tablerow"] = TableRowTag
       @tags["unless"] = UnlessTag
+      @tags["with"] = WithTag
 
       register_filter("abs", Liquid2::Filters.method(:abs))
       register_filter("append", Liquid2::Filters.method(:append))
