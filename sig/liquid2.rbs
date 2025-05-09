@@ -1384,10 +1384,16 @@ module Liquid2
     attr_reader segments: Array[String | Integer | Path]
     attr_reader head: (String | Integer | Path)
 
+    RE_PROPERTY: ::Regexp
+
     # @param segments [Array[String | Integer | Path]]
     def initialize: ([Symbol, String?, Integer] token, Array[String | Integer | Path] segments) -> void
 
     def evaluate: (RenderContext context) -> untyped
+                
+    private
+
+    def segment_to_s: (untyped segment, ?head: bool) -> ::String
   end
 end
 
