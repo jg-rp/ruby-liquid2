@@ -71,7 +71,6 @@ module Liquid2
 
       # Namespaces are searched from right to left. When a RenderContext is extended, the
       # temporary namespace is pushed to the end of this queue.
-      # TODO: exclude @globals if globals is empty
       @scope = ReadOnlyChainHash.new(@counters, BUILT_IN, @globals, @locals)
 
       # A namespace supporting stateful tags, such as `cycle` and `increment`.

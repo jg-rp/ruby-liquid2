@@ -43,7 +43,6 @@ module Liquid2
     end
 
     def render_with_context(context, buffer, partial: false, block_scope: false, namespace: nil)
-      # TODO: don't extend if namespace is nil
       context.extend(namespace || {}) do
         index = 0
         while (node = @ast[index])
@@ -78,8 +77,7 @@ module Liquid2
 
     # Merge template globals with another namespace.
     def make_globals(namespace)
-      # TODO: optimize
-      @globals.merge(@overlay || {}, namespace || {})
+      @globals.merge(@overlay, namespace || {})
     end
 
     # Return `false` if this template is stale and needs to be loaded again.

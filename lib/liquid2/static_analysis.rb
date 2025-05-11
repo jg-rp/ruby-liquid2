@@ -231,7 +231,7 @@ module Liquid2
     def self.extract_filters(expression, template_name)
       filters = [] # : Array[[String, Span]]
 
-      if expression.is_a?(Liquid2::FilteredExpression)
+      if expression.is_a?(Liquid2::FilteredExpression) && !expression.filters.nil?
         expression.filters.each do |filter|
           filters << [filter.name, Span.new(template_name, filter.token.last)]
         end

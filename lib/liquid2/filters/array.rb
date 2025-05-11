@@ -29,7 +29,6 @@ module Liquid2
       when :undefined
         left.compact
       else
-        # TODO: stringify key?
         left.reject do |item|
           item.respond_to?(:fetch) ? item.fetch(key, nil).nil? : true
         end

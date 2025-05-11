@@ -63,8 +63,7 @@ module Liquid2
     end
 
     # Cast _obj_ to a  date and time. Return `nil` if casting fails.
-    #
-    # TODO: This was copied from Shopify/liquid. Include their license and copyright.
+    # NOTE: This was copied from Shopify/liquid.
     def self.to_date(obj)
       return obj if obj.respond_to?(:strftime)
 

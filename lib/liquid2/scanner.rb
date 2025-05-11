@@ -12,8 +12,6 @@ module Liquid2
   class Scanner
     attr_reader :tokens
 
-    RE_MARKUP_START = /\{[\{%#]/
-    RE_WHITESPACE = /[ \n\r\t]+/
     RE_LINE_SPACE = /[ \t]+/
     RE_WORD = /[\u0080-\uFFFFa-zA-Z_][\u0080-\uFFFFa-zA-Z0-9_-]*/
     RE_INT  = /-?\d+(?:[eE]\+?\d+)?/
@@ -94,31 +92,19 @@ module Liquid2
     # @param value [String?]
     # @return void
     def emit(kind, value)
-      # TODO: For debugging. Comment this out when benchmarking.
-      raise "empty span (#{kind}, #{value})" if @scanner.pos == @start
-
       @tokens << [kind, value, @start]
       @start = @scanner.pos
     end
 
     def skip_trivia
-      # TODO: For debugging. Comment this out when benchmarking.
-      raise "must emit before skipping trivia" if @scanner.pos != @start
-
-      @start = @scanner.pos if @scanner.skip(RE_WHITESPACE)
+      @start = @scanner.pos if @scanner.skip(/[ \n\r\t]+/)
     end
 
     def skip_line_trivia
-      # TODO: For debugging. Comment this out when benchmarking.
-      raise "must emit before skipping line trivia" if @scanner.pos != @start
-
       @start = @scanner.pos if @scanner.skip(RE_LINE_SPACE)
     end
 
     def accept_whitespace_control
-      # TODO: For debugging. Comment this out when benchmarking.
-      raise "must emit before accepting whitespace control" if @scanner.pos != @start
-
       ch = @scanner.peek(1)
 
       case ch
@@ -133,7 +119,7 @@ module Liquid2
     end
 
     def lex_markup
-      case @scanner.scan(RE_MARKUP_START)
+      case @scanner.scan(/\{[\{%#]/)
       when "{#"
         :lex_comment
       when "{{"
@@ -197,37 +183,30 @@ module Liquid2
     end
 
     def lex_expression
-      # TODO: For debugging. Comment this out when benchmarking.
-      raise "must emit before accepting an expression token" if @scanner.pos != @start
-
       loop do
         skip_trivia
-
-        case @scanner.get_byte
-        when "'"
+        if (value = @scanner.scan(RE_FLOAT))
+          @tokens << [:token_float, value, @start]
           @start = @scanner.pos
-          scan_string("'", :token_single_quote_string, RE_SINGLE_QUOTE_STRING_SPECIAL)
-        when "\""
+        elsif (value = @scanner.scan(RE_INT))
+          @tokens << [:token_int, value, @start]
           @start = @scanner.pos
-          scan_string("\"", :token_double_quote_string, RE_DOUBLE_QUOTE_STRING_SPECIAL)
-        when nil
-          # End of scanner. Unclosed expression or string literal.
-          break
+        elsif (value = @scanner.scan(RE_PUNCTUATION))
+          @tokens << [TOKEN_MAP[value] || :token_unknown, value, @start]
+          @start = @scanner.pos
+        elsif (value = @scanner.scan(RE_WORD))
+          @tokens << [TOKEN_MAP[value] || :token_word, value, @start]
+          @start = @scanner.pos
         else
-          @scanner.pos -= 1
-          if (value = @scanner.scan(RE_FLOAT))
-            @tokens << [:token_float, value, @start]
+          case @scanner.get_byte
+          when "'"
             @start = @scanner.pos
-          elsif (value = @scanner.scan(RE_INT))
-            @tokens << [:token_int, value, @start]
+            scan_string("'", :token_single_quote_string, RE_SINGLE_QUOTE_STRING_SPECIAL)
+          when "\""
             @start = @scanner.pos
-          elsif (value = @scanner.scan(RE_PUNCTUATION))
-            @tokens << [TOKEN_MAP[value] || :token_unknown, value, @start]
-            @start = @scanner.pos
-          elsif (value = @scanner.scan(RE_WORD))
-            @tokens << [TOKEN_MAP[value] || :token_word, value, @start]
-            @start = @scanner.pos
+            scan_string("\"", :token_double_quote_string, RE_DOUBLE_QUOTE_STRING_SPECIAL)
           else
+            @scanner.pos -= 1
             break
           end
         end
@@ -413,9 +392,6 @@ module Liquid2
     end
 
     def lex_line_statements
-      # TODO: For debugging. Comment this out when benchmarking.
-      raise "must emit before accepting an expression token" if @scanner.pos != @start
-
       skip_trivia # Leading newlines are OK
 
       if (tag_name = @scanner.scan(/(?:[a-z][a-z_0-9]*|#)/))
