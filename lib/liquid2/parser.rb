@@ -233,7 +233,6 @@ module Liquid2
       left = parse_primary
       left = parse_array_literal(left) if current_kind == :token_comma
       filters = parse_filters if current_kind == :token_pipe
-      filters ||= [] # : Array[Filter]
       expr = FilteredExpression.new(token, left, filters)
 
       if current_kind == :token_if
@@ -861,7 +860,7 @@ module Liquid2
 
       unless current_kind == :token_colon || !TERMINATE_FILTER.member?(current_kind)
         # No arguments
-        return Filter.new(name, name[1] || raise, []) # TODO: optimize
+        return Filter.new(name, name[1] || raise, nil)
       end
 
       @pos += 1 # token_colon

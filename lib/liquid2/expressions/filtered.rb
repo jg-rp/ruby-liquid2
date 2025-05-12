@@ -15,8 +15,10 @@ module Liquid2
 
     def evaluate(context)
       left = context.evaluate(@left)
+      return left if @filters.nil?
+
       index = 0
-      while (filter = @filters[index])
+      while (filter = (@filters || raise)[index])
         left = filter.evaluate(left, context)
         index += 1
       end
@@ -81,7 +83,7 @@ module Liquid2
     attr_reader :name, :args
 
     # @param name [String]
-    # @param args [Array[Expression]]
+    # @param args [Array[Expression]?]
     def initialize(token, name, args)
       super(token)
       @name = name
@@ -92,7 +94,26 @@ module Liquid2
       filter, with_context = context.env.filters[@name]
       raise LiquidFilterNotFoundError.new("unknown filter #{@name.inspect}", @token) unless filter
 
-      positional_args, keyword_args = evaluate_args(context)
+      return filter.call(left) if @args.nil? && !with_context # steep:ignore
+      return filter.call(left, context: context) if @args.nil? && with_context # steep:ignore
+
+      positional_args = [] # @type var positional_args: Array[untyped]
+      keyword_args = {} # @type var keyword_args: Hash[Symbol, untyped]
+
+      index = 0
+      loop do
+        # `@args[index]` could be `false` or `nil`
+        break if index >= @args.length # steep:ignore
+
+        arg = @args[index] # steep:ignore
+        index += 1
+        if arg.respond_to?(:sym)
+          keyword_args[arg.sym] = context.evaluate(arg.value)
+        else
+          positional_args << context.evaluate(arg)
+        end
+      end
+
       keyword_args[:context] = context if with_context
 
       if keyword_args.empty?
@@ -104,33 +125,6 @@ module Liquid2
       raise LiquidArgumentError.new(e.message, @token)
     end
 
-    def children = @args
-
-    private
-
-    # @param context [RenderContext]
-    # @return [positional arguments, keyword arguments] An array with two elements.
-    #   The first is an array of evaluates positional arguments. The second is a hash
-    #   of keyword names to evaluated keyword values.
-    def evaluate_args(context)
-      positional_args = [] # @type var positional_args: Array[untyped]
-      keyword_args = {} # @type var keyword_args: Hash[Symbol, untyped]
-
-      index = 0
-      loop do
-        # `@args[index]` could be `false` or `nil`
-        break if index >= @args.length
-
-        arg = @args[index]
-        index += 1
-        if arg.respond_to?(:sym)
-          keyword_args[arg.sym] = context.evaluate(arg.value)
-        else
-          positional_args << context.evaluate(arg)
-        end
-      end
-
-      [positional_args, keyword_args]
-    end
+    def children = @args || []
   end
 end

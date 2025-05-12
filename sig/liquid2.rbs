@@ -864,7 +864,6 @@ module Liquid2
 
     attr_accessor interrupts: Array[Symbol]
 
-
     BUILT_IN: BuiltIn
 
     # @param template [Template]
@@ -1213,11 +1212,11 @@ module Liquid2
   class FilteredExpression < Expression
     @left: Expression
 
-    @filters: Array[Filter]
+    @filters: Array[Filter]?
 
-    attr_reader filters: Array[Filter]
+    attr_reader filters: Array[Filter]?
 
-    def initialize: ([Symbol, String?, Integer] token, untyped left, Array[Filter] filters) -> void
+    def initialize: ([Symbol, String?, Integer] token, untyped left, Array[Filter]? filters) -> void
 
     def evaluate: (RenderContext context) -> untyped
   end
@@ -1250,25 +1249,17 @@ module Liquid2
   class Filter < Expression
     @name: String
 
-    @args: Array[untyped]
+    @args: Array[untyped]?
 
     attr_reader name: String 
 
-    attr_reader args: Array[untyped] 
+    attr_reader args: Array[untyped]?
 
     # @param name [Token]
     # @param args [Array[Expression]]
-    def initialize: ([Symbol, String?, Integer] token, String name, Array[untyped] args) -> void
+    def initialize: ([Symbol, String?, Integer] token, String name, Array[untyped]? args) -> void
 
     def evaluate: (untyped left, RenderContext context) -> untyped
-
-    private
-
-    # @param context [RenderContext]
-    # @return [positional arguments, keyword arguments] An array with two elements.
-    #   The first is an array of evaluates positional arguments. The second is a hash
-    #   of keyword names to evaluated keyword values.
-    def evaluate_args: (RenderContext context) -> [Array[untyped], Hash[Symbol, untyped]]
   end
 end
 
