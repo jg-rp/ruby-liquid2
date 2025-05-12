@@ -36,7 +36,7 @@ Liquid templates for Ruby, with some extra features.
 Add `'liquid2'` to your Gemfile:
 
 ```
-gem 'liquid2', '~> 0.1.1'
+gem 'liquid2', '~> 0.2.0'
 ```
 
 Or

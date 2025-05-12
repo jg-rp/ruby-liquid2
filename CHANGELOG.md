@@ -1,4 +1,4 @@
-## [Unreleased]
+## [0.2.0] - 25-05-12
 
 - Fixed error context info when raising `UndefinedError` from `StrictUndefined`.
 - Fixed parsing of compound expressions given as filter arguments.
