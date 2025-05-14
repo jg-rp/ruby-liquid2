@@ -4,7 +4,7 @@ require_relative "blank"
 require_relative "../expression"
 
 module Liquid2 # :nodoc:
-  # Base for comparison expressions.
+  # Base class for all comparison expressions.
   class ComparisonExpression < Expression
     # @param left [Expression]
     # @param right [Expression]

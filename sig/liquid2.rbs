@@ -375,6 +375,12 @@ module Liquid2
       MEMBERSHIP: 6
 
       PREFIX: 7
+
+      ADD_SUB: 8
+
+      MUL_DIV: 9
+      
+      POW: 10
     end
 
     PRECEDENCES: Hash[Symbol, Integer]
@@ -2550,5 +2556,52 @@ module Liquid2
     def children: (untyped _static_context, ?include_partials: bool) -> ::Array[Node]
 
     def block_scope: () -> Array[Identifier]
+  end
+end
+
+module Liquid2
+  # Base class for all arithmetic expressions.
+  class ArithmeticExpression < Expression
+    @left: untyped
+
+    @right: untyped
+
+    # @param left [Expression]
+    # @param right [Expression]
+    def initialize: ([Symbol, String?, Integer] token, untyped left, untyped right) -> void
+
+    def children: () -> ::Array[untyped]
+
+    def inner_evaluate: (untyped context) -> ::Array[untyped]
+  end
+
+  # Infix addition
+  class Plus < ArithmeticExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  # Infix subtraction
+  class Minus < ArithmeticExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  # Infix multiplication
+  class Times < ArithmeticExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  # Infix division
+  class Divide < ArithmeticExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  # Infix modulo
+  class Modulo < ArithmeticExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  # Infix exponentiation
+  class Pow < ArithmeticExpression
+    def evaluate: (RenderContext context) -> untyped
   end
 end

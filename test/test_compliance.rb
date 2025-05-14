@@ -67,7 +67,10 @@ class TestCompliance < Minitest::Spec
     "tags, if, logical operators are right associative",
     "tags, if, not is not a valid operator",
     "tags, liquid, liquid tag in liquid tag",
-    "tags, liquid, nested liquid in liquid tag"
+    "tags, liquid, nested liquid in liquid tag",
+    "illegal, no subtraction operator",
+    "illegal, no multiplication operator",
+    "illegal, no addition operator"
   ].freeze
   # rubocop:enable Layout/LineLength
 

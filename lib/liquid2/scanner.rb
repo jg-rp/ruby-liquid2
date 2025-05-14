@@ -16,7 +16,7 @@ module Liquid2
     RE_WORD = /[\u0080-\uFFFFa-zA-Z_][\u0080-\uFFFFa-zA-Z0-9_-]*/
     RE_INT  = /-?\d+(?:[eE]\+?\d+)?/
     RE_FLOAT = /((?:-?\d+\.\d+(?:[eE][+-]?\d+)?)|(-?\d+[eE]-\d+))/
-    RE_PUNCTUATION = /\?|\[|\]|\|{1,2}|\.{1,2}|,|:|\(|\)|[<>=!]+/
+    RE_PUNCTUATION = %r{\?|\[|\]|\|{1,2}|\.{1,2}|,|:|\(|\)|[<>=!]+|[+\-%*/]+(?![\}%])}
     RE_SINGLE_QUOTE_STRING_SPECIAL = /[\\'\$]/
     RE_DOUBLE_QUOTE_STRING_SPECIAL = /[\\"\$]/
 
@@ -58,7 +58,14 @@ module Liquid2
       ">=" => :token_ge,
       "==" => :token_eq,
       "!=" => :token_ne,
-      "=>" => :token_arrow
+      "=>" => :token_arrow,
+      "+" => :token_plus,
+      "-" => :token_minus,
+      "%" => :token_mod,
+      "*" => :token_times,
+      "/" => :token_divide,
+      "//" => :token_floor_div,
+      "**" => :token_pow
     }.freeze
 
     def self.tokenize(source, scanner)
