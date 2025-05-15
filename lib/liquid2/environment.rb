@@ -45,7 +45,7 @@ module Liquid2
   class Environment
     attr_reader :tags, :local_namespace_limit, :context_depth_limit, :loop_iteration_limit,
                 :output_stream_limit, :filters, :suppress_blank_control_flow_blocks,
-                :shorthand_indexes, :falsy_undefined
+                :shorthand_indexes, :falsy_undefined, :arithmetic_operators
 
     # @param context_depth_limit [Integer] The maximum number of times a render context can
     #   be extended or copied before a `Liquid2::LiquidResourceLimitError`` is raised.
@@ -68,6 +68,7 @@ module Liquid2
     # @param undefined [singleton(Liquid2::Undefined)] A singleton returning an instance of
     #   `Liquid2::Undefined`, which is used to represent template variables that don't exist.
     def initialize(
+      arithmetic_operators: false,
       context_depth_limit: 30,
       globals: nil,
       loader: nil,
@@ -86,6 +87,10 @@ module Liquid2
       # along with a flag to indicate if the callable accepts a `context`
       # keyword argument.
       @filters = {}
+
+      # When `true`, arithmetic operators `+`, `-`, `*`, `/`, `%` and `**` are enabled.
+      # Defaults to `false`.
+      @arithmetic_operators = arithmetic_operators
 
       # The maximum number of times a render context can be extended or copied before
       # a Liquid2::LiquidResourceLimitError is raised.

@@ -84,6 +84,8 @@ module Liquid2
 
     @scanner: StringScanner
 
+    @arithmetic_operators: bool
+
     attr_reader tags: Hash[String, _Tag]
 
     attr_reader local_namespace_limit: Integer?
@@ -101,6 +103,8 @@ module Liquid2
     attr_reader shorthand_indexes: bool
 
     attr_reader falsy_undefined: bool
+
+    attr_reader arithmetic_operators: bool
 
     def initialize: (?context_depth_limit: ::Integer, ?globals: Hash[String, untyped]?, ?loader: TemplateLoader?, ?local_namespace_limit: Integer?, ?loop_iteration_limit: Integer?, ?output_stream_limit: Integer?, ?shorthand_indexes: bool, ?suppress_blank_control_flow_blocks: bool, ?undefined: singleton(Undefined), ?falsy_undefined: bool) -> void
 

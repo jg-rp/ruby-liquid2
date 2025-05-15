@@ -859,20 +859,28 @@ module Liquid2
         LogicalAnd.new(op_token, left, right)
       when :token_or
         LogicalOr.new(op_token, left, right)
-      when :token_plus
-        Plus.new(op_token, left, right)
-      when :token_minus
-        Minus.new(op_token, left, right)
-      when :token_times
-        Times.new(op_token, left, right)
-      when :token_divide
-        Divide.new(op_token, left, right)
-      when :token_mod
-        Modulo.new(op_token, left, right)
-      when :token_pow
-        Pow.new(op_token, left, right)
       else
-        raise LiquidSyntaxError.new("unexpected infix operator, #{op_token[1]}", op_token)
+        unless @env.arithmetic_operators
+          raise LiquidSyntaxError.new("unexpected infix operator, #{op_token[1]}",
+                                      op_token)
+        end
+
+        case op_token.first
+        when :token_plus
+          Plus.new(op_token, left, right)
+        when :token_minus
+          Minus.new(op_token, left, right)
+        when :token_times
+          Times.new(op_token, left, right)
+        when :token_divide
+          Divide.new(op_token, left, right)
+        when :token_mod
+          Modulo.new(op_token, left, right)
+        when :token_pow
+          Pow.new(op_token, left, right)
+        else
+          raise LiquidSyntaxError.new("unexpected infix operator, #{op_token[1]}", op_token)
+        end
       end
     end
 
