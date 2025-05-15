@@ -55,8 +55,9 @@ module Liquid2 # :nodoc:
   class Divide < ArithmeticExpression
     def evaluate(context)
       left, right = inner_evaluate(context)
-      # TODO: handle divide by zero
       left / right
+    rescue ZeroDivisionError => e
+      raise LiquidTypeError.new(e.message, nil)
     end
   end
 
@@ -64,8 +65,9 @@ module Liquid2 # :nodoc:
   class Modulo < ArithmeticExpression
     def evaluate(context)
       left, right = inner_evaluate(context)
-      # TODO: handle divide by zero
       left % right
+    rescue ZeroDivisionError => e
+      raise LiquidTypeError.new(e.message, nil)
     end
   end
 

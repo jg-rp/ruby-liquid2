@@ -1,3 +1,7 @@
+## [unreleased]
+
+- Added support for arithmetic operators `+`, `-`, `*`, `/`, `%` and `**`.
+
 ## [0.2.0] - 25-05-12
 
 - Fixed error context info when raising `UndefinedError` from `StrictUndefined`.

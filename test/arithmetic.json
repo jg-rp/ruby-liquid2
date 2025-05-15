@@ -1,0 +1,274 @@
+{
+  "tests": [
+    {
+      "name": "divide, integers",
+      "template": "{{ 10 / 2 }}",
+      "result": "5"
+    },
+    {
+      "name": "divide, integer and float",
+      "template": "{{ 10 / 2.0 }}",
+      "result": "5.0"
+    },
+    {
+      "name": "divide, integer floor division",
+      "template": "{{ 9 / 2 }}",
+      "result": "4"
+    },
+    {
+      "name": "divide, float and integer",
+      "template": "{{ 9.0 / 2 }}",
+      "result": "4.5"
+    },
+    {
+      "name": "divide, integer and float floor division",
+      "template": "{{ 20 / 7.0 }}",
+      "result": "2.857142857142857"
+    },
+    {
+      "name": "divide, integer as strings",
+      "template": "{{ \"10\" / \"2\" }}",
+      "result": "5"
+    },
+    {
+      "name": "divide, non numeric string left",
+      "template": "{{ \"foo\" / \"2\" }}",
+      "result": "0"
+    },
+    {
+      "name": "divide, non numeric string right",
+      "template": "{{ \"10\" / \"foo\" }}",
+      "invalid": true
+    },
+    {
+      "name": "divide, undefined left",
+      "template": "{{ nosuchthing / 2 }}",
+      "result": "0"
+    },
+    {
+      "name": "divide, undefined right",
+      "template": "{{ 10 / nosuchthing }}",
+      "invalid": true
+    },
+    {
+      "name": "divide, by zero",
+      "template": "{{ 10 / 0 }}",
+      "invalid": true
+    },
+    {
+      "name": "minus, integers",
+      "template": "{{ 10 - 2 }}",
+      "result": "8"
+    },
+    {
+      "name": "minus, integer and float",
+      "template": "{{ 10 - 2.0 }}",
+      "result": "8.0"
+    },
+    {
+      "name": "minus, floats",
+      "template": "{{ 10.1 - 2.2 }}",
+      "result": "7.9"
+    },
+    {
+      "name": "minus, floats as stings",
+      "template": "{{ \"10.1\" - \"2.2\" }}",
+      "result": "7.9"
+    },
+    {
+      "name": "minus, non numeric string left",
+      "template": "{{ \"foo\" - \"2.0\" }}",
+      "result": "-2.0"
+    },
+    {
+      "name": "minus, non numeric string right",
+      "template": "{{ \"10\" - \"foo\" }}",
+      "result": "10"
+    },
+    {
+      "name": "minus, undefined left",
+      "template": "{{ nosuchthing - 2 }}",
+      "result": "-2"
+    },
+    {
+      "name": "minus, undefined right",
+      "template": "{{ 10 - nosuchthing }}",
+      "result": "10"
+    },
+    {
+      "name": "modulo, integers",
+      "template": "{{ 10 % 3 }}",
+      "result": "1"
+    },
+    {
+      "name": "modulo, integer and float",
+      "template": "{{ 10 % 3.0 }}",
+      "result": "1.0"
+    },
+    {
+      "name": "modulo, float and integer",
+      "template": "{{ 10.0 % 3 }}",
+      "result": "1.0"
+    },
+    {
+      "name": "modulo, floats",
+      "template": "{{ 10.1 % 7.0 }}",
+      "result": "3.1"
+    },
+    {
+      "name": "modulo, floats as strings",
+      "template": "{{ \"10.1\" % \"7.0\" }}",
+      "result": "3.1"
+    },
+    {
+      "name": "modulo, non numeric string left",
+      "template": "{{ \"foo\" % \"7.0\" }}",
+      "result": "0.0"
+    },
+    {
+      "name": "modulo, non numeric string right",
+      "template": "{{ 10 % \"foo\" }}",
+      "invalid": true
+    },
+    {
+      "name": "modulo, undefined left",
+      "template": "{{ nosuchthing % 2 }}",
+      "result": "0"
+    },
+    {
+      "name": "modulo, undefined right",
+      "template": "{{ 10 % nosuchhting }}",
+      "invalid": true
+    },
+    {
+      "name": "plus, integers",
+      "template": "{{ 10 + 2 }}",
+      "result": "12"
+    },
+    {
+      "name": "plus, integer and float",
+      "template": "{{ 10 + 2.0 }}",
+      "result": "12.0"
+    },
+    {
+      "name": "plus, floats",
+      "template": "{{ 10.1 + 2.2 }}",
+      "result": "12.3"
+    },
+    {
+      "name": "plus, floats as stings",
+      "template": "{{ \"10.1\" + \"2.2\" }}",
+      "result": "12.3"
+    },
+    {
+      "name": "plus, non numeric string left",
+      "template": "{{ \"foo\" + \"2.0\" }}",
+      "result": "2.0"
+    },
+    {
+      "name": "plus, non numeric string right",
+      "template": "{{ \"10\" + \"foo\" }}",
+      "result": "10"
+    },
+    {
+      "name": "plus, undefined left",
+      "template": "{{ nosuchthing + 2 }}",
+      "result": "2"
+    },
+    {
+      "name": "plus, undefined right",
+      "template": "{{ 10 + nosuchthing }}",
+      "result": "10"
+    },
+    {
+      "name": "times, integers",
+      "template": "{{ 10 * 2 }}",
+      "result": "20"
+    },
+    {
+      "name": "times, integer and float",
+      "template": "{{ 10 * 2.0 }}",
+      "result": "20.0"
+    },
+    {
+      "name": "times, floats",
+      "template": "{{ 5 * 2.1 }}",
+      "result": "10.5"
+    },
+    {
+      "name": "times, floats as stings",
+      "template": "{{ \"5\" * \"2.1\" }}",
+      "result": "10.5"
+    },
+    {
+      "name": "times, non numeric string left",
+      "template": "{{ \"foo\" * \"2.0\" }}",
+      "result": "0.0"
+    },
+    {
+      "name": "times, non numeric string right",
+      "template": "{{ \"10\" * \"foo\" }}",
+      "result": "0"
+    },
+    {
+      "name": "times, undefined left",
+      "template": "{{ nosuchthing * 2 }}",
+      "result": "0"
+    },
+    {
+      "name": "times, undefined right",
+      "template": "{{ 10 * nosuchthing }}",
+      "result": "0"
+    },
+    {
+      "name": "pow, integers",
+      "template": "{{ 2 ** 3 }}",
+      "result": "8"
+    },
+    {
+      "name": "pow, floats",
+      "template": "{{ 2.0 ** 3.0 }}",
+      "result": "8.0"
+    },
+    {
+      "name": "pow, float and int",
+      "template": "{{ 2.0 ** 3 }}",
+      "result": "8.0"
+    },
+    {
+      "name": "pow, int and float",
+      "template": "{{ 2 ** 3.0 }}",
+      "result": "8.0"
+    },
+    {
+      "name": "times has higher precedence than plus",
+      "template": "{{ 2 + 3 * 4 }}",
+      "result": "14"
+    },
+    {
+      "name": "group terms so plus is evaluated before times",
+      "template": "{{ (2 + 3) * 4 }}",
+      "result": "20"
+    },
+    {
+      "name": "divide has higher precedence than minus",
+      "template": "{{ 4 - 3 / 2.0 }}",
+      "result": "2.5"
+    },
+    {
+      "name": "group terms so minus is evaluated before divide",
+      "template": "{{ (4 - 3) / 2.0 }}",
+      "result": "0.5"
+    },
+    {
+      "name": "pow has higher priority than times",
+      "template": "{{ 2 * 2**3 }}",
+      "result": "16"
+    },
+    {
+      "name": "group terms to times is evaluated before pow",
+      "template": "{{ (2 * 2)**3 }}",
+      "result": "64"
+    }
+  ]
+}
