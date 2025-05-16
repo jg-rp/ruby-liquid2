@@ -147,6 +147,83 @@ class TestTokenize < Minitest::Spec
         [:token_output_end, nil, 54],
         [:token_other, "!", 56]
       ]
+    },
+    {
+      name: "output, plus operator",
+      source: "{{ 42 + 3 }}",
+      want: [
+        [:token_output_start, nil, 0],
+        [:token_int, "42", 3],
+        [:token_plus, "+", 6],
+        [:token_int, "3", 8],
+        [:token_output_end, nil, 10]
+      ]
+    },
+    {
+      name: "output, minus operator",
+      source: "{{ 42 - 3 }}",
+      want: [
+        [:token_output_start, nil, 0],
+        [:token_int, "42", 3],
+        [:token_minus, "-", 6],
+        [:token_int, "3", 8],
+        [:token_output_end, nil, 10]
+      ]
+    },
+    {
+      name: "output, modulo operator",
+      source: "{{ 42 % 3 }}",
+      want: [
+        [:token_output_start, nil, 0],
+        [:token_int, "42", 3],
+        [:token_mod, "%", 6],
+        [:token_int, "3", 8],
+        [:token_output_end, nil, 10]
+      ]
+    },
+    {
+      name: "output, divide operator",
+      source: "{{ 42 / 3 }}",
+      want: [
+        [:token_output_start, nil, 0],
+        [:token_int, "42", 3],
+        [:token_divide, "/", 6],
+        [:token_int, "3", 8],
+        [:token_output_end, nil, 10]
+      ]
+    },
+    {
+      name: "output, times operator",
+      source: "{{ 42 * 3 }}",
+      want: [
+        [:token_output_start, nil, 0],
+        [:token_int, "42", 3],
+        [:token_times, "*", 6],
+        [:token_int, "3", 8],
+        [:token_output_end, nil, 10]
+      ]
+    },
+    {
+      name: "output, power operator",
+      source: "{{ 42 ** 3 }}",
+      want: [
+        [:token_output_start, nil, 0],
+        [:token_int, "42", 3],
+        [:token_pow, "**", 6],
+        [:token_int, "3", 9],
+        [:token_output_end, nil, 11]
+      ]
+    },
+    {
+      name: "output, floor div operator",
+      source: "{{ 42 // 3 }}",
+      want: [
+        [:token_output_start, nil, 0],
+        [:token_int, "42", 3],
+        [:token_floor_div, "//", 6],
+        [:token_int, "3", 9],
+        [:token_output_end, nil, 11]
+      ]
     }
   ].freeze
 

@@ -219,6 +219,10 @@ Here we use `~` to remove the newline after the opening `for` tag, but preserve 
 </ul>
 ```
 
+#### Arithmetic operators
+
+Arithmetic operators `+`, `-`, `*`, `/`, `%` and `**` are disabled by default. Enable them by passing `arithmetic_operators: true` to a new [`Liquid2::Environment`](https://github.com/jg-rp/ruby-liquid2/blob/main/lib/liquid2/environment.rb).
+
 #### Scientific notation
 
 Integer and float literals can use scientific notation, like `1.2e3` or `1e-2`.

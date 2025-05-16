@@ -7,6 +7,7 @@ require_relative "node"
 require_relative "nodes/comment"
 require_relative "nodes/output"
 require_relative "expressions/arguments"
+require_relative "expressions/arithmetic"
 require_relative "expressions/array"
 require_relative "expressions/blank"
 require_relative "expressions/boolean"
@@ -536,6 +537,9 @@ module Liquid2
       RELATIONAL = 5
       MEMBERSHIP = 6
       PREFIX = 7
+      ADD_SUB = 8
+      MUL_DIV = 9
+      POW = 10
     end
 
     PRECEDENCES = {
@@ -551,7 +555,14 @@ module Liquid2
       token_ne: Precedence::RELATIONAL,
       token_lg: Precedence::RELATIONAL,
       token_le: Precedence::RELATIONAL,
-      token_ge: Precedence::RELATIONAL
+      token_ge: Precedence::RELATIONAL,
+      token_plus: Precedence::ADD_SUB,
+      token_minus: Precedence::ADD_SUB,
+      token_times: Precedence::MUL_DIV,
+      token_divide: Precedence::MUL_DIV,
+      token_floor_div: Precedence::MUL_DIV,
+      token_mod: Precedence::MUL_DIV,
+      token_pow: Precedence::POW
     }.freeze
 
     BINARY_OPERATORS = Set[
@@ -565,7 +576,14 @@ module Liquid2
       :token_contains,
       :token_in,
       :token_and,
-      :token_or
+      :token_or,
+      :token_plus,
+      :token_minus,
+      :token_times,
+      :token_divide,
+      :token_floor_div,
+      :token_mod,
+      :token_pow
     ]
 
     TERMINATE_EXPRESSION = Set[
@@ -842,7 +860,27 @@ module Liquid2
       when :token_or
         LogicalOr.new(op_token, left, right)
       else
-        raise LiquidSyntaxError.new("unexpected infix operator, #{op_token[1]}", op_token)
+        unless @env.arithmetic_operators
+          raise LiquidSyntaxError.new("unexpected infix operator, #{op_token[1]}",
+                                      op_token)
+        end
+
+        case op_token.first
+        when :token_plus
+          Plus.new(op_token, left, right)
+        when :token_minus
+          Minus.new(op_token, left, right)
+        when :token_times
+          Times.new(op_token, left, right)
+        when :token_divide
+          Divide.new(op_token, left, right)
+        when :token_mod
+          Modulo.new(op_token, left, right)
+        when :token_pow
+          Pow.new(op_token, left, right)
+        else
+          raise LiquidSyntaxError.new("unexpected infix operator, #{op_token[1]}", op_token)
+        end
       end
     end
 
