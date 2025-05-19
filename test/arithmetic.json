@@ -269,6 +269,27 @@
       "name": "group terms to times is evaluated before pow",
       "template": "{{ (2 * 2)**3 }}",
       "result": "64"
+    },
+    {
+      "name": "negate",
+      "template": "{{ -(1+2) }}",
+      "result": "-3"
+    },
+    {
+      "name": "unary minus takes priority over infix plus",
+      "template": "{{ -1+2 }}",
+      "result": "1"
+    },
+    {
+      "name": "unary plus, int as string",
+      "template": "{{ +a - 3 }}",
+      "data": { "a": 42 },
+      "result": "39"
+    },
+    {
+      "name": "unary plus, undefined",
+      "template": "{{ +a - 3 }}",
+      "result": "-3"
     }
   ]
 }

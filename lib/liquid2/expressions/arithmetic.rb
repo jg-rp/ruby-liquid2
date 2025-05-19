@@ -89,12 +89,12 @@ module Liquid2 # :nodoc:
 
     def evaluate(context)
       right = context.evaluate(@right)
-      value = Liquid2::Filters.to_decimal(right, default: nil)
-      if value.respond_to?(:-@)
-        value.send(:-@)
-      else
-        context.env.undefined("-(#{Liquid2.to_output_string(right.inspect)})", node: self)
-      end
+      value = Liquid2::Filters.to_decimal(right,
+                                          default: nil) || context.env.undefined(
+                                            "-(#{Liquid2.to_output_string(right.inspect)})",
+                                            node: self
+                                          )
+      value.send(:-@)
     end
 
     def children = [@right]
@@ -110,12 +110,12 @@ module Liquid2 # :nodoc:
 
     def evaluate(context)
       right = context.evaluate(@right)
-      value = Liquid2::Filters.to_decimal(right, default: nil)
-      if value.respond_to?(:+@)
-        value.send(:+@)
-      else
-        context.env.undefined("+(#{Liquid2.to_output_string(right.inspect)})", node: self)
-      end
+      value = Liquid2::Filters.to_decimal(right,
+                                          default: nil) || context.env.undefined(
+                                            "+(#{Liquid2.to_output_string(right.inspect)})",
+                                            node: self
+                                          )
+      value.send(:+@)
     end
 
     def children = [@right]

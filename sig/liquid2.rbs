@@ -640,6 +640,10 @@ module Liquid2
     def to_s: () -> ""
 
     def to_i: () -> 0
+            
+    def +@: () -> 0
+          
+    def -@: () -> 0
 
     def to_f: () -> ::Float
 
@@ -689,6 +693,10 @@ module Liquid2
     def to_s: () -> untyped
 
     def to_i: () -> untyped
+            
+    def +@: () -> untyped
+          
+    def -@: () -> untyped
 
     def to_f: () -> untyped
 

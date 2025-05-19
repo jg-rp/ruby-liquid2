@@ -104,14 +104,14 @@ class TestLiquidSyntaxErrors < Minitest::Test
 
   def test_hyphen_string
     source = "{{ -'foo' }}"
-    message = "unexpected token_minus"
+    message = "unexpected prefix operator -"
     error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
     assert_equal(message, error.message)
   end
 
   def test_unknown_prefix_operator
     source = "{{ +5 }}"
-    message = "unexpected token_plus"
+    message = "unexpected prefix operator +"
     error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
     assert_equal(message, error.message)
   end
