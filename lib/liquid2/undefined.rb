@@ -105,11 +105,11 @@ module Liquid2
     end
 
     def +@
-      raise UndefinedError.new(@message, @node.token)
+      self
     end
 
     def -@
-      raise UndefinedError.new(@message, @node.token)
+      self
     end
 
     def each(...)
@@ -125,7 +125,7 @@ module Liquid2
     end
 
     def to_liquid(_context)
-      raise UndefinedError.new(@message, @node.token)
+      self
     end
 
     def poke

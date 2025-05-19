@@ -91,7 +91,7 @@ module Liquid2 # :nodoc:
       right = context.evaluate(@right)
       value = Liquid2::Filters.to_decimal(right,
                                           default: nil) || context.env.undefined(
-                                            "-(#{Liquid2.to_output_string(right.inspect)})",
+                                            "-(#{Liquid2.to_output_string(right)})",
                                             node: self
                                           )
       value.send(:-@)
@@ -112,7 +112,7 @@ module Liquid2 # :nodoc:
       right = context.evaluate(@right)
       value = Liquid2::Filters.to_decimal(right,
                                           default: nil) || context.env.undefined(
-                                            "+(#{Liquid2.to_output_string(right.inspect)})",
+                                            "+(#{Liquid2.to_output_string(right)})",
                                             node: self
                                           )
       value.send(:+@)

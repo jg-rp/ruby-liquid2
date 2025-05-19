@@ -829,7 +829,7 @@ module Liquid2
       case current_kind
       when :token_not
         token = self.next
-        expr = parse_primary
+        expr = parse_primary(precedence: Precedence::PREFIX)
         LogicalNot.new(token, expr)
       when :token_plus
         token = self.next
@@ -838,7 +838,7 @@ module Liquid2
                                       token)
         end
 
-        Positive.new(token, parse_primary)
+        Positive.new(token, parse_primary(precedence: Precedence::PREFIX))
       when :token_minus
         token = self.next
         unless @env.arithmetic_operators
@@ -846,7 +846,7 @@ module Liquid2
                                       token)
         end
 
-        Negative.new(token, parse_primary)
+        Negative.new(token, parse_primary(precedence: Precedence::PREFIX))
       else
         raise LiquidSyntaxError.new("unexpected prefix operator #{current[1]}", current)
       end

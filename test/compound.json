@@ -59,6 +59,11 @@
       "name": "arithmetic operators bind more tightly than relational operators",
       "template": "{{ 1 + 2 == 3 }}",
       "result": "true"
+    },
+    {
+      "name": "not binds more tightly than or",
+      "template": "{{ not false or true  }}",
+      "result": "true"
     }
   ]
 }
