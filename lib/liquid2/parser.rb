@@ -359,7 +359,7 @@ module Liquid2
                parse_path
              when :token_lparen
                parse_range_lambda_or_grouped_expression
-             when :token_not
+             when :token_not, :token_plus, :token_minus
                parse_prefix_expression
              else
                unless looks_like_a_path && RESERVED_WORDS.include?(kind)
@@ -821,14 +821,35 @@ module Liquid2
       end
 
       eat(:token_rparen)
-      GroupedExpression.new(token, expr)
+      expr
     end
 
     # @return [Node]
     def parse_prefix_expression
-      token = eat(:token_not)
-      expr = parse_primary
-      LogicalNot.new(token, expr)
+      case current_kind
+      when :token_not
+        token = self.next
+        expr = parse_primary
+        LogicalNot.new(token, expr)
+      when :token_plus
+        token = self.next
+        unless @env.arithmetic_operators
+          raise LiquidSyntaxError.new("unexpected prefix operator +",
+                                      token)
+        end
+
+        Positive.new(token, parse_primary)
+      when :token_minus
+        token = self.next
+        unless @env.arithmetic_operators
+          raise LiquidSyntaxError.new("unexpected prefix operator -",
+                                      token)
+        end
+
+        Negative.new(token, parse_primary)
+      else
+        raise LiquidSyntaxError.new("unexpected prefix operator #{current[1]}", current)
+      end
     end
 
     # @param left [Expression]

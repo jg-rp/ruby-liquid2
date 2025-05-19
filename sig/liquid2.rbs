@@ -1603,7 +1603,7 @@ module Liquid2
     def self.to_integer: (untyped obj) -> Integer
 
     # Cast _obj_ to a number, favouring BigDecimal over Float.
-    def self.to_decimal: (untyped obj, ?default: ::Integer) -> (Integer | BigDecimal | Numeric)
+    def self.to_decimal: (untyped obj, ?default: untyped) -> (Integer | BigDecimal | Numeric)
 
     # Cast _obj_ to a  date and time. Return `nil` if casting fails.
     def self.to_date: (untyped obj) -> untyped
@@ -2606,6 +2606,26 @@ module Liquid2
 
   # Infix exponentiation
   class Pow < ArithmeticExpression
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  # Prefix negation
+  class Negative < Expression
+    @right: untyped
+
+    # @param right [Expression]
+    def initialize: ([Symbol, String?, Integer] token, untyped right) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  # Prefix positive
+  class Positive < Expression
+    @right: untyped
+
+    # @param right [Expression]
+    def initialize: ([Symbol, String?, Integer] token, untyped right) -> void
+
     def evaluate: (RenderContext context) -> untyped
   end
 end
