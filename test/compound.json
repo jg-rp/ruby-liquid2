@@ -1,0 +1,69 @@
+{
+  "tests": [
+    {
+      "name": "logical and, last value, truthy left",
+      "template": "{{ true and 42 }}",
+      "result": "42"
+    },
+    {
+      "name": "logical and, last value, falsy left",
+      "template": "{{ false and 42 }}",
+      "result": "false"
+    },
+    {
+      "name": "logical or, last value, truthy left",
+      "template": "{{ 99 or 42 }}",
+      "result": "99"
+    },
+    {
+      "name": "logical or, last value, falsy left",
+      "template": "{{ false or 42 }}",
+      "result": "42"
+    },
+    {
+      "name": "logical and, falsy left, or truthy",
+      "template": "{{ false and 42 or 99 }}",
+      "result": "99"
+    },
+    {
+      "name": "arithmetic and relational, truthy",
+      "template": "{{ 1 + 2 <= 3 }}",
+      "result": "true"
+    },
+    {
+      "name": "arithmetic and relational, falsy",
+      "template": "{{ 1 + 2 > 3 }}",
+      "result": "false"
+    },
+    {
+      "name": "if tag, arithmetic and relational",
+      "template": "{% if 1 + 2 <= 3 %}true{% endif %}",
+      "result": "true"
+    },
+    {
+      "name": "arithmetic, relational and logical, truthy",
+      "template": "{{ 1 + 2 > 3 or 4 < 5 }}",
+      "result": "true"
+    },
+    {
+      "name": "arithmetic, plus false",
+      "template": "{{ 1 + (2 > 3) }}",
+      "result": "1"
+    },
+    {
+      "name": "arithmetic, plus true",
+      "template": "{{ 1 + (2 < 3) }}",
+      "result": "1"
+    },
+    {
+      "name": "arithmetic operators bind more tightly than relational operators",
+      "template": "{{ 1 + 2 == 3 }}",
+      "result": "true"
+    },
+    {
+      "name": "not binds more tightly than or",
+      "template": "{{ not false or true  }}",
+      "result": "true"
+    }
+  ]
+}

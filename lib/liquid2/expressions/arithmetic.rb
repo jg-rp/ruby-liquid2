@@ -78,4 +78,46 @@ module Liquid2 # :nodoc:
       left**right
     end
   end
+
+  # Prefix negation
+  class Negative < Expression
+    # @param right [Expression]
+    def initialize(token, right)
+      super(token)
+      @right = right
+    end
+
+    def evaluate(context)
+      right = context.evaluate(@right)
+      value = Liquid2::Filters.to_decimal(right,
+                                          default: nil) || context.env.undefined(
+                                            "-(#{Liquid2.to_output_string(right)})",
+                                            node: self
+                                          )
+      value.send(:-@)
+    end
+
+    def children = [@right]
+  end
+
+  # Prefix positive
+  class Positive < Expression
+    # @param right [Expression]
+    def initialize(token, right)
+      super(token)
+      @right = right
+    end
+
+    def evaluate(context)
+      right = context.evaluate(@right)
+      value = Liquid2::Filters.to_decimal(right,
+                                          default: nil) || context.env.undefined(
+                                            "+(#{Liquid2.to_output_string(right)})",
+                                            node: self
+                                          )
+      value.send(:+@)
+    end
+
+    def children = [@right]
+  end
 end

@@ -1,6 +1,6 @@
 ## [unreleased]
 
-- Added support for arithmetic operators `+`, `-`, `*`, `/`, `%` and `**`. These operators are disabled by default. Enable them by passing `arithmetic_operators: true` to a new `Liquid2::Environment`.
+- Added support for arithmetic infix operators `+`, `-`, `*`, `/`, `%` and `**`, and prefix operators `+` and `-`. These operators are disabled by default. Enable them by passing `arithmetic_operators: true` to a new `Liquid2::Environment`.
 
 ## [0.2.0] - 25-05-12
 
