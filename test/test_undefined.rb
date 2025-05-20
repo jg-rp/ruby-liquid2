@@ -54,6 +54,14 @@ class TestUndefinedCVariables < Minitest::Test
   def test_prefix_coerced_to_undefined
     source = "{{ -'foo' or 'bar' }}"
     env = Liquid2::Environment.new(falsy_undefined: true,
+                                   arithmetic_operators: true)
+
+    assert_equal("bar", env.render(source))
+  end
+
+  def test_prefix_coerced_to_strict_undefined
+    source = "{{ -'foo' or 'bar' }}"
+    env = Liquid2::Environment.new(falsy_undefined: true,
                                    undefined: Liquid2::StrictUndefined,
                                    arithmetic_operators: true)
 

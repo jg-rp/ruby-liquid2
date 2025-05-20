@@ -28,8 +28,8 @@ module Liquid2
     def to_s = ""
     def to_i = 0
     def to_f = 0.0
-    def -@ = 0
-    def +@ = 0
+    def -@ = self
+    def +@ = self
     def each(...) = Enumerator.new {} # rubocop:disable Lint/EmptyBlock
     def each_with_index(...) = Enumerator.new {} # rubocop:disable Lint/EmptyBlock
     def join(...) = ""

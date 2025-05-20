@@ -619,33 +619,33 @@ module Liquid2
 
     def []: (*untyped) ?{ (?) -> untyped } -> self
 
-    def key?: (*untyped) ?{ (?) -> untyped } -> false
+    def key?: (*untyped) ?{ (?) -> untyped } -> untyped
 
-    def include?: (*untyped) ?{ (?) -> untyped } -> false
+    def include?: (*untyped) ?{ (?) -> untyped } -> untyped
 
-    def member?: (*untyped) ?{ (?) -> untyped } -> false
+    def member?: (*untyped) ?{ (?) -> untyped } -> untyped
 
     def fetch: (*untyped) ?{ (?) -> untyped } -> self
 
-    def !: () -> true
+    def !: () -> untyped
 
     def ==: (untyped other) -> untyped
 
     alias eql? ==
 
-    def size: () -> 0
+    def size: () -> untyped
 
-    def length: () -> 0
+    def length: () -> untyped
 
     def to_s: () -> ""
 
-    def to_i: () -> 0
+    def to_i: () -> untyped
             
-    def +@: () -> 0
+    def +@: () -> untyped
           
-    def -@: () -> 0
+    def -@: () -> untyped
 
-    def to_f: () -> ::Float
+    def to_f: () -> untyped
 
     def each: (*untyped) ?{ (?) -> untyped } -> untyped
 
@@ -653,9 +653,9 @@ module Liquid2
                        
     def join: (*untyped) -> ""
 
-    def to_liquid: (RenderContext _context) -> nil
+    def to_liquid: (RenderContext _context) -> untyped
 
-    def poke: () -> true
+    def poke: () -> bool
   end
 
   # An undefined type that always raises an exception.
