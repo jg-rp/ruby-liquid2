@@ -36,7 +36,7 @@ Liquid templates for Ruby, with some extra features.
 Add `'liquid2'` to your Gemfile:
 
 ```
-gem 'liquid2', '~> 0.2.0'
+gem 'liquid2', '~> 0.3.0'
 ```
 
 Or
@@ -221,7 +221,7 @@ Here we use `~` to remove the newline after the opening `for` tag, but preserve 
 
 #### Arithmetic operators
 
-Arithmetic infix operators `+`, `-`, `*`, `/`, `%` and `**`, and prefix operators `+` and `-`, are disabled by default. Enable them by passing `arithmetic_operators: true` to a new [`Liquid2::Environment`](https://github.com/jg-rp/ruby-liquid2/blob/main/lib/liquid2/environment.rb).
+Arithmetic infix operators `+`, `-`, `*`, `/`, `%` and `**`, and prefix operators `+` and `-`, are an experimental feature and are disabled by default. Enable them by passing `arithmetic_operators: true` to a new [`Liquid2::Environment`](https://github.com/jg-rp/ruby-liquid2/blob/main/lib/liquid2/environment.rb).
 
 #### Scientific notation
 

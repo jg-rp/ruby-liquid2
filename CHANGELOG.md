@@ -1,4 +1,4 @@
-## [unreleased]
+## [0.3.0] - 25-05-29
 
 - Fixed static analysis of lambda expressions (arrow functions). Previously we were not including lambda parameters in the scope of the expression. See [#12](https://github.com/jg-rp/ruby-liquid2/issues/12).
 - Fixed parsing of variable paths that start with `true`, `false`, `nil` or `null`. For example, `{{ true.foo }}`. See [#13](https://github.com/jg-rp/ruby-liquid2/issues/13).
