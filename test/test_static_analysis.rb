@@ -257,5 +257,57 @@ class TestStaticAnalysis < Minitest::Test
     )
   end
 
+  def test_lambda_expression
+    source = "{% assign y = 42 %}{% assign x = a | where: i => i.foo.bar == y %}"
+
+    assert_analysis(
+      Liquid2.parse(source),
+      locals: {
+        "y" => [Var.new(["y"], Span.new("", 10))],
+        "x" => [Var.new(["x"], Span.new("", 29))]
+      },
+      globals: { "a" => [Var.new(["a"], Span.new("", 33))] },
+      variables: {
+        "a" => [
+          Var.new(["a"], Span.new("", 33))
+        ],
+        "i" => [
+          Var.new(%w[i foo bar], Span.new("", 49))
+        ],
+        "y" => [
+          Var.new(["y"], Span.new("", 62))
+        ]
+      },
+      tags: { "assign" => [Span.new("", 3), Span.new("", 22)] },
+      filters: { "where" => [Span.new("", 37)] }
+    )
+  end
+
+  def test_two_argument_lambda_expression
+    source = "{% assign y = 42 %}{% assign x = a | where: (i, j) => i.foo.bar == j %}"
+
+    assert_analysis(
+      Liquid2.parse(source),
+      locals: {
+        "y" => [Var.new(["y"], Span.new("", 10))],
+        "x" => [Var.new(["x"], Span.new("", 29))]
+      },
+      globals: { "a" => [Var.new(["a"], Span.new("", 33))] },
+      variables: {
+        "a" => [
+          Var.new(["a"], Span.new("", 33))
+        ],
+        "i" => [
+          Var.new(%w[i foo bar], Span.new("", 54))
+        ],
+        "j" => [
+          Var.new(["j"], Span.new("", 67))
+        ]
+      },
+      tags: { "assign" => [Span.new("", 3), Span.new("", 22)] },
+      filters: { "where" => [Span.new("", 37)] }
+    )
+  end
+
   # TODO: finish me
 end
