@@ -1,5 +1,6 @@
 ## [unreleased]
 
+- Fixed parsing of variable paths that start with `true`, `false`, `nil` or `null`. For example, `{{ true.foo }}`. See [#13](https://github.com/jg-rp/ruby-liquid2/issues/13).
 - Added support for arithmetic infix operators `+`, `-`, `*`, `/`, `%` and `**`, and prefix operators `+` and `-`. These operators are disabled by default. Enable them by passing `arithmetic_operators: true` to a new `Liquid2::Environment`.
 
 ## [0.2.0] - 25-05-12

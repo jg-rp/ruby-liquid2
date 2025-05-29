@@ -337,14 +337,26 @@ module Liquid2
 
       left = case kind
              when :token_true
-               self.next
-               looks_like_a_path ? parse_path : true
+               if looks_like_a_path
+                 parse_path
+               else
+                 self.next
+                 true
+               end
              when :token_false
-               self.next
-               looks_like_a_path ? parse_path : false
+               if looks_like_a_path
+                 parse_path
+               else
+                 self.next
+                 false
+               end
              when :token_nil
-               self.next
-               looks_like_a_path ? parse_path : nil
+               if looks_like_a_path
+                 parse_path
+               else
+                 self.next
+                 nil
+               end
              when :token_int
                Liquid2.to_liquid_int(self.next[1])
              when :token_float
@@ -536,10 +548,10 @@ module Liquid2
       LOGICAL_AND = 4
       RELATIONAL = 5
       MEMBERSHIP = 6
-      PREFIX = 7
       ADD_SUB = 8
       MUL_DIV = 9
       POW = 10
+      PREFIX = 11
     end
 
     PRECEDENCES = {
