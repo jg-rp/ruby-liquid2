@@ -64,6 +64,32 @@
       "name": "not binds more tightly than or",
       "template": "{{ not false or true  }}",
       "result": "true"
+    },
+    {
+      "name": "filter arguments",
+      "template": "{{ a | split: b or ',' | join: c or '#'  }}",
+      "data": {
+        "a": "1,2,3,4",
+        "b": null,
+        "c": "*"
+      },
+      "result": "1*2*3*4"
+    },
+    {
+      "name": "loop target",
+      "template": "{% for x in y or a %}{{ x + 2 }}, {% endfor %}",
+      "data": {
+        "a": [1, 2, 3]
+      },
+      "result": "3, 4, 5, "
+    },
+    {
+      "name": "lambda expression",
+      "template": "{{ x or a | map: i => i + 2 | join: ', ' }}",
+      "data": {
+        "a": [1, 2, 3]
+      },
+      "result": "3, 4, 5"
     }
   ]
 }

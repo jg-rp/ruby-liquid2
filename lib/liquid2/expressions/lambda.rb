@@ -19,6 +19,8 @@ module Liquid2
 
     def children = [@expr]
 
+    # TODO: scope
+
     # Apply this lambda function to elements from _enum_.
     # @param context [RenderContext]
     # @param enum [Enumerable<Object>]
