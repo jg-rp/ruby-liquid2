@@ -45,7 +45,13 @@ module Liquid2
   class Environment
     attr_reader :tags, :local_namespace_limit, :context_depth_limit, :loop_iteration_limit,
                 :output_stream_limit, :filters, :suppress_blank_control_flow_blocks,
-                :shorthand_indexes, :falsy_undefined, :arithmetic_operators
+                :shorthand_indexes, :falsy_undefined, :arithmetic_operators, :markup_comment_prefix,
+                :markup_comment_suffix, :markup_out_end, :markup_out_start, :markup_tag_end,
+                :markup_tag_start, :re_tag_name, :re_word, :re_int, :re_float,
+                :re_double_quote_string_special, :re_single_quote_string_special, :re_markup_start,
+                :re_markup_end, :re_markup_end_chars, :re_up_to_markup_start, :re_punctuation,
+                :re_up_to_inline_comment_end, :re_up_to_raw_end, :re_block_comment_chunk,
+                :re_up_to_doc_end, :re_line_statement_comment
 
     # @param context_depth_limit [Integer] The maximum number of times a render context can
     #   be extended or copied before a `Liquid2::LiquidResourceLimitError`` is raised.
@@ -59,8 +65,23 @@ module Liquid2
     #   `Liquid2::LiquidResourceLimitError`` is raised.
     # @param loop_iteration_limit [Integer?] The maximum number of loop iterations allowed
     #   before a `LiquidResourceLimitError` is raised.
+    # @param markup_comment_prefix [String] The string of characters that indicate the start of a
+    #   Liquid comment. This should include a single trailing `#`. Additional, variable length
+    #   hashes will be handled by the tokenizer. It is not possible to change comment syntax to not
+    #   use `#`.
+    # @param markup_comment_suffix [String] The string of characters that indicate the end of a
+    #   Liquid comment, excluding any hashes.
+    # @param markup_out_end [String] The string of characters that indicate the end of a Liquid
+    #   output statement.
+    # @param markup_out_start [String] The string of characters that indicate the start of a Liquid
+    #   output statement.
+    # @param markup_tag_end [String] The string of characters that indicate the end of a Liquid tag.
+    # @param markup_tag_start [String] The string of characters that indicate the start of a Liquid
+    #   tag.
     # @param output_stream_limit [Integer?] The maximum number of bytes that can be written
     #   to a template's output buffer before a `LiquidResourceLimitError` is raised.
+    # @param parser [singleton(Parser)] `Liquid2::Parser` of a subclass of it.
+    # @param parser [singleton(Scanner)] `Liquid2::Scanner` of a subclass of it.
     # @param shorthand_indexes [bool] When `true`, allow shorthand dotted array indexes as
     #   well as bracketed indexes in variable paths. Defaults to `false`.
     # @param suppress_blank_control_flow_blocks [bool] When `true`, suppress blank control
@@ -70,15 +91,23 @@ module Liquid2
     def initialize(
       arithmetic_operators: false,
       context_depth_limit: 30,
+      falsy_undefined: true,
       globals: nil,
       loader: nil,
       local_namespace_limit: nil,
       loop_iteration_limit: nil,
+      markup_comment_prefix: "{#",
+      markup_comment_suffix: "}",
+      markup_out_end: "}}",
+      markup_out_start: "{{",
+      markup_tag_end: "%}",
+      markup_tag_start: "{%",
       output_stream_limit: nil,
+      parser: Parser,
+      scanner: Scanner,
       shorthand_indexes: false,
       suppress_blank_control_flow_blocks: true,
-      undefined: Undefined,
-      falsy_undefined: true
+      undefined: Undefined
     )
       # A mapping of tag names to objects responding to `parse(token, parser)`.
       @tags = {}
@@ -116,9 +145,17 @@ module Liquid2
       # before a `LiquidResourceLimitError` is raised.
       @output_stream_limit = output_stream_limit
 
+      # Liquid2::Scanner or a subclass of it. This is used to tokenize Liquid source
+      # text before paring it.
+      @scanner = scanner
+
+      # Liquid2::Parser or a subclass of it. The parser takes tokens from the scanner
+      # and produces an abstract syntax tree.
+      @parser = parser
+
       # We reuse the same string scanner when parsing templates for improved performance.
       # TODO: Is this going to cause issues in multi threaded environments?
-      @scanner = StringScanner.new("")
+      @string_scanner = StringScanner.new("")
 
       # When `true`, allow shorthand dotted array indexes as well as bracketed indexes
       # in variable paths. Defaults to `false`.
@@ -136,6 +173,31 @@ module Liquid2
       # raise an error when tested for truthiness.
       @falsy_undefined = falsy_undefined
 
+      # The string of characters that indicate the start of a Liquid output statement.
+      @markup_out_start = markup_out_start
+
+      # The string of characters that indicate the end of a Liquid output statement.
+      @markup_out_end = markup_out_end
+
+      # The string of characters that indicate the start of a Liquid tag.
+      @markup_tag_start = markup_tag_start
+
+      # The string of characters that indicate the end of a Liquid tag.
+      @markup_tag_end = markup_tag_end
+
+      # The string of characters that indicate the start of a Liquid comment. This should
+      # include a single trailing `#`. Additional, variable length hashes will be handled
+      # by the tokenizer. It is not possible to change comment syntax to not use `#`.
+      @markup_comment_prefix = markup_comment_prefix
+
+      # The string of characters that indicate the end of a Liquid comment, excluding any
+      # hashes.
+      @markup_comment_suffix = markup_comment_suffix
+
+      # You might need to override `setup_scanner` if you've specified custom markup
+      # delimiters and they conflict with standard punctuation.
+      setup_scanner
+
       # Override `setup_tags_and_filters` in environment subclasses to configure custom
       # tags and/or filters.
       setup_tags_and_filters
@@ -145,11 +207,13 @@ module Liquid2
     # @param source [String] template source text.
     # @return [Template]
     def parse(source, name: "", path: nil, up_to_date: nil, globals: nil, overlay: nil)
-      Template.new(self,
-                   source,
-                   Parser.parse(self, source, scanner: @scanner),
-                   name: name, path: path, up_to_date: up_to_date,
-                   globals: make_globals(globals), overlay: overlay)
+      Template.new(
+        self,
+        source,
+        @parser.new(self, @scanner.tokenize(self, source, @string_scanner), source.length).parse,
+        name: name, path: path, up_to_date: up_to_date,
+        globals: make_globals(globals), overlay: overlay
+      )
     rescue LiquidError => e
       e.source = source unless e.source
       e.template_name = name unless e.template_name || name.empty?
@@ -290,6 +354,43 @@ module Liquid2
       register_filter("url_decode", Liquid2::Filters.method(:url_decode))
       register_filter("upcase", Liquid2::Filters.method(:upcase))
       register_filter("where", Liquid2::Filters.method(:where))
+    end
+
+    # Compile regular expressions for use by the tokenizer attached to this environment.
+    def setup_scanner
+      # A regex pattern matching Liquid tag names. Should include `#` for inline comments.
+      @re_tag_name = /(?:[a-z][a-z_0-9]*|#)/
+      @re_word = /[\u0080-\uFFFFa-zA-Z_][\u0080-\uFFFFa-zA-Z0-9_-]*/
+      @re_int = /-?\d+(?:[eE]\+?\d+)?/
+      @re_float = /((?:-?\d+\.\d+(?:[eE][+-]?\d+)?)|(-?\d+[eE]-\d+))/
+      @re_double_quote_string_special = /[\\"\$]/
+      @re_single_quote_string_special = /[\\'\$]/
+
+      # rubocop: disable Layout/LineLength
+
+      # A regex pattern matching the start of some Liquid markup. Could be the start of an
+      # output statement, tag or comment. Traditionally `{{`, `{%` and `{#`, respectively.
+      @re_markup_start = /#{Regexp.escape(@markup_out_start)}|#{Regexp.escape(@markup_tag_start)}|#{Regexp.escape(@markup_comment_prefix)}/
+
+      # A regex pattern matching the end of some Liquid markup. Could be the end of
+      # an output statement or tag. Traditionally `}}`, `%}`, respectively.
+      # respectively.
+      @re_markup_end = /#{Regexp.escape(@markup_out_end)}|#{Regexp.escape(@markup_tag_end)}/
+
+      # A regex pattern matching any one of the possible characters ending some Liquid
+      # markup. This is used to detect incomplete and malformed markup and provide
+      # helpful error messages.
+      @re_markup_end_chars = /[#{Regexp.escape((@markup_out_end + @markup_tag_end).each_char.uniq.join)}]/
+
+      @re_up_to_markup_start = /(?=#{Regexp.escape(@markup_out_start)}|#{Regexp.escape(@markup_tag_start)}|#{Regexp.escape(@markup_comment_prefix)})/
+      @re_punctuation = %r{(?!#{@re_markup_end})(\?|\[|\]|\|{1,2}|\.{1,2}|,|:|\(|\)|[<>=!]+|[+\-%*/]+(?!#{@re_markup_end_chars}))}
+      @re_up_to_inline_comment_end = /(?=([+\-~])?#{Regexp.escape(@markup_tag_end)})/
+      @re_up_to_raw_end = /(?=(#{Regexp.escape(@markup_tag_start)}[+\-~]?\s*endraw\s*[+\-~]?#{Regexp.escape(@markup_tag_end)}))/
+      @re_block_comment_chunk = /(#{Regexp.escape(@markup_tag_start)}[+\-~]?\s*(comment|raw|endcomment|endraw)\s*[+\-~]?#{Regexp.escape(@markup_tag_end)})/
+      @re_up_to_doc_end = /(?=(#{Regexp.escape(@markup_tag_start)}[+\-~]?\s*enddoc\s*[+\-~]?#{Regexp.escape(@markup_tag_end)}))/
+      @re_line_statement_comment = /(?=([\r\n]+|-?#{Regexp.escape(@markup_tag_end)}))/
+
+      # rubocop: enable Layout/LineLength
     end
 
     def undefined(name, node: nil)

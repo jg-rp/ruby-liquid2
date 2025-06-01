@@ -12,14 +12,6 @@ module Liquid2
   class Scanner
     attr_reader :tokens
 
-    RE_LINE_SPACE = /[ \t]+/
-    RE_WORD = /[\u0080-\uFFFFa-zA-Z_][\u0080-\uFFFFa-zA-Z0-9_-]*/
-    RE_INT  = /-?\d+(?:[eE]\+?\d+)?/
-    RE_FLOAT = /((?:-?\d+\.\d+(?:[eE][+-]?\d+)?)|(-?\d+[eE]-\d+))/
-    RE_PUNCTUATION = %r{\?|\[|\]|\|{1,2}|\.{1,2}|,|:|\(|\)|[<>=!]+|[+\-%*/]+(?![\}%])}
-    RE_SINGLE_QUOTE_STRING_SPECIAL = /[\\'\$]/
-    RE_DOUBLE_QUOTE_STRING_SPECIAL = /[\\"\$]/
-
     # Keywords and symbols that get their own token kind.
     TOKEN_MAP = {
       "true" => :token_true,
@@ -68,15 +60,16 @@ module Liquid2
       "**" => :token_pow
     }.freeze
 
-    def self.tokenize(source, scanner)
-      lexer = new(source, scanner)
+    def self.tokenize(env, source, scanner)
+      lexer = new(env, source, scanner)
       lexer.run
       lexer.tokens
     end
 
+    # @param env [Environment]
     # @param source [String]
     # @param scanner [StringScanner]
-    def initialize(source, scanner)
+    def initialize(env, source, scanner)
       @source = source
       @scanner = scanner
       @scanner.string = @source
@@ -86,6 +79,30 @@ module Liquid2
 
       # Tokens are arrays of (kind, value, start index)
       @tokens = [] # : Array[[Symbol, String?, Integer]]
+
+      @s_out_start = env.markup_out_start
+      @s_out_end = env.markup_out_end
+      @s_tag_start = env.markup_tag_start
+      @s_tag_end = env.markup_tag_end
+      @s_comment_prefix = env.markup_comment_prefix
+      @s_comment_suffix = env.markup_comment_suffix
+
+      @re_tag_name = env.re_tag_name
+      @re_word = env.re_word
+      @re_int = env.re_int
+      @re_float = env.re_float
+      @re_double_quote_string_special = env.re_double_quote_string_special
+      @re_single_quote_string_special = env.re_single_quote_string_special
+      @re_markup_start = env.re_markup_start
+      @re_markup_end = env.re_markup_end
+      @re_markup_end_chars = env.re_markup_end_chars
+      @re_up_to_markup_start = env.re_up_to_markup_start
+      @re_punctuation = env.re_punctuation
+      @re_up_to_inline_comment_end = env.re_up_to_inline_comment_end
+      @re_up_to_raw_end = env.re_up_to_raw_end
+      @re_block_comment_chunk = env.re_block_comment_chunk
+      @re_up_to_doc_end = env.re_up_to_doc_end
+      @re_line_statement_comment = env.re_line_statement_comment
     end
 
     def run
@@ -108,14 +125,13 @@ module Liquid2
     end
 
     def skip_line_trivia
-      @start = @scanner.pos if @scanner.skip(RE_LINE_SPACE)
+      @start = @scanner.pos if @scanner.skip(/[ \t]+/)
     end
 
     def accept_whitespace_control
       ch = @scanner.peek(1)
 
-      case ch
-      when "-", "+", "~"
+      if ch == "-" || ch == "+" || ch == "~" # rubocop: disable Style/MultipleComparison
         @scanner.pos += 1
         @tokens << [:token_whitespace_control, ch, @start]
         @start = @scanner.pos
@@ -126,22 +142,22 @@ module Liquid2
     end
 
     def lex_markup
-      case @scanner.scan(/\{[\{%#]/)
-      when "{#"
+      case @scanner.scan(@re_markup_start)
+      when @s_comment_prefix
         :lex_comment
-      when "{{"
+      when @s_out_start
         @tokens << [:token_output_start, nil, @start]
         @start = @scanner.pos
         accept_whitespace_control
         skip_trivia
         :lex_expression
-      when "{%"
+      when @s_tag_start
         @tokens << [:token_tag_start, nil, @start]
         @start = @scanner.pos
         accept_whitespace_control
         skip_trivia
 
-        if (tag_name = @scanner.scan(/(?:[a-z][a-z_0-9]*|#)/))
+        if (tag_name = @scanner.scan(@re_tag_name))
           @tokens << [:token_tag_name, tag_name, @start]
           @start = @scanner.pos
 
@@ -173,8 +189,7 @@ module Liquid2
           :lex_expression
         end
       else
-        if @scanner.skip_until(/\{[\{%#]/)
-          @scanner.pos -= 2
+        if @scanner.skip_until(@re_up_to_markup_start)
           @tokens << [:token_other, @source.byteslice(@start...@scanner.pos), @start]
           @start = @scanner.pos
           :lex_markup
@@ -192,26 +207,27 @@ module Liquid2
     def lex_expression
       loop do
         skip_trivia
-        if (value = @scanner.scan(RE_FLOAT))
+        if (value = @scanner.scan(@re_float))
           @tokens << [:token_float, value, @start]
           @start = @scanner.pos
-        elsif (value = @scanner.scan(RE_INT))
+        elsif (value = @scanner.scan(@re_int))
           @tokens << [:token_int, value, @start]
           @start = @scanner.pos
-        elsif (value = @scanner.scan(RE_PUNCTUATION))
+        elsif (value = @scanner.scan(@re_punctuation))
           @tokens << [TOKEN_MAP[value] || :token_unknown, value, @start]
           @start = @scanner.pos
-        elsif (value = @scanner.scan(RE_WORD))
+        elsif (value = @scanner.scan(@re_word))
           @tokens << [TOKEN_MAP[value] || :token_word, value, @start]
           @start = @scanner.pos
         else
           case @scanner.get_byte
           when "'"
             @start = @scanner.pos
-            scan_string("'", :token_single_quote_string, RE_SINGLE_QUOTE_STRING_SPECIAL)
+            scan_string("'", :token_single_quote_string, @re_single_quote_string_special)
           when "\""
             @start = @scanner.pos
-            scan_string("\"", :token_double_quote_string, RE_DOUBLE_QUOTE_STRING_SPECIAL)
+            scan_string("\"", :token_double_quote_string,
+                        @re_double_quote_string_special)
           else
             @scanner.pos -= 1
             break
@@ -222,17 +238,17 @@ module Liquid2
       accept_whitespace_control
 
       # Miro benchmarks show no performance gain using scan_byte and peek_byte over scan here.
-      case @scanner.scan(/[\}%]\}/)
-      when "}}"
+      case @scanner.scan(@re_markup_end)
+      when @s_out_end
         @tokens << [:token_output_end, nil, @start]
-      when "%}"
+      when @s_tag_end
         @tokens << [:token_tag_end, nil, @start]
       else
         # Unexpected token
         return nil if @scanner.eos?
 
-        if (ch = @scanner.scan(/[\}%]/))
-          raise LiquidSyntaxError.new("missing \"}\" or \"%\" detected",
+        if (ch = @scanner.scan(@re_markup_end_chars))
+          raise LiquidSyntaxError.new("missing markup delimiter detected",
                                       [:token_unknown, ch, @start])
         end
 
@@ -255,8 +271,7 @@ module Liquid2
 
       wc = accept_whitespace_control
 
-      if @scanner.skip_until(/([+\-~]?)(\#{#{hash_count}}\})/)
-        @scanner.pos -= @scanner[0]&.length || 0
+      if @scanner.skip_until(/(?=([+\-~]?)(\#{#{hash_count}}#{Regexp.escape(@s_comment_suffix)}))/)
         @tokens << [:token_comment, @source.byteslice(@start...@scanner.pos), @start]
         @start = @scanner.pos
 
@@ -282,18 +297,17 @@ module Liquid2
     end
 
     def lex_inside_inline_comment
-      if @scanner.skip_until(/([+\-~])?%\}/)
-        @scanner.pos -= @scanner.captures&.first.nil? ? 2 : 3
+      if @scanner.skip_until(@re_up_to_inline_comment_end)
         @tokens << [:token_comment, @source.byteslice(@start...@scanner.pos), @start]
         @start = @scanner.pos
       end
 
       accept_whitespace_control
 
-      case @scanner.scan(/[\}%]\}/)
-      when "}}"
+      case @scanner.scan(@re_markup_end)
+      when @s_out_end
         @tokens << [:token_output_end, nil, @start]
-      when "%}"
+      when @s_tag_end
         @tokens << [:token_tag_end, nil, @start]
       else
         # Unexpected token
@@ -310,17 +324,16 @@ module Liquid2
       skip_trivia
       accept_whitespace_control
 
-      case @scanner.scan(/[\}%]\}/)
-      when "}}"
+      case @scanner.scan(@re_markup_end)
+      when @s_out_end
         @tokens << [:token_output_end, nil, @start]
         @start = @scanner.pos
-      when "%}"
+      when @s_tag_end
         @tokens << [:token_tag_end, nil, @start]
         @start = @scanner.pos
       end
 
-      if @scanner.skip_until(/(\{%[+\-~]?\s*endraw\s*[+\-~]?%\})/)
-        @scanner.pos -= @scanner.captures&.first&.length || raise
+      if @scanner.skip_until(@re_up_to_raw_end)
         @tokens << [:token_raw, @source.byteslice(@start...@scanner.pos), @start]
         @start = @scanner.pos
       end
@@ -332,11 +345,11 @@ module Liquid2
       skip_trivia
       accept_whitespace_control
 
-      case @scanner.scan(/[\}%]\}/)
-      when "}}"
+      case @scanner.scan(@re_markup_end)
+      when @s_out_end
         @tokens << [:token_output_end, nil, @start]
         @start = @scanner.pos
-      when "%}"
+      when @s_tag_end
         @tokens << [:token_tag_end, nil, @start]
         @start = @scanner.pos
       end
@@ -345,9 +358,7 @@ module Liquid2
       raw_depth = 0
 
       loop do
-        unless @scanner.skip_until(/(\{%[+\-~]?\s*(comment|raw|endcomment|endraw)\s*[+\-~]?%\})/)
-          break
-        end
+        break unless @scanner.skip_until(@re_block_comment_chunk)
 
         tag_name = @scanner.captures&.last || raise
 
@@ -380,17 +391,16 @@ module Liquid2
       skip_trivia
       accept_whitespace_control
 
-      case @scanner.scan(/[\}%]\}/)
-      when "}}"
+      case @scanner.scan(@re_markup_end)
+      when @s_out_end
         @tokens << [:token_output_end, nil, @start]
         @start = @scanner.pos
-      when "%}"
+      when @s_tag_end
         @tokens << [:token_tag_end, nil, @start]
         @start = @scanner.pos
       end
 
-      if @scanner.skip_until(/(\{%[+\-~]?\s*enddoc\s*[+\-~]?%\})/)
-        @scanner.pos -= @scanner.captures&.first&.length || raise
+      if @scanner.skip_until(@re_up_to_doc_end)
         @tokens << [:token_doc, @source.byteslice(@start...@scanner.pos), @start]
         @start = @scanner.pos
       end
@@ -401,21 +411,19 @@ module Liquid2
     def lex_line_statements
       skip_trivia # Leading newlines are OK
 
-      if (tag_name = @scanner.scan(/(?:[a-z][a-z_0-9]*|#)/))
+      if (tag_name = @scanner.scan(@re_tag_name))
         @tokens << [:token_tag_start, nil, @start]
         @tokens << [:token_tag_name, tag_name, @start]
         @start = @scanner.pos
 
-        if tag_name == "#" && @scanner.scan_until(/([\r\n]+|-?%\})/)
-          @scanner.pos -= @scanner.captures&.first&.length || raise
+        if tag_name == "#" && @scanner.scan_until(@re_line_statement_comment)
           @tokens << [:token_comment, @source.byteslice(@start...@scanner.pos), @start]
           @start = @scanner.pos
           @tokens << [:token_tag_end, nil, @start]
           :lex_line_statements
 
-        elsif tag_name == "comment" && @scanner.scan_until(/(endcomment)/)
+        elsif tag_name == "comment" && @scanner.scan_until(/(?=endcomment)/)
           @tokens << [:token_tag_end, nil, @start]
-          @scanner.pos -= @scanner.captures&.first&.length || raise
           @tokens << [:token_comment, @source.byteslice(@start...@scanner.pos), @start]
           @start = @scanner.pos
           :lex_line_statements
@@ -424,11 +432,11 @@ module Liquid2
         end
       else
         accept_whitespace_control
-        case @scanner.scan(/[\}%]\}/)
-        when "}}"
+        case @scanner.scan(@re_markup_end)
+        when @s_out_end
           @tokens << [:token_output_end, nil, @start]
           @start = @scanner.pos
-        when "%}"
+        when @s_tag_end
           @tokens << [:token_tag_end, nil, @start]
           @start = @scanner.pos
         end
@@ -444,26 +452,26 @@ module Liquid2
         case @scanner.get_byte
         when "'"
           @start = @scanner.pos
-          scan_string("'", :token_single_quote_string, RE_SINGLE_QUOTE_STRING_SPECIAL)
+          scan_string("'", :token_single_quote_string, @re_single_quote_string_special)
         when "\""
           @start = @scanner.pos
-          scan_string("\"", :token_double_quote_string, RE_DOUBLE_QUOTE_STRING_SPECIAL)
+          scan_string("\"", :token_double_quote_string, @re_double_quote_string_special)
         when nil
           # End of scanner. Unclosed expression or string literal.
           break
 
         else
           @scanner.pos -= 1
-          if (value = @scanner.scan(RE_FLOAT))
+          if (value = @scanner.scan(@re_float))
             @tokens << [:token_float, value, @start]
             @start = @scanner.pos
-          elsif (value = @scanner.scan(RE_INT))
+          elsif (value = @scanner.scan(@re_int))
             @tokens << [:token_int, value, @start]
             @start = @scanner.pos
-          elsif (value = @scanner.scan(RE_PUNCTUATION))
+          elsif (value = @scanner.scan(@re_punctuation))
             @tokens << [TOKEN_MAP[value] || raise, nil, @start]
             @start = @scanner.pos
-          elsif (value = @scanner.scan(RE_WORD))
+          elsif (value = @scanner.scan(@re_word))
             @tokens << [TOKEN_MAP[value] || :token_word, value, @start]
             @start = @scanner.pos
           elsif @scanner.scan(/(\r?\n)+/)
@@ -475,11 +483,11 @@ module Liquid2
             # End of the line statement and enclosing `liquid` tag.
             @tokens << [:token_tag_end, nil, @start]
             accept_whitespace_control
-            case @scanner.scan(/[\}%]\}/)
-            when "}}"
+            case @scanner.scan(@re_markup_end)
+            when @s_out_end
               @tokens << [:token_output_end, nil, @start]
               @start = @scanner.pos
-            when "%}"
+            when @s_tag_end
               @tokens << [:token_tag_end, nil, @start]
               @start = @scanner.pos
             end
@@ -536,10 +544,12 @@ module Liquid2
             case @scanner.get_byte
             when "'"
               @start = @scanner.pos
-              scan_string("'", :token_single_quote_string, RE_SINGLE_QUOTE_STRING_SPECIAL)
+              scan_string("'", :token_single_quote_string,
+                          @re_single_quote_string_special)
             when "\""
               @start = @scanner.pos
-              scan_string("\"", :token_double_quote_string, RE_DOUBLE_QUOTE_STRING_SPECIAL)
+              scan_string("\"", :token_double_quote_string,
+                          @re_double_quote_string_special)
             when "}"
               @tokens << [:token_string_interpol_end, nil, @start]
               @start = @scanner.pos
@@ -550,16 +560,16 @@ module Liquid2
                                           [symbol, nil, start_of_string])
             else
               @scanner.pos -= 1
-              if (value = @scanner.scan(RE_FLOAT))
+              if (value = @scanner.scan(@re_float))
                 @tokens << [:token_float, value, @start]
                 @start = @scanner.pos
-              elsif (value = @scanner.scan(RE_INT))
+              elsif (value = @scanner.scan(@re_int))
                 @tokens << [:token_int, value, @start]
                 @start = @scanner.pos
-              elsif (value = @scanner.scan(RE_PUNCTUATION))
+              elsif (value = @scanner.scan(@re_punctuation))
                 @tokens << [TOKEN_MAP[value] || raise, nil, @start]
                 @start = @scanner.pos
-              elsif (value = @scanner.scan(RE_WORD))
+              elsif (value = @scanner.scan(@re_word))
                 @tokens << [TOKEN_MAP[value] || :token_word, value, @start]
                 @start = @scanner.pos
               else

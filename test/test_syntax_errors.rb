@@ -174,21 +174,21 @@ class TestLiquidSyntaxErrors < Minitest::Test
 
   def test_missing_output_closing_bracket
     source = "Hello, {{you}!"
-    message = "missing \"}\" or \"%\" detected"
+    message = "missing markup delimiter detected"
     error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
     assert_equal(message, error.message)
   end
 
   def test_missing_tag_closing_percent
     source = "{% assign x = 42 }"
-    message = "missing \"}\" or \"%\" detected"
+    message = "missing markup delimiter detected"
     error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
     assert_equal(message, error.message)
   end
 
   def test_missing_tag_closing_bracket
     source = "{% assign x = 42 %"
-    message = "missing \"}\" or \"%\" detected"
+    message = "missing markup delimiter detected"
     error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
     assert_equal(message, error.message)
   end

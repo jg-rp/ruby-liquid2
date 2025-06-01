@@ -82,9 +82,75 @@ module Liquid2
 
     @globals: Hash[String, untyped]?
 
-    @scanner: StringScanner
+    @scanner: singleton(Scanner)
+
+    @parser: singleton(Parser)
+
+    @string_scanner: StringScanner
 
     @arithmetic_operators: bool
+
+    # The string of characters that indicate the start of a Liquid output statement.
+    @markup_out_start: String
+
+    # The string of characters that indicate the end of a Liquid output statement.
+    @markup_out_end: String
+
+    # The string of characters that indicate the start of a Liquid tag.
+    @markup_tag_start: String
+
+    # The string of characters that indicate the end of a Liquid tag.
+    @markup_tag_end: String
+
+    # The string of characters that indicate the start of a Liquid comment. This should
+    # include a single trailing `#`. Additional, variable length hashes will be handled
+    # by the tokenizer. It is not possible to change comment syntax to not use `#`.
+    @markup_comment_prefix: String
+
+    # The string of characters that indicate the end of a Liquid comment, excluding any
+    # hashes.
+    @markup_comment_suffix: String
+
+    # A regex pattern matching Liquid tag names. Should include `#` for inline comments.
+    @re_tag_name: Regexp
+
+    @re_word: Regexp
+
+    @re_int: Regexp
+
+    @re_float: Regexp
+
+    @re_double_quote_string_special: Regexp
+
+    @re_single_quote_string_special: Regexp
+
+    # A regex pattern matching the start of some Liquid markup. Could be the start of an
+    # output statement, tag or comment. Traditionally `{{`, `{%` and `{#`, respectively.
+    @re_markup_start: Regexp
+
+    # A regex pattern matching the end of some Liquid markup. Could be the end of
+    # an output statement or tag. Traditionally `}}`, `%}`, respectively.
+    # respectively.
+    @re_markup_end: Regexp
+
+    # A regex pattern matching any one of the possible characters ending some Liquid
+    # markup. This is used to detect incomplete and malformed markup and provide
+    # helpful error messages.
+    @re_markup_end_chars: Regexp
+
+    @re_up_to_markup_start: Regexp
+
+    @re_punctuation: Regexp
+
+    @re_up_to_inline_comment_end: Regexp
+
+    @re_up_to_raw_end: Regexp
+
+    @re_block_comment_chunk: Regexp
+
+    @re_up_to_doc_end: Regexp
+
+    @re_line_statement_comment: Regexp
 
     attr_reader tags: Hash[String, _Tag]
 
@@ -106,7 +172,51 @@ module Liquid2
 
     attr_reader arithmetic_operators: bool
 
-    def initialize: (?context_depth_limit: ::Integer, ?globals: Hash[String, untyped]?, ?loader: TemplateLoader?, ?local_namespace_limit: Integer?, ?loop_iteration_limit: Integer?, ?output_stream_limit: Integer?, ?shorthand_indexes: bool, ?suppress_blank_control_flow_blocks: bool, ?undefined: singleton(Undefined), ?falsy_undefined: bool) -> void
+    attr_reader markup_comment_prefix: String
+
+    attr_reader markup_comment_suffix: String
+
+    attr_reader markup_out_end: String
+
+    attr_reader markup_out_start: String
+
+    attr_reader markup_tag_end: String
+
+    attr_reader markup_tag_start: String
+
+    attr_reader re_tag_name: Regexp
+
+    attr_reader re_word: Regexp
+
+    attr_reader re_int: Regexp
+
+    attr_reader re_float: Regexp
+
+    attr_reader re_double_quote_string_special: Regexp
+
+    attr_reader re_single_quote_string_special: Regexp
+
+    attr_reader re_markup_start: Regexp
+
+    attr_reader re_markup_end: Regexp
+
+    attr_reader re_markup_end_chars: Regexp
+
+    attr_reader re_up_to_markup_start: Regexp
+
+    attr_reader re_punctuation: Regexp
+
+    attr_reader re_up_to_inline_comment_end: Regexp
+
+    attr_reader re_up_to_raw_end: Regexp
+
+    attr_reader re_block_comment_chunk: Regexp
+
+    attr_reader re_up_to_doc_end: Regexp
+
+    attr_reader re_line_statement_comment: Regexp
+
+    def initialize: (?arithmetic_operators: bool, ?context_depth_limit: ::Integer, ?falsy_undefined: bool, ?globals: untyped?, ?loader: TemplateLoader?, ?local_namespace_limit: Integer?, ?loop_iteration_limit: Integer?, ?markup_comment_prefix: ::String, ?markup_comment_suffix: ::String, ?markup_out_end: ::String, ?markup_out_start: ::String, ?markup_tag_end: ::String, ?markup_tag_start: ::String, ?output_stream_limit: Integer?, ?parser: singleton(Parser), ?scanner: singleton(Scanner), ?shorthand_indexes: bool, ?suppress_blank_control_flow_blocks: bool, ?undefined: singleton(Undefined)) -> void
 
     # @param source [String] template source text.
     # @return [Template]
@@ -136,6 +246,8 @@ module Liquid2
     def delete_tag: (String name) -> (_Tag | nil) 
 
     def setup_tags_and_filters: () -> void
+                              
+    def setup_scanner: () -> void
 
     def undefined: (String name, ?node: _HasToken?) -> Undefined
 
@@ -171,37 +283,59 @@ module Liquid2
     # A pointer to the start of the current token.
     @start: Integer
 
+    @s_out_start: String
+
+    @s_out_end: String
+
+    @s_tag_start: String
+
+    @s_tag_end: String
+
+    @s_comment_prefix: String
+
+    @s_comment_suffix: String
+
+    @re_tag_name: Regexp
+
+    @re_word: Regexp
+
+    @re_int: Regexp
+
+    @re_float: Regexp
+
+    @re_double_quote_string_special: Regexp
+
+    @re_single_quote_string_special: Regexp
+
+    @re_markup_start: Regexp
+
+    @re_markup_end: Regexp
+
+    @re_markup_end_chars: Regexp
+
+    @re_up_to_markup_start: Regexp
+
+    @re_punctuation: Regexp
+
+    @re_up_to_inline_comment_end: Regexp
+    @re_up_to_raw_end: Regexp
+    @re_block_comment_chunk: Regexp
+    @re_up_to_doc_end: Regexp
+    @re_line_statement_comment: Regexp
+
     # Tokens are arrays of (kind, value, start index)
     @tokens: Array[[Symbol, String?, Integer]]
 
     attr_reader tokens: Array[[Symbol, String?, Integer]]
 
-    RE_MARKUP_START: ::Regexp
-
-    RE_WHITESPACE: ::Regexp
-
-    RE_LINE_SPACE: ::Regexp
-
-    RE_WORD: ::Regexp
-
-    RE_INT: ::Regexp
-
-    RE_FLOAT: ::Regexp
-
-    RE_PUNCTUATION: ::Regexp
-
-    RE_SINGLE_QUOTE_STRING_SPECIAL: ::Regexp
-
-    RE_DOUBLE_QUOTE_STRING_SPECIAL: ::Regexp
-
     # Keywords and symbols that get their own token kind.
     TOKEN_MAP: Hash[String, Symbol]
 
-    def self.tokenize: (String source, StringScanner scanner) -> Array[[Symbol, String?, Integer]]
+    def self.tokenize: (Environment env, String source, StringScanner scanner) -> Array[[Symbol, String?, Integer]]
 
     # @param source [String]
     # @param scanner [StringScanner]
-    def initialize: (String source, StringScanner scanner) -> void
+    def initialize: (Environment env, String source, StringScanner scanner) -> void
 
     def run: () -> void
 

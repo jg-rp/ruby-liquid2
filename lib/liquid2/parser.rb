@@ -25,11 +25,12 @@ module Liquid2
   # Liquid template parser.
   class Parser
     # Parse Liquid template text into a syntax tree.
+    # @param env [Environment]
     # @param source [String]
     # @return [Array[Node | String]]
     def self.parse(env, source, scanner: nil)
       new(env,
-          Liquid2::Scanner.tokenize(source, scanner || StringScanner.new("")),
+          Liquid2::Scanner.tokenize(env, source, scanner || StringScanner.new("")),
           source.length).parse
     end
 
