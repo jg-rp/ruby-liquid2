@@ -23,6 +23,18 @@
       "template": "Hello,   {#- this is a comment -#}\nWorld!",
       "data": {},
       "result": "Hello,World!"
+    },
+    {
+      "name": "balanced hashes",
+      "template": "Hello, {## this is a comment ##} World!",
+      "data": {},
+      "result": "Hello,  World!"
+    },
+    {
+      "name": "balanced hashes, nested comment",
+      "template": "Hello, {## this is a {# comment #} ##} World!",
+      "data": {},
+      "result": "Hello,  World!"
     }
   ]
 }

@@ -232,7 +232,11 @@ class TestTokenize < Minitest::Spec
   describe "scan template" do
     TEST_CASES.each do |test_case|
       it test_case[:name] do
-        tokens = Liquid2::Scanner.tokenize(test_case[:source], scanner)
+        tokens = Liquid2::Scanner.tokenize(
+          Liquid2::DEFAULT_ENVIRONMENT,
+          test_case[:source],
+          scanner
+        )
         _(tokens).must_equal test_case[:want]
       end
     end

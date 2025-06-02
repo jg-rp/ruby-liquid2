@@ -48,16 +48,10 @@ env = fixture.env
 source = fixture.templates["index.liquid"]
 template = env.get_template("index.liquid")
 
-# scanner = StringScanner.new("")
-
 Benchmark.ips do |x|
   # Configure the number of seconds used during
   # the warmup phase (default 2) and calculation phase (default 5)
   x.config(warmup: 2, time: 5)
-
-  # x.report("tokenize (#{fixture.name}):") do
-  #   Liquid2::Scanner.tokenize(source, scanner)
-  # end
 
   x.report("parse (#{fixture.name}):") do
     env.parse(source)
