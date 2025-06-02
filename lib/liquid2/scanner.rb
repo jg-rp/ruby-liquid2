@@ -77,7 +77,8 @@ module Liquid2
       # A pointer to the start of the current token.
       @start = 0
 
-      # Tokens are arrays of (kind, value, start index)
+      # Tokens are arrays of (kind, value, start index).
+      # Sometimes we set value to `nil` when the symbol is unambiguous.
       @tokens = [] # : Array[[Symbol, String?, Integer]]
 
       @s_out_start = env.markup_out_start

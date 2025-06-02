@@ -1,6 +1,6 @@
 ## [unreleased]
 
-- Added support for custom markup delimiters.
+- Added support for custom markup delimiters. See [#16](https://github.com/jg-rp/ruby-liquid2/pull/16).
 
 ## [0.3.0] - 25-05-29
 

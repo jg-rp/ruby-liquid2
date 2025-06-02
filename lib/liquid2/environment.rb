@@ -80,8 +80,8 @@ module Liquid2
     #   tag.
     # @param output_stream_limit [Integer?] The maximum number of bytes that can be written
     #   to a template's output buffer before a `LiquidResourceLimitError` is raised.
-    # @param parser [singleton(Parser)] `Liquid2::Parser` of a subclass of it.
-    # @param parser [singleton(Scanner)] `Liquid2::Scanner` of a subclass of it.
+    # @param parser [singleton(Parser)] `Liquid2::Parser` or a subclass of it.
+    # @param scanner [singleton(Scanner)] `Liquid2::Scanner` or a subclass of it.
     # @param shorthand_indexes [bool] When `true`, allow shorthand dotted array indexes as
     #   well as bracketed indexes in variable paths. Defaults to `false`.
     # @param suppress_blank_control_flow_blocks [bool] When `true`, suppress blank control
@@ -146,7 +146,7 @@ module Liquid2
       @output_stream_limit = output_stream_limit
 
       # Liquid2::Scanner or a subclass of it. This is used to tokenize Liquid source
-      # text before paring it.
+      # text before parsing it.
       @scanner = scanner
 
       # Liquid2::Parser or a subclass of it. The parser takes tokens from the scanner
@@ -360,9 +360,18 @@ module Liquid2
     def setup_scanner
       # A regex pattern matching Liquid tag names. Should include `#` for inline comments.
       @re_tag_name = /(?:[a-z][a-z_0-9]*|#)/
+
+      # A regex pattern matching keywords and/or variable/path names. Replace this if
+      # you want to disable Unicode characters in identifiers, for example.
       @re_word = /[\u0080-\uFFFFa-zA-Z_][\u0080-\uFFFFa-zA-Z0-9_-]*/
+
+      # Patterns matching literal integers and floats, possibly in scientific notation.
+      # You could simplify these to disable scientific notation.
       @re_int = /-?\d+(?:[eE]\+?\d+)?/
       @re_float = /((?:-?\d+\.\d+(?:[eE][+-]?\d+)?)|(-?\d+[eE]-\d+))/
+
+      # Patterns matching escape sequences, interpolation and end of string in string literals.
+      # You could remove `\$` from these to disable string interpolation.
       @re_double_quote_string_special = /[\\"\$]/
       @re_single_quote_string_special = /[\\'\$]/
 
@@ -374,7 +383,6 @@ module Liquid2
 
       # A regex pattern matching the end of some Liquid markup. Could be the end of
       # an output statement or tag. Traditionally `}}`, `%}`, respectively.
-      # respectively.
       @re_markup_end = /#{Regexp.escape(@markup_out_end)}|#{Regexp.escape(@markup_tag_end)}/
 
       # A regex pattern matching any one of the possible characters ending some Liquid
