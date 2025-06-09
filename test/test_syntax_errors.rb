@@ -38,7 +38,6 @@ class TestLiquidSyntaxErrors < Minitest::Test
     assert_equal(message, error.message)
   end
 
-  # TODO: this is not a syntax error
   def test_orphaned_break
     source = "{% break %}"
     message = "unexpected break"
@@ -238,6 +237,13 @@ class TestLiquidSyntaxErrors < Minitest::Test
   def test_assign_to_bad_identifier
     source = "{% assign foo+bar = 'hello there'%}{{ foo+bar }}"
     message = "malformed identifier or missing assignment operator"
+    error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
+    assert_equal(message, error.message)
+  end
+
+  def test_unbalanced_parentheses
+    source = "{% if true and (false and true %}a{% else %}b{% endif %}"
+    message = "unbalanced parentheses"
     error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
     assert_equal(message, error.message)
   end

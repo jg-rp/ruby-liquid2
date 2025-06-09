@@ -825,15 +825,7 @@ module Liquid2
         return parse_partial_arrow_function(expr)
       end
 
-      unless TERMINATE_GROUPED_EXPRESSION.member?(kind)
-        unless BINARY_OPERATORS.member?(kind)
-          raise LiquidSyntaxError.new("expected an infix operator, found #{kind}", current)
-        end
-
-        expr = parse_infix_expression(expr)
-      end
-
-      eat(:token_rparen)
+      eat(:token_rparen, "unbalanced parentheses")
       expr
     end
 
