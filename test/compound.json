@@ -90,6 +90,12 @@
         "a": [1, 2, 3]
       },
       "result": "3, 4, 5"
+    },
+    {
+      "name": "group terms with parentheses",
+      "template": "{% if ((true) and (false and (false or true))) %}a{% else %}b{% endif %}",
+      "data": {},
+      "result": "b"
     }
   ]
 }
