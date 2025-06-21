@@ -24,12 +24,12 @@ module Liquid2
       stop = stop_ == :undefined ? nil : stop_ if stop == :undefined
       step = step_ == :undefined ? nil : step_ if step == :undefined
 
-      step = Integer(step || 1)
+      step = to_integer(step || 1)
       length = left.length
       return [] if length.zero? || step.zero?
 
-      start = Integer(start) unless start.nil?
-      stop = Integer(stop) unless stop.nil?
+      start = to_integer(start) unless start.nil?
+      stop = to_integer(stop) unless stop.nil?
 
       normalized_start = if start.nil?
                            step.negative? ? length - 1 : 0
