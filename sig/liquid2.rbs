@@ -1894,6 +1894,8 @@ module Liquid2
     
     # Return the subsequence of _left_ starting at _start_ up to _length_.
     def self.slice: (untyped left, untyped start, ?untyped length) -> untyped
+                  
+    def self.better_slice: (untyped left, ?untyped start_, ?untyped stop_, ?untyped step_, ?start: untyped, ?stop: untyped, ?step: untyped) -> untyped
 
     # Return _left_ with all characters converted to uppercase.
     # Coerce _left_ to a string if it is not one already.
