@@ -38,7 +38,7 @@ require_relative "nodes/tags/with"
 module Liquid2
   # Template parsing and rendering configuration.
   #
-  # A Liquid::Environment is where you might register custom tags and filters,
+  # A Liquid2::Environment is where you might register custom tags and filters,
   # or store global context data that should be available to all templates.
   #
   # `Liquid2.parse(source)` is equivalent to `Liquid2::Environment.new.parse(source)`.
