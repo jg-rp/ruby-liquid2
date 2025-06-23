@@ -326,6 +326,7 @@ module Liquid2
       register_filter("newline_to_br", Liquid2::Filters.method(:newline_to_br))
       register_filter("plus", Liquid2::Filters.method(:plus))
       register_filter("prepend", Liquid2::Filters.method(:prepend))
+      register_filter("range", Liquid2::Filters.method(:better_slice))
       register_filter("reject", Liquid2::Filters.method(:reject))
       register_filter("remove_first", Liquid2::Filters.method(:remove_first))
       register_filter("remove_last", Liquid2::Filters.method(:remove_last))

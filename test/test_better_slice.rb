@@ -3,13 +3,6 @@
 require "json"
 require "test_helper"
 
-class MockEnv < Liquid2::Environment
-  def setup_tags_and_filters
-    super
-    register_filter("range", Liquid2::Filters.method(:better_slice))
-  end
-end
-
 class TestBetterSlice < Minitest::Spec
   make_my_diffs_pretty!
 
@@ -22,7 +15,7 @@ class TestBetterSlice < Minitest::Spec
                    Liquid2::HashLoader.new(templates)
                  end
 
-        env = MockEnv.new(loader: loader)
+        env = Liquid2::Environment.new(loader: loader)
 
         if test_case["invalid"]
           assert_raises Liquid2::LiquidError do
