@@ -1,163 +1,163 @@
 {
   "tests": [
     {
-      "name": "slice, start and stop",
+      "name": "start and stop",
       "template": "{{ a | range: 1, 3 | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
       "result": "1 2"
     },
     {
-      "name": "slice, start, stop and step",
+      "name": "start, stop and step",
       "template": "{{ a | range: 1, 6, 2 | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
       "result": "1 3 5"
     },
     {
-      "name": "slice, no arguments",
+      "name": "no arguments",
       "template": "{{ a | range | join }}",
       "data": { "a": [0, 1, 2, 3] },
       "result": "0 1 2 3"
     },
     {
-      "name": "slice, explicit nils",
+      "name": "explicit nils",
       "template": "{{ a | range: nil, nil, nil | join }}",
       "data": { "a": [0, 1, 2, 3] },
       "result": "0 1 2 3"
     },
     {
-      "name": "slice, undefined start defaults to zero",
+      "name": "undefined start defaults to zero",
       "template": "{{ a | range: start=nosuchthing | join }}",
       "data": { "a": [0, 1, 2, 3] },
       "result": "0 1 2 3"
     },
     {
-      "name": "slice, undefined stop defaults to zero",
+      "name": "undefined stop defaults to zero",
       "template": "{{ a | range: start=3, stop=nosuchthing, step=-1 | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5] },
       "result": "3 2 1"
     },
     {
-      "name": "slice, undefined step defaults to zero",
+      "name": "undefined step defaults to zero",
       "template": "{{ a | range: start=1, stop=3, step=nosuchthing | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5] },
       "result": ""
     },
     {
-      "name": "slice, default start and step",
+      "name": "default start and step",
       "template": "{{ a | range: stop=2 | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
       "result": "0 1"
     },
     {
-      "name": "slice, default start and stop",
+      "name": "default start and stop",
       "template": "{{ a | range: step=2 | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
       "result": "0 2 4 6 8"
     },
     {
-      "name": "slice, explicit nil for start and stop",
+      "name": "explicit nil for start and stop",
       "template": "{{ a | range: nil, nil, step=2 | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
       "result": "0 2 4 6 8"
     },
     {
-      "name": "slice, default start and stop, negative step",
+      "name": "default start and stop, negative step",
       "template": "{{ a | range: step=-1 | join }}",
       "data": { "a": [0, 1, 2, 3] },
       "result": "3 2 1 0"
     },
     {
-      "name": "slice, default start, negative step",
+      "name": "default start, negative step",
       "template": "{{ a | range: stop=0, step=-1 | join }}",
       "data": { "a": [0, 1, 2, 3] },
       "result": "3 2 1"
     },
     {
-      "name": "slice, default stop, negative step",
+      "name": "default stop, negative step",
       "template": "{{ a | range: start=2, step=-1 | join }}",
       "data": { "a": [0, 1, 2, 3] },
       "result": "2 1 0"
     },
     {
-      "name": "slice, negative start and stop, default step",
+      "name": "negative start and stop, default step",
       "template": "{{ a | range: start=-1, stop=-3 | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
       "result": ""
     },
     {
-      "name": "slice, negative start and stop, negative step",
+      "name": "negative start and stop, negative step",
       "template": "{{ a | range: start=-1, stop=-3, step=-1 | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
       "result": "9 8"
     },
     {
-      "name": "slice, negative start and stop, bigger negative step",
+      "name": "negative start and stop, bigger negative step",
       "template": "{{ a | range: start=-1, stop=-6, step=-2 | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
       "result": "9 7 5"
     },
     {
-      "name": "slice, negative start, positive stop",
+      "name": "negative start, positive stop",
       "template": "{{ a | range: start=-5, stop=7 | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
       "result": "5 6"
     },
     {
-      "name": "slice, negative start, default stop",
+      "name": "negative start, default stop",
       "template": "{{ a | range: start=-2 | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
       "result": "8 9"
     },
     {
-      "name": "slice, positive start, negative stop",
+      "name": "positive start, negative stop",
       "template": "{{ a | range: start=1, stop=-1 | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
       "result": "1 2 3 4 5 6 7 8"
     },
     {
-      "name": "slice, negative start, positive stop, negative step",
+      "name": "negative start, positive stop, negative step",
       "template": "{{ a | range: start=-1, stop=1, step=-1 | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
       "result": "9 8 7 6 5 4 3 2"
     },
     {
-      "name": "slice, zero step",
+      "name": "zero step",
       "template": "{{ a | range: step=0 | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
       "result": ""
     },
     {
-      "name": "slice, integers as strings",
+      "name": "integers as strings",
       "template": "{{ a | range: '1', '3', '1' | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
       "result": "1 2"
     },
     {
-      "name": "slice, non-integer strings",
+      "name": "non-integer strings",
       "template": "{{ a | range: 'foo', 'bar' | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
       "invalid": true
     },
     {
-      "name": "slice, too many arguments",
+      "name": "too many arguments",
       "template": "{{ a | range: 1, 2, 3, 4 | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
       "invalid": true
     },
     {
-      "name": "slice, undefined left",
+      "name": "undefined left",
       "template": "{{ x | range: 1, 3, | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
       "result": ""
     },
     {
-      "name": "slice, float arguments",
+      "name": "float arguments",
       "template": "{{ a | range: 1.2, 3 | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
       "result": "1 2"
     },
     {
-      "name": "slice, stop is greater than length",
+      "name": "stop is greater than length",
       "template": "{{ a | range: 5, 999 | join }}",
       "data": { "a": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
       "result": "5 6 7 8 9"
