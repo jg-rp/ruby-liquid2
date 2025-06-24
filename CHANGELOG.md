@@ -1,6 +1,7 @@
 ## [unreleased]
 
 - Added support for custom markup delimiters. See [#16](https://github.com/jg-rp/ruby-liquid2/pull/16).
+- Added the `range` filter. `range` is an array slicing filter that takes optional start and end indexes, and an optional step argument, any of which can be negative. See [#18](https://github.com/jg-rp/ruby-liquid2/pull/18).
 
 ## [0.3.0] - 25-05-29
 

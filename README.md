@@ -231,7 +231,13 @@ Integer and float literals can use scientific notation, like `1.2e3` or `1e-2`.
 
 Liquid2 includes implementations of `{% extends %}` and `{% block %}` for template inheritance, `{% with %}` for block scoped variables and `{% macro %}` and `{% call %}` for defining parameterized blocks.
 
-There's also built-in implementations of `sort_numeric` and `json` filters.
+The following filters are included in Liquid2's default environment:
+
+- `sort_numeric` - Sorts array elements by runs of digits found in their string representation.
+- `json` - Outputs objects serialized in JSON format.
+- `range`- An alternative to the standard `slice` filter that takes optional start and stop indexes, and an optional step, all of which can be negative.
+
+See [Tags and filters](#tags-and-filters) for how to add, remove or alias tags and/or filters from your own Liquid2 environment.
 
 ## API
 
