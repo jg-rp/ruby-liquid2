@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    liquid2 (0.3.0)
+    liquid2 (0.3.1)
       base64 (~> 0.2)
       bigdecimal (~> 3.1)
 
