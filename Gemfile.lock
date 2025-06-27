@@ -29,7 +29,9 @@ GEM
     concurrent-ruby (1.3.5)
     connection_pool (2.5.3)
     csv (3.3.4)
+    date (3.4.1)
     drb (2.2.1)
+    erb (5.0.1)
     ffi (1.17.2)
     ffi (1.17.2-arm64-darwin)
     fileutils (1.7.3)
@@ -52,6 +54,9 @@ GEM
       ast (~> 2.4.1)
       racc
     prism (1.4.0)
+    psych (5.2.6)
+      date
+      stringio
     racc (1.8.1)
     rainbow (3.1.1)
     rake (13.2.1)
@@ -60,6 +65,9 @@ GEM
       ffi (~> 1.0)
     rbs (3.9.2)
       logger
+    rdoc (6.14.1)
+      erb
+      psych (>= 4.0.0)
     regexp_parser (2.10.0)
     rubocop (1.75.4)
       json (~> 2.3)
@@ -106,6 +114,7 @@ GEM
       strscan (>= 1.0.0)
       terminal-table (>= 2, < 5)
       uri (>= 0.12.0)
+    stringio (3.1.7)
     strscan (3.1.4)
     terminal-table (4.0.0)
       unicode-display_width (>= 1.1.1, < 4)
@@ -115,6 +124,7 @@ GEM
       unicode-emoji (~> 4.0, >= 4.0.4)
     unicode-emoji (4.0.4)
     uri (1.0.3)
+    yard (0.9.37)
 
 PLATFORMS
   arm64-darwin-23
@@ -128,12 +138,14 @@ DEPENDENCIES
   minitest (~> 5.16)
   minitest-fail-fast (~> 0.1.0)
   rake (~> 13.0)
+  rdoc (~> 6.14)
   rubocop (~> 1.21)
   rubocop-minitest (~> 0.37.1)
   rubocop-performance (~> 1.24)
   rubocop-rake (~> 0.7.1)
   stackprof (~> 0.2.27)
   steep (~> 1.10)
+  yard (~> 0.9.37)
 
 BUNDLED WITH
    2.6.8
