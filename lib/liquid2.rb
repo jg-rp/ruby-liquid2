@@ -20,7 +20,7 @@ module Liquid2
 
   # Parse _source_ text as a template using the default Liquid environment.
   # @param source [String]
-  # @param data [?Hash[String, untyped]?]
+  # @param globals [?Hash[String, untyped]?]
   # @return [Template]
   def self.parse(source, globals: nil)
     DEFAULT_ENVIRONMENT.parse(source, globals: globals)

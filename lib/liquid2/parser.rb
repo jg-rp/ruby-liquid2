@@ -85,7 +85,7 @@ module Liquid2
     end
 
     # Consume the next token if its kind is in _kinds_, raise an error if it does not.
-    # @param kind [Symbol]
+    # @param kinds [Symbol]
     # @return [Token] The consumed token.
     def eat_one_of(*kinds)
       token = self.next
@@ -406,7 +406,7 @@ module Liquid2
 
     # Parse a string literal without interpolation..
     # @return [String]
-    # @raises [LiquidTypeError].
+    # @raise [LiquidTypeError].
     def parse_string
       node = parse_primary
       raise LiquidTypeError, "expected a string literal" unless node.is_a?(String)
@@ -989,7 +989,6 @@ module Liquid2
       Lambda.new(token, params, parse_primary)
     end
 
-    # @param children [Array<Token | Node>] Child tokens already consumed by the caller.
     # @param expr [Expression] The first parameter already passed by the caller.
     # @return [Expression]
     def parse_partial_arrow_function(expr)

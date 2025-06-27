@@ -20,4 +20,10 @@ Steep::RakeTask.new do |t|
   t.watch.verbose
 end
 
+require "yard"
+
+YARD::Rake::YardocTask.new do |t|
+  t.files = ["lib/**/*.rb"]
+end
+
 task default: %i[test rubocop steep]
