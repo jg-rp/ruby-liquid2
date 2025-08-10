@@ -43,6 +43,10 @@ module Liquid2
       @pos = 0
       @eof = [:token_eof, nil, length - 1]
       @whitespace_carry = nil
+
+      # If both tags and output statements share the same end delimiter, we expect
+      # `:token_tag_end` to close an output statement as the scanner scans for tags first.
+      @output_end = @env.universal_markup_end ? :token_tag_end : :token_output_end
     end
 
     # Return the current token without advancing the pointer.
@@ -691,7 +695,7 @@ module Liquid2
     def parse_output
       expr = parse_filtered_expression
       carry_whitespace_control
-      eat(:token_output_end)
+      eat(@output_end)
       Output.new(expr.token, expr)
     end
 
