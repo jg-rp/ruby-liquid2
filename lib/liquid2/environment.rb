@@ -51,7 +51,7 @@ module Liquid2
                 :re_double_quote_string_special, :re_single_quote_string_special, :re_markup_start,
                 :re_markup_end, :re_markup_end_chars, :re_up_to_markup_start, :re_punctuation,
                 :re_up_to_inline_comment_end, :re_up_to_raw_end, :re_block_comment_chunk,
-                :re_up_to_doc_end, :re_line_statement_comment
+                :re_up_to_doc_end, :re_line_statement_comment, :persistent_namespaces
 
     # @param context_depth_limit [Integer] The maximum number of times a render context can
     #   be extended or copied before a `Liquid2::LiquidResourceLimitError`` is raised.
@@ -116,6 +116,10 @@ module Liquid2
       # along with a flag to indicate if the callable accepts a `context`
       # keyword argument.
       @filters = {}
+
+      # An array of symbols indicating which namespaces from RenderContext.tag_namespaces
+      # should be preserved when using RenderContext#copy.
+      @persistent_namespaces = [:extends]
 
       # When `true`, arithmetic operators `+`, `-`, `*`, `/`, `%` and `**` are enabled.
       # Defaults to `false`.

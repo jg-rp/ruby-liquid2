@@ -219,8 +219,10 @@ module Liquid2
                                loop_carry: loop_carry,
                                local_namespace_carry: @assign_score)
 
-      # XXX: bit of a hack
-      context.tag_namespace[:extends] = @tag_namespace[:extends]
+      @env.persistent_namespaces.each do |ns|
+        context.tag_namespace[ns] = @tag_namespace[ns] if @tag_namespace[ns]
+      end
+
       context
     end
 
