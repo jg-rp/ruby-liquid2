@@ -106,6 +106,8 @@ module Liquid2
     # The string of characters that indicate the end of a Liquid tag.
     @markup_tag_end: String
 
+    @universal_markup_end: bool
+
     # The string of characters that indicate the start of a Liquid comment. This should
     # include a single trailing `#`. Additional, variable length hashes will be handled
     # by the tokenizer. It is not possible to change comment syntax to not use `#`.
@@ -189,6 +191,8 @@ module Liquid2
     attr_reader markup_tag_end: String
 
     attr_reader markup_tag_start: String
+
+    attr_reader universal_markup_end: bool
 
     attr_reader re_tag_name: Regexp
 
@@ -393,6 +397,8 @@ module Liquid2
 
     @whitespace_carry: String?
 
+    @output_end: Symbol
+
     # Parse Liquid template text into a syntax tree.
     # @param source [String]
     # @return [Array[Node | String]]
@@ -518,13 +524,13 @@ module Liquid2
 
       MEMBERSHIP: 6
 
-      PREFIX: 7
-
       ADD_SUB: 8
 
       MUL_DIV: 9
       
       POW: 10
+
+      PREFIX: 11
     end
 
     PRECEDENCES: Hash[Symbol, Integer]

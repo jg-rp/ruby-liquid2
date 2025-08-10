@@ -13,4 +13,21 @@ class TestIssues < Minitest::Test
 
     assert_equal("42 43 44 45 46", Liquid2.render(source, data))
   end
+
+  def test_issue23
+    env = Liquid2::Environment.new(
+      markup_out_start: "<%=",
+      markup_out_end: "%>",
+      markup_tag_start: "<%",
+      markup_tag_end: "%>"
+    )
+
+    source = <<~LIQUID
+      <% if true %>
+        Hello, <%= you %>!
+      <% endif %>
+    LIQUID
+
+    assert_equal("\n  Hello, World!\n\n", env.render(source, "you" => "World"))
+  end
 end

@@ -240,10 +240,10 @@ module Liquid2
 
       # Miro benchmarks show no performance gain using scan_byte and peek_byte over scan here.
       case @scanner.scan(@re_markup_end)
-      when @s_out_end
-        @tokens << [:token_output_end, nil, @start]
       when @s_tag_end
         @tokens << [:token_tag_end, nil, @start]
+      when @s_out_end
+        @tokens << [:token_output_end, nil, @start]
       else
         # Unexpected token
         return nil if @scanner.eos?
@@ -306,10 +306,10 @@ module Liquid2
       accept_whitespace_control
 
       case @scanner.scan(@re_markup_end)
-      when @s_out_end
-        @tokens << [:token_output_end, nil, @start]
       when @s_tag_end
         @tokens << [:token_tag_end, nil, @start]
+      when @s_out_end
+        @tokens << [:token_output_end, nil, @start]
       else
         # Unexpected token
         return nil if @scanner.eos?
@@ -326,11 +326,11 @@ module Liquid2
       accept_whitespace_control
 
       case @scanner.scan(@re_markup_end)
-      when @s_out_end
-        @tokens << [:token_output_end, nil, @start]
-        @start = @scanner.pos
       when @s_tag_end
         @tokens << [:token_tag_end, nil, @start]
+        @start = @scanner.pos
+      when @s_out_end
+        @tokens << [:token_output_end, nil, @start]
         @start = @scanner.pos
       end
 
@@ -347,11 +347,11 @@ module Liquid2
       accept_whitespace_control
 
       case @scanner.scan(@re_markup_end)
-      when @s_out_end
-        @tokens << [:token_output_end, nil, @start]
-        @start = @scanner.pos
       when @s_tag_end
         @tokens << [:token_tag_end, nil, @start]
+        @start = @scanner.pos
+      when @s_out_end
+        @tokens << [:token_output_end, nil, @start]
         @start = @scanner.pos
       end
 
@@ -393,11 +393,11 @@ module Liquid2
       accept_whitespace_control
 
       case @scanner.scan(@re_markup_end)
-      when @s_out_end
-        @tokens << [:token_output_end, nil, @start]
-        @start = @scanner.pos
       when @s_tag_end
         @tokens << [:token_tag_end, nil, @start]
+        @start = @scanner.pos
+      when @s_out_end
+        @tokens << [:token_output_end, nil, @start]
         @start = @scanner.pos
       end
 
@@ -434,11 +434,11 @@ module Liquid2
       else
         accept_whitespace_control
         case @scanner.scan(@re_markup_end)
-        when @s_out_end
-          @tokens << [:token_output_end, nil, @start]
-          @start = @scanner.pos
         when @s_tag_end
           @tokens << [:token_tag_end, nil, @start]
+          @start = @scanner.pos
+        when @s_out_end
+          @tokens << [:token_output_end, nil, @start]
           @start = @scanner.pos
         end
 
@@ -485,11 +485,11 @@ module Liquid2
             @tokens << [:token_tag_end, nil, @start]
             accept_whitespace_control
             case @scanner.scan(@re_markup_end)
-            when @s_out_end
-              @tokens << [:token_output_end, nil, @start]
-              @start = @scanner.pos
             when @s_tag_end
               @tokens << [:token_tag_end, nil, @start]
+              @start = @scanner.pos
+            when @s_out_end
+              @tokens << [:token_output_end, nil, @start]
               @start = @scanner.pos
             end
 

@@ -51,7 +51,8 @@ module Liquid2
                 :re_double_quote_string_special, :re_single_quote_string_special, :re_markup_start,
                 :re_markup_end, :re_markup_end_chars, :re_up_to_markup_start, :re_punctuation,
                 :re_up_to_inline_comment_end, :re_up_to_raw_end, :re_block_comment_chunk,
-                :re_up_to_doc_end, :re_line_statement_comment, :persistent_namespaces
+                :re_up_to_doc_end, :re_line_statement_comment, :persistent_namespaces,
+                :universal_markup_end
 
     # @param arithmetic_operators [bool] When `true`, arithmetic operators `+`, `-`, `*`, `/`, `%`
     #   and `**` are enabled.
@@ -199,6 +200,10 @@ module Liquid2
 
       # The string of characters that indicate the end of a Liquid tag.
       @markup_tag_end = markup_tag_end
+
+      # Indicates if tag and output end delimiters are identical. This is used by the
+      # parser when parsing output statements.
+      @universal_markup_end = markup_tag_end == markup_out_end
 
       # The string of characters that indicate the start of a Liquid comment. This should
       # include a single trailing `#`. Additional, variable length hashes will be handled
