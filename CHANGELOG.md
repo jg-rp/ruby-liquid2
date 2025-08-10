@@ -1,3 +1,7 @@
+## [0.4.0] - unreleased
+
+- Added `Liquid2::Environment.persistent_namespaces`. It is an array of symbols indicating which namespaces from `Liquid2::RenderContext.tag_namespaces` should be preserved when calling `Liquid2::RenderContext#copy`. This is important for some tags - like `{% extends %}` - that need to share state with partial templates rendered with `{% render %}`.
+
 ## [0.3.1] - 25-06-24
 
 - Added support for custom markup delimiters. See [#16](https://github.com/jg-rp/ruby-liquid2/pull/16).
