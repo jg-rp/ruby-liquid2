@@ -53,6 +53,11 @@ module Liquid2
                 :re_up_to_inline_comment_end, :re_up_to_raw_end, :re_block_comment_chunk,
                 :re_up_to_doc_end, :re_line_statement_comment, :persistent_namespaces
 
+    # @param arithmetic_operators [bool] When `true`, arithmetic operators `+`, `-`, `*`, `/`, `%`
+    #   and `**` are enabled.
+    # @auto_trim ['-' | '~' | nil] Whitespace trimming to apply to the left of text when
+    #   neither `-` or `~` is given for any tag, output statement or comment. The default is
+    #   `nil`, which means no automatic whitespace trimming is applied.
     # @param context_depth_limit [Integer] The maximum number of times a render context can
     #   be extended or copied before a `Liquid2::LiquidResourceLimitError`` is raised.
     # @param globals [Hash[String, untyped]?] Variables that are available to all templates
@@ -91,6 +96,7 @@ module Liquid2
     def initialize(
       arithmetic_operators: false,
       context_depth_limit: 30,
+      auto_trim: nil,
       falsy_undefined: true,
       globals: nil,
       loader: nil,
@@ -128,6 +134,11 @@ module Liquid2
       # The maximum number of times a render context can be extended or copied before
       # a Liquid2::LiquidResourceLimitError is raised.
       @context_depth_limit = context_depth_limit
+
+      # The default whitespace trimming applied to the left of text content when neither
+      # `-` or `~` is specified. Defaults to `nil`, which means no automatic whitespace
+      # trimming.
+      @auto_trim = auto_trim
 
       # Variables that are available to all templates rendered from this environment.
       @globals = globals
@@ -412,7 +423,7 @@ module Liquid2
 
     # Trim _text_.
     def trim(text, left_trim, right_trim)
-      case left_trim
+      case left_trim || @auto_trim
       when "-"
         text.lstrip!
       when "~"

@@ -1,6 +1,7 @@
 ## [0.4.0] - unreleased
 
 - Added `Liquid2::Environment.persistent_namespaces`. It is an array of symbols indicating which namespaces from `Liquid2::RenderContext.tag_namespaces` should be preserved when calling `Liquid2::RenderContext#copy`. This is important for some tags - like `{% extends %}` - that need to share state with partial templates rendered with `{% render %}`.
+- Added the `auto_trim` argument to `Liquid2::Environment`. `auto_trim` can be `'-'`, `'~'` or `nil` (the default). When not `nil`, it sets the automatic whitespace trimming applied to the left side of template text when no explicit whitespace control is given. `+` is also available as whitespace control in tags, outputs statements and comments. A `+` will ensure no trimming is applied, even if `auto_trim` is set.
 
 ## [0.3.1] - 25-06-24
 

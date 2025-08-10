@@ -92,6 +92,8 @@ module Liquid2
 
     @arithmetic_operators: bool
 
+    @auto_trim: '-' | '~' | nil
+
     # The string of characters that indicate the start of a Liquid output statement.
     @markup_out_start: String
 
@@ -220,7 +222,7 @@ module Liquid2
 
     attr_reader re_line_statement_comment: Regexp
 
-    def initialize: (?arithmetic_operators: bool, ?context_depth_limit: ::Integer, ?falsy_undefined: bool, ?globals: untyped?, ?loader: TemplateLoader?, ?local_namespace_limit: Integer?, ?loop_iteration_limit: Integer?, ?markup_comment_prefix: ::String, ?markup_comment_suffix: ::String, ?markup_out_end: ::String, ?markup_out_start: ::String, ?markup_tag_end: ::String, ?markup_tag_start: ::String, ?output_stream_limit: Integer?, ?parser: singleton(Parser), ?scanner: singleton(Scanner), ?shorthand_indexes: bool, ?suppress_blank_control_flow_blocks: bool, ?undefined: singleton(Undefined)) -> void
+    def initialize: (?arithmetic_operators: bool, ?context_depth_limit: ::Integer, ?auto_trim: '-' | '~' | nil, ?falsy_undefined: bool, ?globals: untyped?, ?loader: TemplateLoader?, ?local_namespace_limit: Integer?, ?loop_iteration_limit: Integer?, ?markup_comment_prefix: ::String, ?markup_comment_suffix: ::String, ?markup_out_end: ::String, ?markup_out_start: ::String, ?markup_tag_end: ::String, ?markup_tag_start: ::String, ?output_stream_limit: Integer?, ?parser: singleton(Parser), ?scanner: singleton(Scanner), ?shorthand_indexes: bool, ?suppress_blank_control_flow_blocks: bool, ?undefined: singleton(Undefined)) -> void
 
     # @param source [String] template source text.
     # @return [Template]
