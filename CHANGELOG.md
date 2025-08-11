@@ -1,4 +1,4 @@
-## [0.4.0] - unreleased
+## [0.4.0] - 25-08-11
 
 - Fixed a bug where the parser would raise a `Liquid2::LiquidSyntaxError` if environment arguments `markup_out_end` and `markup_tag_end` where identical. See [#23](https://github.com/jg-rp/ruby-liquid2/issues/23).
 - Added `Liquid2::Environment.persistent_namespaces`. It is an array of symbols indicating which namespaces from `Liquid2::RenderContext.tag_namespaces` should be preserved when calling `Liquid2::RenderContext#copy`. This is important for some tags - like `{% extends %}` - that need to share state with partial templates rendered with `{% render %}`.
