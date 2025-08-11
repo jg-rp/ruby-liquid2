@@ -21,7 +21,7 @@ module Liquid2
     # @param env [Environment] The current Liquid environment.
     # @param name [String] A name or identifier for the target template source text.
     # @param context [RenderContext?] The current render context, if one is available.
-    # @param *kwargs Arbitrary arguments that can be used to narrow the template source
+    # @param kwargs Arbitrary arguments that can be used to narrow the template source
     #   search space.
     # @return [TemplateSource]
     def get_source(env, name, context: nil, **kwargs) # rubocop:disable Lint/UnusedMethodArgument

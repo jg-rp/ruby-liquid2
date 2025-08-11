@@ -39,7 +39,6 @@ module Liquid2
     # @param disabled_tags [Array<String>?]
     # @param copy_depth [Integer?]
     # @param parent [RenderContext?]
-    # @param parent_scope [Array[_Namespace]] Namespaces from a parent render context.
     # @param loop_carry [Integer?]
     # @param local_namespace_carry [Integer?]
     def initialize(

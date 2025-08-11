@@ -11,8 +11,8 @@ module Liquid2
     end
 
     # Render this tag to the output buffer.
-    # @param context [RenderContext]
-    # @param buffer [String]
+    # @param _context [RenderContext]
+    # @param _buffer [String]
     def render(_context, _buffer)
       raise "tags must implement `render: (RenderContext, String) -> void`."
     end
