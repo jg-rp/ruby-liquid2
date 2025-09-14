@@ -271,7 +271,7 @@ puts template.render("you" => "Liquid") # Hello, Liquid!
 
 If the _globals_ keyword argument is given, that data will be _pinned_ to the template and will be available as template variables every time you call `Template#render`. Pinned data will be merged with data passed to `Template#render`, with `render` arguments taking priority over pinned data if there's a name conflict.
 
-`Liquid2.render(source)` is a convenience method equivalent to `Liquid2::DEFAULT_ENVIRONMENT.parse(source)` or `Liquid2::Environment.new.parse(source)`.
+`Liquid2.parse(source)` is a convenience method equivalent to `Liquid2::DEFAULT_ENVIRONMENT.parse(source)` or `Liquid2::Environment.new.parse(source)`.
 
 ### Configure
 
