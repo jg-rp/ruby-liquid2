@@ -1,0 +1,153 @@
+/// Liquid2 expression
+
+expression = { filtered_expr ~ ternary? }
+
+filtered_expr = { expr ~ ("|" ~ filter)* }
+
+ternary = { 
+  "if" ~ expr ~ ("else" ~ filtered_expr)? ~ tail_filters?
+}
+
+expr = _{ logical_or_expr }
+logical_or_expr = { logical_and_expr ~ ("or" ~ logical_and_expr)* }
+logical_and_expr = { basic_expr ~ ("and" ~ basic_expr)* }
+
+basic_expr = _{
+  | paren_expr
+  // TODO | comparison_expr
+  | primary
+}
+
+paren_expr =  { logical_not_op? ~ "(" ~ expr ~ ")" }
+logical_not_op = { "not" }
+
+primary = {
+  | literal
+  | reserved_word
+  // TODO: | variable
+}
+
+literal = _{
+  | boolean
+  | number 
+  | string
+  // TODO | array
+  | range
+  | "nil" 
+    
+}
+
+reserved_word = {
+  | "blank"
+  | "empty"
+}
+
+boolean = { 
+  | "true" 
+  | "false"
+}
+
+number = _{
+  | float
+  | int
+}
+
+int = @{ "-"? ~ (ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* | "0") }
+
+// Float: 
+//   - decimal with optional exponent
+//   - integer with mandatory negative exponent (scientific form)
+float = @{ 
+  | ("-"? ~ ASCII_DIGIT+ ~ "." ~ ASCII_DIGIT+ ~ exp?)
+  | ("-"? ~ ASCII_DIGIT+ ~ ^"e" ~ "-" ~ ASCII_DIGIT+)
+}
+
+// Exponent part of float or int
+exp = { ^"e" ~ ("+" | "-")? ~ ASCII_DIGIT+ }
+
+string = _{
+  | "\x22" ~ double_quoted ~ "\x22"
+  | "\x27" ~ single_quoted ~ "\x27"
+}
+
+double_quoted = { double_quoted_char* }
+single_quoted = { single_quoted_char* }
+
+double_quoted_char = _{
+  |  unescaped
+  | "\x27"
+  | (ESC ~ "\x22")
+  | (ESC ~ escapable)
+}
+
+single_quoted_char = _{
+  |  unescaped
+  | "\x22"
+  | (ESC ~ "\x27")
+  | (ESC ~ escapable)
+}
+
+ESC = _{ "\x5C" }
+
+unescaped = _{
+  |  '\u{20}'..'\u{21}'
+  | '\u{23}'..'\u{26}'
+  | '\u{28}'..'\u{5B}'
+  | '\u{5D}'..'\u{D7FF}'
+  | '\u{E000}'..'\u{10FFFF}'
+}
+
+escapable = _{
+  |  "\x62"
+  | "\x66"
+  | "\x6E"
+  | "\x72"
+  | "\x74"
+  | "/"
+  | "\\"
+  | ("\x75" ~ hexchar)
+}
+
+hexchar = _{
+  |  non_surrogate
+  | (high_surrogate ~ "\\u" ~ low_surrogate)
+}
+
+non_surrogate = _{
+  | ((ASCII_DIGIT | ^"A" | ^"B" | ^"C" | ^"E" | ^"F") ~ ASCII_HEX_DIGIT{3})
+  | (^"D" ~ '\u{30}'..'\u{37}' ~ ASCII_HEX_DIGIT{2})
+}
+
+high_surrogate = _{ ^"D" ~ ("8" | "9" | ^"A" | ^"B") ~ ASCII_HEX_DIGIT{2} }
+low_surrogate  = _{ ^"D" ~ (^"C" | ^"D" | ^"E" | ^"F") ~ ASCII_HEX_DIGIT{2} }
+
+range     =  { "(" ~ range_arg ~ ".." ~ range_arg ~ ")" }
+range_arg = _{ int | variable }
+
+filter = { filter_name ~ (":" ~filter_argument ~ ("," ~ filter_argument)*)? }
+
+// # is for inline comments
+filter_name = @{ "#" | word }
+
+filter_argument = _{
+  | keyword_arg
+  | positional_arg
+}
+
+tail_filters = { "||" ~ filter ~ ("|" ~ filter)* }
+
+keyword_arg = { word ~ (":" | "=") ~ positional_arg  }
+
+positional_arg = {
+  | expr 
+  | lambda_expr
+}
+
+word = @{ CASED_LETTER ~ (CASED_LETTER | ASCII_DIGIT | "_" | "-")* }
+
+lambda_expr = {
+  | word ~ "=>" ~ expr
+  | "(" ~ (word ~ ("," ~ word)*)? ~ ")" ~ "=>" ~ expr
+}
+
+WHITESPACE = _{ " " | "\n" | "\t" | "\r" }

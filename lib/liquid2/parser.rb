@@ -978,7 +978,7 @@ module Liquid2
         # A single parameter without parens
         params << parse_identifier
       when :token_lparen
-        # One or move parameters separated by commas and surrounded by parentheses.
+        # One or more parameters separated by commas and surrounded by parentheses.
         self.next
         while current_kind != :token_rparen
           params << parse_identifier
