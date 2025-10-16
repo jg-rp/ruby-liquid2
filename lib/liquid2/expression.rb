@@ -10,6 +10,11 @@ module Liquid2
       @token = token
     end
 
+    # @param context RenderContext
+    def evaluate(_context)
+      raise "all expressions must implement `evaluate: (RenderContext context) -> untyped`"
+    end
+
     # Return children of this expression.
     def children = []
 

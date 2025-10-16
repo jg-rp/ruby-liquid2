@@ -1276,6 +1276,8 @@ module Liquid2
 
     # @param token [[Symbol, String?, Integer]]
     def initialize: ([Symbol, String?, Integer] token) -> void
+                  
+    def evaluate: (RenderContext context) -> untyped
 
     def children: () -> Array[untyped]
     
