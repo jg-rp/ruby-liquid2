@@ -237,7 +237,7 @@ module Liquid2
     def parse_filtered_expression
       token = current
       left = parse_primary
-      left = parse_array_literal(left) if current_kind == :token_comma
+      left = parse_implicit_array(left) if current_kind == :token_comma
       filters = parse_filters if current_kind == :token_pipe
       expr = FilteredExpression.new(token, left, filters)
 
@@ -262,7 +262,7 @@ module Liquid2
 
       if current_kind == :token_comma
         unless LOOP_KEYWORDS.member?(peek[1] || raise)
-          enum = parse_array_literal(enum)
+          enum = parse_implicit_array(enum)
           return LoopExpression.new(identifier.token, identifier, enum,
                                     limit: limit, offset: offset, reversed: reversed, cols: cols)
         end
@@ -372,8 +372,10 @@ module Liquid2
                looks_like_a_path ? parse_path : Empty.new(self.next)
              when :token_single_quote_string, :token_double_quote_string
                parse_string_literal
-             when :token_word, :token_lbracket
+             when :token_word
                parse_path
+             when :token_lbracket
+               parse_array_or_path
              when :token_lparen
                parse_range_lambda_or_grouped_expression
              when :token_not, :token_plus, :token_minus
@@ -787,10 +789,61 @@ module Liquid2
       end
     end
 
+    # Parse an array literal delimited with `[` and `]` or a bracketed variable/path.
+    # @return [Node]
+    def parse_array_or_path
+      start_pos = @pos
+      token = eat(:token_lbracket)
+
+      if current_kind == :token_rbracket
+        # Empty array
+        @pos += 1
+        return ArrayLiteral.new(token, [])
+      end
+
+      first = parse_primary
+
+      if current_kind == :token_comma
+        # An array
+        parse_partial_array(token, first)
+      else
+        # backtrack
+        @pos = start_pos
+        parse_path
+      end
+    end
+
+    # Parse an array where we've already consumed the opening bracket and first item.
+    def parse_partial_array(token, first)
+      items = [first] # : Array[untyped]
+
+      loop do
+        if current_kind == :token_rbracket
+          @pos += 1
+          break
+        end
+
+        eat(:token_comma)
+
+        # Trailing commas are OK.
+        if current_kind == :token_rbracket
+          @pos += 1
+          break
+        end
+
+        # Trailing commas are OK.
+        break if current_kind == :token_rbracket
+
+        items << parse_primary
+      end
+
+      ArrayLiteral.new(token, items)
+    end
+
     # Parse a comma separated list of expressions. Assumes the next token is a comma.
     # @param left [Expression] The first item in the array.
     # @return [ArrayLiteral]
-    def parse_array_literal(left)
+    def parse_implicit_array(left)
       token = current
       items = [left] # : Array[untyped]
 

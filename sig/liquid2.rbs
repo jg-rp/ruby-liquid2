@@ -583,7 +583,11 @@ module Liquid2
     # @return [Filter]
     def parse_filter: () -> Filter
                     
-    def parse_array_literal: (untyped left) -> ArrayLiteral
+    def parse_array_or_path: () -> (ArrayLiteral | Path)
+                    
+    def parse_partial_array: ([Symbol, String?, Integer] token, Node first) -> ArrayLiteral
+
+    def parse_implicit_array: (untyped left) -> ArrayLiteral
 
     def parse_arrow_function: () -> untyped
 

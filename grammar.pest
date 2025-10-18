@@ -16,6 +16,7 @@ basic_expr = _{
   | paren_expr
   | comparison_expr
   | membership_expr
+  // TODO: arithmetic_expr
   | primary
 }
 
@@ -38,7 +39,6 @@ literal = _{
     
 }
 
-// TODO: dedicated rules?
 reserved_word = {
   | "blank"
   | "empty"
@@ -116,7 +116,7 @@ hexchar = _{
 }
 
 non_surrogate = _{
-  | ((ASCII_DIGIT | ^"A" | ^"B" | ^"C" | ^"E" | ^"F") ~ ASCII_HEX_DIGIT{3})
+  | ASCII_HEX_DIGIT{4}
   | (^"D" ~ '\u{30}'..'\u{37}' ~ ASCII_HEX_DIGIT{2})
 }
 
@@ -145,7 +145,8 @@ positional_arg = {
   | lambda_expr
 }
 
-ident = @{ CASED_LETTER ~ (CASED_LETTER | ASCII_DIGIT | "_" | "-")* }
+// TODO: Unicode identifiers
+ident = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_" | "-")* }
 
 lambda_expr = {
   | ident ~ "=>" ~ expr
@@ -156,7 +157,7 @@ comparison_expr = { comparable ~ comparison_op ~ comparable }
 membership_expr = { comparable ~ membership_op ~ comparable }
 
 comparison_op = {
-  |  "=="
+  | "=="
   | "!="
   | "<="
   | ">="

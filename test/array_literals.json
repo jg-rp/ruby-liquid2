@@ -1,0 +1,68 @@
+{
+  "tests": [
+    {
+      "name": "for loop target, no brackets",
+      "template": "{% for x in 1, 2, 3 %}{{ x }}-{% endfor %}",
+      "result": "1-2-3-"
+    },
+    {
+      "name": "for loop target",
+      "template": "{% for x in [1, 2, 3] %}{{ x }}-{% endfor %}",
+      "result": "1-2-3-"
+    },
+    {
+      "name": "for loop target, single element, trailing comma",
+      "template": "{% for x in [a,] %}{{ x }}-{% endfor %}",
+      "data": { "a": "b", "b": "foo" },
+      "result": "b-"
+    },
+    {
+      "name": "for loop target, single element path string, no trailing comma",
+      "template": "{% for x in ['a'] %}{{ x }}-{% endfor %}",
+      "data": { "a": "b", "b": "foo" },
+      "result": "b-"
+    },
+    {
+      "name": "for loop target, single element nested path, no trailing comma",
+      "template": "{% for x in [a] %}{{ x }}-{% endfor %}",
+      "data": { "a": "b", "b": "foo" },
+      "result": "f-o-o-"
+    },
+    {
+      "name": "for loop target, empty array",
+      "template": "{% for x in [] %}{{ x }}-{% endfor %}",
+      "result": ""
+    },
+    {
+      "name": "for loop target, just a comma",
+      "template": "{% for x in [,] %}{{ x }}-{% endfor %}",
+      "invalid": true
+    },
+    {
+      "name": "for loop target, nested array",
+      "template": "{% for x in [[1, 2, 3], ['a', 'b', 'c']] %}{{ x | join: '#' }}-{% endfor %}",
+      "result": "1#2#3-a#b#c-"
+    },
+    {
+      "name": "output, no brackets, filtered",
+      "template": "{{ 1, 2, 3 | join: '-' }}",
+      "result": "1-2-3"
+    },
+    {
+      "name": "assign, no brackets",
+      "template": "{% assign x = 1, 2, 3 %}{{ x | join: '-' }}",
+      "result": "1-2-3"
+    },
+    {
+      "name": "output, no brackets, mixed primitives",
+      "template": "{{ 1, 'hello', false | join: '-' }}",
+      "result": "1-hello-false"
+    },
+    {
+      "name": "output, no brackets, variables",
+      "template": "{{ a, b, c | join: '-' }}",
+      "data": { "a": 42, "b": "hello" },
+      "result": "42-hello-"
+    }
+  ]
+}
