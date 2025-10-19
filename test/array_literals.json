@@ -49,6 +49,38 @@
       "result": "1-2-3"
     },
     {
+      "name": "output",
+      "template": "{{ [1, 2, 3] }}",
+      "result": "123"
+    },
+    {
+      "name": "output, single element, trailing comma",
+      "template": "{{ [1,] }}",
+      "result": "1"
+    },
+    {
+      "name": "output, single element path string, no trailing comma",
+      "template": "{{ ['a'] }}",
+      "data": { "a": "b", "b": "foo" },
+      "result": "b"
+    },
+    {
+      "name": "output, single element nested path, no trailing comma",
+      "template": "{{ [a] }}",
+      "data": { "a": "b", "b": "foo" },
+      "result": "foo"
+    },
+    {
+      "name": "output, empty array",
+      "template": "{{ [] }}",
+      "result": ""
+    },
+    {
+      "name": "output, just a comma",
+      "template": "{{ [,] }}",
+      "invalid": true
+    },
+    {
       "name": "assign, no brackets",
       "template": "{% assign x = 1, 2, 3 %}{{ x | join: '-' }}",
       "result": "1-2-3"
@@ -63,6 +95,11 @@
       "template": "{{ a, b, c | join: '-' }}",
       "data": { "a": 42, "b": "hello" },
       "result": "42-hello-"
+    },
+    {
+      "name": "filter argument",
+      "template": "{{ [1, 2] | concat: [3, 4] | join: '-' }}",
+      "result": "1-2-3-4"
     }
   ]
 }
