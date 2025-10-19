@@ -222,6 +222,10 @@ module Liquid2
           @start = @scanner.pos
         else
           case @scanner.get_byte
+          when "{"
+            @tokens << [:token_lbrace, nil, @start]
+            @start = @scanner.pos
+            scan_object_literal
           when "'"
             @start = @scanner.pos
             scan_string("'", :token_single_quote_string, @re_single_quote_string_special)
@@ -450,6 +454,9 @@ module Liquid2
       loop do
         skip_line_trivia
 
+        # XXX: strings can contain line breaks
+        # XXX: object literals can contain line breaks
+
         case @scanner.get_byte
         when "'"
           @start = @scanner.pos
@@ -457,6 +464,10 @@ module Liquid2
         when "\""
           @start = @scanner.pos
           scan_string("\"", :token_double_quote_string, @re_double_quote_string_special)
+        when "{"
+          @tokens << [:token_lbrace, nil, @start]
+          @start = @scanner.pos
+          scan_object_literal
         when nil
           # End of scanner. Unclosed expression or string literal.
           break
@@ -499,7 +510,7 @@ module Liquid2
       end
     end
 
-    # Scan a string literal surrounded by single quotes.
+    # Scan a string literal surrounded by `quote`.
     # Assumes the opening quote has already been consumed and emitted.
     def scan_string(quote, symbol, pattern)
       start_of_string = @start - 1
@@ -551,6 +562,10 @@ module Liquid2
               @start = @scanner.pos
               scan_string("\"", :token_double_quote_string,
                           @re_double_quote_string_special)
+            when "{"
+              @tokens << [:token_lbrace, nil, @start]
+              @start = @scanner.pos
+              scan_object_literal
             when "}"
               @tokens << [:token_string_interpol_end, nil, @start]
               @start = @scanner.pos
@@ -583,6 +598,53 @@ module Liquid2
           raise LiquidSyntaxError.new("unclosed string literal or template string expression",
                                       [symbol, nil, start_of_string])
         end
+      end
+    end
+
+    # Scan an object/hash literal delimited by `{` and `}`.
+    # Assumes the opening `{` has been consumed and emitted.
+    def scan_object_literal
+      start_of_object = @start - 1
+      loop do
+        skip_trivia
+        if (value = @scanner.scan(@re_float))
+          @tokens << [:token_float, value, @start]
+          @start = @scanner.pos
+        elsif (value = @scanner.scan(@re_int))
+          @tokens << [:token_int, value, @start]
+          @start = @scanner.pos
+        elsif (value = @scanner.scan(@re_punctuation))
+          @tokens << [TOKEN_MAP[value] || :token_unknown, value, @start]
+          @start = @scanner.pos
+        elsif (value = @scanner.scan(@re_word))
+          @tokens << [TOKEN_MAP[value] || :token_word, value, @start]
+          @start = @scanner.pos
+        else
+          case @scanner.get_byte
+          when "{"
+            @tokens << [:token_lbrace, nil, @start]
+            @start = @scanner.pos
+            scan_object_literal
+          when "'"
+            @start = @scanner.pos
+            scan_string("'", :token_single_quote_string, @re_single_quote_string_special)
+          when "\""
+            @start = @scanner.pos
+            scan_string("\"", :token_double_quote_string,
+                        @re_double_quote_string_special)
+          else
+            @scanner.pos -= 1
+            break
+          end
+        end
+      end
+
+      if @scanner.get_byte == "}"
+        @tokens << [:token_rbrace, nil, @start]
+        @start = @scanner.pos
+      else
+        raise LiquidSyntaxError.new("unclosed object literal",
+                                    [:token_lbrace, nil, start_of_object])
       end
     end
   end

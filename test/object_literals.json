@@ -1,0 +1,49 @@
+{
+  "tests": [
+    {
+      "name": "for loop target",
+      "template": "{% for x in {'a': 1, 'b': 2} %}{{ x[0] }}:{{ x[1] }}-{% endfor %}",
+      "result": "a:1-b:2-"
+    },
+    {
+      "name": "for loop target, object with one item",
+      "template": "{% for x in {'a': 1} %}{{ x[0] }}:{{ x[1] }}-{% endfor %}",
+      "result": "a:1-"
+    },
+    {
+      "name": "for loop target, empty object",
+      "template": "{% for x in {} %}{{ x[0] }}:{{ x[1] }}-{% endfor %}",
+      "result": ""
+    },
+    {
+      "name": "for loop target, unquoted keys",
+      "template": "{% for x in {a: 1, b: 2} %}{{ x[0] }}:{{ x[1] }}-{% endfor %}",
+      "result": "a:1-b:2-"
+    },
+    {
+      "name": "output",
+      "template": "{{ {'a': 1, 'b': 2} }}",
+      "result": "{\"a\":1,\"b\":2}"
+    },
+    {
+      "name": "output, nested",
+      "template": "{{ {'a': 1, 'b': {'c': 3}} }}",
+      "result": "{\"a\":1,\"b\":{\"c\":3}}"
+    },
+    {
+      "name": "output, nested",
+      "template": "{{ {'${a}': 1} }}",
+      "invalid": true
+    },
+    {
+      "name": "liquid",
+      "template": "{% liquid\nassign x = {'a': 1}\necho x.a %}",
+      "result": "1"
+    },
+    {
+      "name": "assign, nested",
+      "template": "{% assign x = {'a': 1, 'b': {'c': 3}} %}{{ x.b.c }}",
+      "result": "3"
+    }
+  ]
+}

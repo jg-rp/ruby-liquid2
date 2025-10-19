@@ -381,6 +381,8 @@ module Liquid2
     # Scan a string literal surrounded by _quote_.
     # Assumes the opening quote has already been consumed and emitted.
     def scan_string: (("\"" | "'"), Symbol, Regexp) -> void
+                   
+    def scan_object_literal: () -> void
   end
 end
 
@@ -588,6 +590,10 @@ module Liquid2
     def parse_partial_array: ([Symbol, String?, Integer] token, Node first) -> ArrayLiteral
 
     def parse_implicit_array: (untyped left) -> ArrayLiteral
+
+    def parse_object_literal: () -> ObjectLiteral
+                            
+    def parse_object_literal_item: () -> ObjectLiteralItem
 
     def parse_arrow_function: () -> untyped
 
@@ -1340,6 +1346,37 @@ module Liquid2
     def initialize: ([Symbol, String?, Integer] token, Array[untyped] items) -> void
 
     def evaluate: (RenderContext context) -> untyped
+  end
+end
+
+module Liquid2
+  class ObjectLiteral < Expression
+    @items: Array[ObjectLiteralItem]
+
+    # @param items [Array<Expression>]
+    def initialize: ([Symbol, String?, Integer] token, Array[ObjectLiteralItem] items) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class ObjectLiteralItem < Expression
+    @name: String
+
+    @sym: Symbol
+
+    @value: untyped
+
+    attr_reader name: String
+
+    attr_reader sym: Symbol
+
+    attr_reader value: untyped
+
+    # @param name [Token]
+    # @param value [Expression]
+    def initialize: ([Symbol, String?, Integer] token, String name, untyped value) -> void
+
+    def evaluate: (RenderContext context) -> [String, untyped]
   end
 end
 

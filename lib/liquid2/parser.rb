@@ -16,6 +16,7 @@ require_relative "expressions/identifier"
 require_relative "expressions/lambda"
 require_relative "expressions/logical"
 require_relative "expressions/loop"
+require_relative "expressions/object"
 require_relative "expressions/path"
 require_relative "expressions/range"
 require_relative "expressions/relational"
@@ -376,6 +377,8 @@ module Liquid2
                parse_path
              when :token_lbracket
                parse_array_or_path
+             when :token_lbrace
+               parse_object_literal
              when :token_lparen
                parse_range_lambda_or_grouped_expression
              when :token_not, :token_plus, :token_minus
@@ -431,6 +434,7 @@ module Liquid2
     end
 
     # Parse a string literals or unquoted word.
+    # @return [String]
     def parse_name
       case current_kind
       when :token_word
@@ -858,6 +862,41 @@ module Liquid2
       end
 
       ArrayLiteral.new(left.respond_to?(:token) ? left.token : token, items)
+    end
+
+    def parse_object_literal
+      token = eat(:token_lbrace)
+
+      if current_kind == :token_rbrace
+        # Empty object/hash
+        @pos += 1
+        return ObjectLiteral.new(token, [])
+      end
+
+      items = [parse_object_literal_item] # : Array[ObjectLiteralItem]
+
+      # Subsequent items must be preceded by a comma.
+      loop do
+        break unless current_kind == :token_comma
+
+        @pos += 1
+
+        # Trailing commas are OK.
+        break if current_kind == :token_rbrace
+
+        items << parse_object_literal_item
+      end
+
+      eat(:token_rbrace)
+      ObjectLiteral.new(token, items)
+    end
+
+    def parse_object_literal_item
+      token = current
+      key = parse_name # TODO: allow variables that resolve to string or computed keys `[key]`?
+      eat(:token_colon)
+      value = parse_primary
+      ObjectLiteralItem.new(token, key, value)
     end
 
     # @return [Node]
