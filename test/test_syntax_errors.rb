@@ -75,7 +75,7 @@ class TestLiquidSyntaxErrors < Minitest::Test
 
   def test_too_many_dots_in_range
     source = "{% for x in (2...4) %}{{ x }}{% endfor %}"
-    message = "unexpected token_dot"
+    message = "too many dots"
     error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
     assert_equal(message, error.message)
   end

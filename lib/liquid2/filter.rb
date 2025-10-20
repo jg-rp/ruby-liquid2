@@ -15,8 +15,6 @@ module Liquid2
         obj.flatten
       when Hash, String
         [obj]
-      # when String
-      #   obj.each_char
       when Enumerable
         obj
       else

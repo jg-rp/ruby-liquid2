@@ -805,6 +805,12 @@ module Liquid2
         return ArrayLiteral.new(token, [])
       end
 
+      if current_kind == :token_spread
+        # An array with a spread operator before the first item.
+        spread_token = self.next
+        return parse_partial_array(token, ArraySpread.new(spread_token, parse_primary))
+      end
+
       first = parse_primary
 
       if current_kind == :token_comma
@@ -835,10 +841,12 @@ module Liquid2
           break
         end
 
-        # Trailing commas are OK.
-        break if current_kind == :token_rbracket
-
-        items << parse_primary
+        if current_kind == :token_spread
+          spread_token = self.next
+          items << ArraySpread.new(spread_token, parse_primary)
+        else
+          items << parse_primary
+        end
       end
 
       ArrayLiteral.new(token, items)
@@ -904,14 +912,17 @@ module Liquid2
       token = eat(:token_lparen)
       expr = parse_primary
 
-      if current_kind == :token_double_dot
+      kind = current_kind
+
+      if kind == :token_double_dot
         @pos += 1
         stop = parse_primary
         eat(:token_rparen)
         return RangeExpression.new(token, expr, stop)
       end
 
-      kind = current_kind
+      # Probably a range expression with too many dots.
+      raise LiquidSyntaxError.new("too many dots", current) if kind == :token_spread
 
       # An arrow function, but we've already consumed lparen and the first parameter.
       return parse_partial_arrow_function(expr) if kind == :token_comma

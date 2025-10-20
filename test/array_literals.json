@@ -100,6 +100,41 @@
       "name": "filter argument",
       "template": "{{ [1, 2] | concat: [3, 4] | join: '-' }}",
       "result": "1-2-3-4"
+    },
+    {
+      "name": "spread operator, trailing",
+      "template": "{% assign x = [1, 2, 3] %}{% assign y = ['a', ...x] %}{{ y | json }}",
+      "result": "[\"a\",1,2,3]"
+    },
+    {
+      "name": "spread operator, middle",
+      "template": "{% assign x = [1, 2, 3] %}{% assign y = ['a', ...x, 'b'] %}{{ y | json }}",
+      "result": "[\"a\",1,2,3,\"b\"]"
+    },
+    {
+      "name": "spread operator, leading",
+      "template": "{% assign x = [1, 2, 3] %}{% assign y = [...x, 'b'] %}{{ y | json }}",
+      "result": "[1,2,3,\"b\"]"
+    },
+    {
+      "name": "spread operator, nested",
+      "template": "{% assign x = [1, 2, 3] %}{% assign y = ['a', ['b', ...x]] %}{{ y | json }}",
+      "result": "[\"a\",[\"b\",1,2,3]]"
+    },
+    {
+      "name": "spread operator, only",
+      "template": "{% assign x = [1, 2, 3] %}{% assign y = [...x] %}{{ y | json }}",
+      "result": "[1,2,3]"
+    },
+    {
+      "name": "spread operator, string operand",
+      "template": "{% assign x = 'foo' %}{% assign y = [...x] %}{{ y | json }}",
+      "result": "[\"foo\"]"
+    },
+    {
+      "name": "spread operator, no brackets",
+      "template": "{% assign x = [1, 2, 3] %}{{ 'a', ...x, 'b' | json }}",
+      "invalid": true
     }
   ]
 }

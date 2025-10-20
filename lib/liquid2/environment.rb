@@ -419,7 +419,7 @@ module Liquid2
       #
       # In this example we need two `:token_rbrace` before `:token_output_end`.
       #  `{{ {"thing": {"foo": 1, "bar": 2}} }}`
-      @re_punctuation = %r{(?!#{@re_markup_end})(\?|\[|\]|\|{1,2}|\.{1,2}|,|:|\(|\)|[<>=!]+|[+\-%*/]+(?!#{@re_markup_end_chars}))}
+      @re_punctuation = %r{(?!#{@re_markup_end})(\?|\[|\]|\|{1,2}|\.{1,3}|,|:|\(|\)|[<>=!]+|[+\-%*/]+(?!#{@re_markup_end_chars}))}
 
       @re_up_to_inline_comment_end = /(?=([+\-~])?#{Regexp.escape(@markup_tag_end)})/
       @re_up_to_raw_end = /(?=(#{Regexp.escape(@markup_tag_start)}[+\-~]?\s*endraw\s*[+\-~]?#{Regexp.escape(@markup_tag_end)}))/

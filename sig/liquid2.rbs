@@ -587,7 +587,7 @@ module Liquid2
                     
     def parse_array_or_path: () -> (ArrayLiteral | Path)
                     
-    def parse_partial_array: ([Symbol, String?, Integer] token, Node first) -> ArrayLiteral
+    def parse_partial_array: ([Symbol, String?, Integer] token, Expression first) -> ArrayLiteral
 
     def parse_implicit_array: (untyped left) -> ArrayLiteral
 
@@ -1344,6 +1344,14 @@ module Liquid2
 
     # @param items [Array<Expression>]
     def initialize: ([Symbol, String?, Integer] token, Array[untyped] items) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class ArraySpread < Expression
+    @expr: Expression
+
+    def initialize: ([Symbol, String?, Integer] token, Expression expr) -> void
 
     def evaluate: (RenderContext context) -> untyped
   end

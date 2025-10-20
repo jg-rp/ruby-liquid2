@@ -4,7 +4,11 @@ TODO: introduction
 
 ## Immutable data guarantee
 
-TODO: Why we don't include filters and/or tags to modify data.
+Liquid2, in its default configuration, will never mutate render context data. This behavior ensures that rendering the same template with the same inputs always yields identical results, and that data passed into the template cannot be changed accidentally or maliciously.
+
+Some Liquid2 deployments may choose to support controlled data mutation for performance or integration reasons. In those configurations, custom filters and tags may mutate existing data structures. However, the default runtime always treats data as immutable, providing deterministic and side-effect-free rendering suitable for static publishing, caching, and sandboxed execution.
+
+As such, there are no built-in `append`, `add`, `prepend` or `removed` filters for mutating arrays, nor filters for adding, removing or setting keys in objects/hashes.
 
 ## Literals
 
@@ -19,7 +23,7 @@ TODO: Why we don't include filters and/or tags to modify data.
 {% endfor %}
 ```
 
-Square brackets are optional in the left-hand side of a filtered expression or a for loop target, as long as there's at least two items.
+Square brackets are optional on the left-hand side of a filtered expression or a for loop target, as long as there's at least two items.
 
 ```liquid
 {{ 1, 2, 3 | join: '-' }}
@@ -74,6 +78,18 @@ You can also map to arrays using the `map` filter and an arrow function argument
 {% endfor %}
 ```
 
-TODO: spread operator
+The spread operator `...` allows authors to compose arrays immutably from existing arrays and enumerables.
+
+```liquid
+{% assign x = [1, 2, 3] %}
+{% assign y = [...x, "a"] %}
+{{ y | json }}
+```
+
+**Output**
+
+```json
+[1, 2, 3, "a"]
+```
 
 TODO: object/hash literals

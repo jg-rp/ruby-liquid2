@@ -38,6 +38,7 @@ module Liquid2
       "||" => :token_double_pipe,
       "." => :token_dot,
       ".." => :token_double_dot,
+      "..." => :token_spread,
       "," => :token_comma,
       ":" => :token_colon,
       "(" => :token_lparen,
