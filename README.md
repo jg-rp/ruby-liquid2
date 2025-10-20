@@ -36,7 +36,7 @@ Liquid templates for Ruby, with some extra features.
 Add `'liquid2'` to your Gemfile:
 
 ```
-gem 'liquid2', '~> 0.4.0'
+gem 'liquid2', '~> 0.5.0'
 ```
 
 Or
@@ -107,31 +107,77 @@ Hello, {{ you | capitalize }}!
 
 #### Array literals
 
-Filtered expressions (those found in output statements, the `assign` tag and the `echo` tag) and `for` tag expressions support array literal syntax. We don't use the traditional `[item1, item2, ...]` syntax with square brackets because square brackets are already used for variables (`["some variable with spaces"]` is a valid variable).
+_CHANGED IN VERSION 0.5.0_
 
-```liquid2
-{% assign my_array = a, b, '42', false -%}
-{% for item in my_array -%}
-    - {{ item }}
+Array literals are allowed anywhere a value (literal or variable) is expected.
+
+```liquid
+{{ [1, 2, 3] }}
+{{ ['a', 'b', 'c'] }}
+
+{% assign some_array = [x, y, z] %}
+
+{% for x in [1, 2, 3] %}
+  - {{ x }}
 {% endfor %}
 ```
 
-or, using a `{% liquid %}` tag:
+Square brackets are optional on the left-hand side of a filtered expression or a for loop target, as long as there's at least two items.
 
-```liquid2
-{% liquid
-    for item in a, b, '42', false
-        echo "- ${item}\n"
-    endfor %}
+```liquid
+{{ 1, 2, 3 | join: '-' }}
+
+{% for x in 1, 2, 3 %}
+  - {{ x }}
+{% endfor %}
 ```
 
-With `a` set to `"Hello"` and `b` set to `"World"`, both of the examples above produce the following output.
+The spread operator `...` allows template authors to compose arrays immutably from existing arrays and enumerables.
 
-```plain title="output"
-- Hello
-- World
-- 42
-- false
+```liquid
+{% assign x = [1, 2, 3] %}
+{% assign y = [...x, "a"] %}
+{{ y | json }}
+```
+
+**Output**
+
+```json
+[1, 2, 3, "a"]
+```
+
+#### Object literals
+
+_NEW IN VERSION 0.5.0_
+
+Object (aka hash) literals are allowed anywhere a value (literal or variable) is expected. Keys must be strings or static identifiers. We do not support dynamic keys.
+
+```liquid
+{% assign point = {x: 10, y: 20} %}
+{{ point.x }}
+
+{{ {"foo": "bar", "baz": 42} | json }}
+```
+
+Object and array literals can be nested arbitrarily.
+
+```liquid
+{% assign profile = {
+    name: "Ada",
+    age: 42,
+    tags: ["engineer", "mathematician"]
+  } %}
+
+{{ profile.tags[0] }}
+```
+
+The spread operator `...` can also be used within object literals to merge key–value pairs from other objects or expressions.
+
+```liquid
+{% assign defaults = {a: 1, b: 2} %}
+{% assign overrides = {b: 9, c: 3} %}
+{% assign merged = {...defaults, ...overrides, d: 4} %}
+{{ merged | json }}
 ```
 
 #### Logical `not`
