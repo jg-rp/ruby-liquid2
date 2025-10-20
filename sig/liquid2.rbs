@@ -1374,15 +1374,19 @@ module Liquid2
 
     @value: untyped
 
+    @spread: bool
+
     attr_reader name: String
 
     attr_reader sym: Symbol
 
     attr_reader value: untyped
 
+    attr_reader spread: bool
+
     # @param name [Token]
     # @param value [Expression]
-    def initialize: ([Symbol, String?, Integer] token, String name, untyped value) -> void
+    def initialize: ([Symbol, String?, Integer] token, String name, untyped value, ?spread: bool) -> void
 
     def evaluate: (RenderContext context) -> [String, untyped]
   end
@@ -1813,7 +1817,7 @@ module Liquid2
     # Cast _obj_ to a  date and time. Return `nil` if casting fails.
     def self.to_date: (untyped obj) -> untyped
                     
-    def self.fetch: (untyped obj, untyped key) -> untyped
+    def self.fetch: (untyped obj, untyped key, ?untyped default) -> untyped
 
     # Return the concatenation of items in _left_ separated by _sep_.
     def self.join: (untyped left, ?::String sep) -> untyped

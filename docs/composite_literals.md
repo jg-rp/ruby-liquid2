@@ -1,16 +1,12 @@
-# Arrays in Liquid2
-
-TODO: introduction
-
-## Immutable data guarantee
+# Composite literals in Liquid2
 
 Liquid2, in its default configuration, will never mutate render context data. This behavior ensures that rendering the same template with the same inputs always yields identical results, and that data passed into the template cannot be changed accidentally or maliciously.
 
 Some Liquid2 deployments may choose to support controlled data mutation for performance or integration reasons. In those configurations, custom filters and tags may mutate existing data structures. However, the default runtime always treats data as immutable, providing deterministic and side-effect-free rendering suitable for static publishing, caching, and sandboxed execution.
 
-As such, there are no built-in `append`, `add`, `prepend` or `removed` filters for mutating arrays, nor filters for adding, removing or setting keys in objects/hashes.
+As such, there are no built-in `append`, `add`, `prepend` or `removed` filters for mutating arrays, nor filters for adding, removing or setting keys in objects (aka hashes or mappings). Instead, we introduce **array and object literals**, and the spread operator `...`.
 
-## Literals
+## Array literals
 
 ```liquid
 {{ [1, 2, 3] }}
@@ -78,7 +74,7 @@ You can also map to arrays using the `map` filter and an arrow function argument
 {% endfor %}
 ```
 
-The spread operator `...` allows authors to compose arrays immutably from existing arrays and enumerables.
+The spread operator `...` allows template authors to compose arrays immutably from existing arrays and enumerables.
 
 ```liquid
 {% assign x = [1, 2, 3] %}
@@ -92,4 +88,52 @@ The spread operator `...` allows authors to compose arrays immutably from existi
 [1, 2, 3, "a"]
 ```
 
-TODO: object/hash literals
+## Object literals
+
+Object literals (also known as hashes or mappings) define key–value pairs enclosed in curly braces `{}`. Keys must be static identifiers or string literals, and braces are always required.
+
+```liquid
+{% assign point = {x: 10, y: 20} %}
+{{ point.x }}
+
+{{ {"foo": "bar", "baz": 42} | json }}
+```
+
+Object literals can contain values of any type, including arrays, objects, and interpolated strings.
+
+```liquid
+{% assign profile = {
+    name: "Ada",
+    age: 42,
+    tags: ["engineer", "mathematician"]
+  } %}
+
+{{ profile.name }}
+```
+
+Keys may be written as unquoted identifiers or quoted strings. Both forms are equivalent:
+
+```liquid
+{% assign a = {foo: 1, "bar": 2} %}
+```
+
+The spread operator `...` can also be used within object literals to merge key–value pairs from other objects or expressions. Each spread is evaluated in order, and later keys override earlier ones. The source objects themselves are never mutated.
+
+```liquid
+{% assign defaults = {a: 1, b: 2} %}
+{% assign overrides = {b: 9, c: 3} %}
+{% assign merged = {...defaults, ...overrides, d: 4} %}
+{{ merged | json }}
+```
+
+**Output**
+
+```json
+{ "a": 1, "b": 9, "c": 3, "d": 4 }
+```
+
+Spread values are evaluated as follows:
+
+- **Hashes (objects)** are merged directly.
+- **Objects responding to `to_h`** are converted and merged.
+- **Other values** are ignored (treated as empty objects).

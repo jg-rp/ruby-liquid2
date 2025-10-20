@@ -122,6 +122,11 @@
       "result": "[\"a\",[\"b\",1,2,3]]"
     },
     {
+      "name": "spread operator, don't flatten",
+      "template": "{% assign x = [1, 2, [3, 4]] %}{% assign y = ['a', ['b', ...x]] %}{{ y | json }}",
+      "result": "[\"a\",[\"b\",1,2,[3,4]]]"
+    },
+    {
       "name": "spread operator, only",
       "template": "{% assign x = [1, 2, 3] %}{% assign y = [...x] %}{{ y | json }}",
       "result": "[1,2,3]"

@@ -885,9 +885,9 @@ module Liquid2
 
       # Subsequent items must be preceded by a comma.
       loop do
-        break unless current_kind == :token_comma
+        break if current_kind == :token_rbrace
 
-        @pos += 1
+        eat(:token_comma, "expected a comma")
 
         # Trailing commas are OK.
         break if current_kind == :token_rbrace
@@ -901,7 +901,12 @@ module Liquid2
 
     def parse_object_literal_item
       token = current
-      key = parse_name # TODO: allow variables that resolve to string or computed keys `[key]`?
+      if token[0] == :token_spread
+        @pos += 1
+        return ObjectLiteralItem.new(token, "", parse_primary, spread: true)
+      end
+
+      key = parse_name # We don't support dynamic keys
       eat(:token_colon)
       value = parse_primary
       ObjectLiteralItem.new(token, key, value)

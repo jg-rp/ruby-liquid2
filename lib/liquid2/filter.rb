@@ -84,6 +84,8 @@ module Liquid2
     end
 
     def self.fetch(obj, key, default = nil)
+      # TODO: benchmark without rescue
+      # TODO: try defensive respond_to?
       obj[key]
     rescue ArgumentError, TypeError, NoMethodError
       default

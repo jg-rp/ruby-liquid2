@@ -12,7 +12,20 @@ module Liquid2
     end
 
     def evaluate(context)
-      @items.to_h { |item| context.evaluate(item) }
+      result = {} # : Hash[String,untyped]
+      @items.each do |item|
+        key, value = context.evaluate(item)
+        if item.spread
+          if value.is_a?(Hash)
+            result.merge!(value)
+          elsif value.respond_to?(:to_h)
+            result.merge!(value.to_h)
+          end
+        else
+          result[key] = value
+        end
+      end
+      result
     end
 
     def children = @items
@@ -20,15 +33,16 @@ module Liquid2
 
   # A key/value pair belonging to an object literal.
   class ObjectLiteralItem < Expression
-    attr_reader :value, :name, :sym
+    attr_reader :value, :name, :sym, :spread
 
     # @param name [String]
     # @param value [Expression]
-    def initialize(token, name, value)
+    def initialize(token, name, value, spread: false)
       super(token)
       @name = name
       @sym = name.to_sym
       @value = value
+      @spread = spread
     end
 
     def evaluate(context)
