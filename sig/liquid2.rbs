@@ -2185,6 +2185,8 @@ module Liquid2
 
     @blank: bool
 
+    @key: String | nil
+
     # @param parser [Parser]
     # @return [CycleTag]
     def self.parse: ([Symbol, String?, Integer] token, Parser parser) -> CycleTag

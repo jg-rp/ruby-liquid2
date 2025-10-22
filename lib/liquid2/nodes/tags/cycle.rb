@@ -39,19 +39,14 @@ module Liquid2
       @items = items
       @named = named
       @blank = false
+      # Generate the cycle key here once if we don't have a potentially dynamic name.
+      @key = @items.to_s unless @named
     end
 
     def render(context, buffer)
-      args = @items.map { |expr| context.evaluate(expr) }
-
-      key = if @named
-              context.evaluate(@name).to_s
-            else
-              @items.to_s
-            end
-
+      key = @key || context.evaluate(@name).to_s
       index = context.tag_namespace[:cycles][key]
-      buffer << Liquid2.to_output_s(args[index])
+      buffer << Liquid2.to_output_s(context.evaluate(@items[index]))
 
       index += 1
       index = 0 if index >= @items.length
