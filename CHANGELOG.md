@@ -1,3 +1,9 @@
+## [0.5.0] - unreleased
+
+- Improved array literal syntax. Arrays with square brackets are now allowed anywhere a value (literal or variable) is expected. See [#21](https://github.com/jg-rp/ruby-liquid2/issues/21) and `docs/composite_literals.md`.
+- Added object (aka hash) literal syntax. Like arrays, object literals are allowed anywhere a value (literal or variable) is expected. See `docs/composite_literals.md`.
+- Added the spread operator `...`. Like spread syntax in JavaScript, the spread operator is used to expand array elements inside array literals and merge objects (aka hashes) in object literals. See `docs/composite_literals.md`.
+
 ## [0.4.0] - 25-08-11
 
 - Fixed a bug where the parser would raise a `Liquid2::LiquidSyntaxError` if environment arguments `markup_out_end` and `markup_tag_end` where identical. See [#23](https://github.com/jg-rp/ruby-liquid2/issues/23).

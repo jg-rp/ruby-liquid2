@@ -381,6 +381,8 @@ module Liquid2
     # Scan a string literal surrounded by _quote_.
     # Assumes the opening quote has already been consumed and emitted.
     def scan_string: (("\"" | "'"), Symbol, Regexp) -> void
+                   
+    def scan_object_literal: () -> void
   end
 end
 
@@ -583,7 +585,15 @@ module Liquid2
     # @return [Filter]
     def parse_filter: () -> Filter
                     
-    def parse_array_literal: (untyped left) -> ArrayLiteral
+    def parse_array_or_path: () -> (ArrayLiteral | Path)
+                    
+    def parse_partial_array: ([Symbol, String?, Integer] token, Expression first) -> ArrayLiteral
+
+    def parse_implicit_array: (untyped left) -> ArrayLiteral
+
+    def parse_object_literal: () -> ObjectLiteral
+                            
+    def parse_object_literal_item: () -> ObjectLiteralItem
 
     def parse_arrow_function: () -> untyped
 
@@ -1276,6 +1286,8 @@ module Liquid2
 
     # @param token [[Symbol, String?, Integer]]
     def initialize: ([Symbol, String?, Integer] token) -> void
+                  
+    def evaluate: (RenderContext context) -> untyped
 
     def children: () -> Array[untyped]
     
@@ -1334,6 +1346,49 @@ module Liquid2
     def initialize: ([Symbol, String?, Integer] token, Array[untyped] items) -> void
 
     def evaluate: (RenderContext context) -> untyped
+  end
+
+  class ArraySpread < Expression
+    @expr: Expression
+
+    def initialize: ([Symbol, String?, Integer] token, Expression expr) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+end
+
+module Liquid2
+  class ObjectLiteral < Expression
+    @items: Array[ObjectLiteralItem]
+
+    # @param items [Array<Expression>]
+    def initialize: ([Symbol, String?, Integer] token, Array[ObjectLiteralItem] items) -> void
+
+    def evaluate: (RenderContext context) -> untyped
+  end
+
+  class ObjectLiteralItem < Expression
+    @name: String
+
+    @sym: Symbol
+
+    @value: untyped
+
+    @spread: bool
+
+    attr_reader name: String
+
+    attr_reader sym: Symbol
+
+    attr_reader value: untyped
+
+    attr_reader spread: bool
+
+    # @param name [Token]
+    # @param value [Expression]
+    def initialize: ([Symbol, String?, Integer] token, String name, untyped value, ?spread: bool) -> void
+
+    def evaluate: (RenderContext context) -> [String, untyped]
   end
 end
 
@@ -1762,7 +1817,7 @@ module Liquid2
     # Cast _obj_ to a  date and time. Return `nil` if casting fails.
     def self.to_date: (untyped obj) -> untyped
                     
-    def self.fetch: (untyped obj, untyped key) -> untyped
+    def self.fetch: (untyped obj, untyped key, ?untyped default) -> untyped
 
     # Return the concatenation of items in _left_ separated by _sep_.
     def self.join: (untyped left, ?::String sep) -> untyped

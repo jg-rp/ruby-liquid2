@@ -1,0 +1,145 @@
+{
+  "tests": [
+    {
+      "name": "for loop target, no brackets",
+      "template": "{% for x in 1, 2, 3 %}{{ x }}-{% endfor %}",
+      "result": "1-2-3-"
+    },
+    {
+      "name": "for loop target",
+      "template": "{% for x in [1, 2, 3] %}{{ x }}-{% endfor %}",
+      "result": "1-2-3-"
+    },
+    {
+      "name": "for loop target, single element, trailing comma",
+      "template": "{% for x in [a,] %}{{ x }}-{% endfor %}",
+      "data": { "a": "b", "b": "foo" },
+      "result": "b-"
+    },
+    {
+      "name": "for loop target, single element path string, no trailing comma",
+      "template": "{% for x in ['a'] %}{{ x }}-{% endfor %}",
+      "data": { "a": "b", "b": "foo" },
+      "result": "b-"
+    },
+    {
+      "name": "for loop target, single element nested path, no trailing comma",
+      "template": "{% for x in [a] %}{{ x }}-{% endfor %}",
+      "data": { "a": "b", "b": "foo" },
+      "result": "f-o-o-"
+    },
+    {
+      "name": "for loop target, empty array",
+      "template": "{% for x in [] %}{{ x }}-{% endfor %}",
+      "result": ""
+    },
+    {
+      "name": "for loop target, just a comma",
+      "template": "{% for x in [,] %}{{ x }}-{% endfor %}",
+      "invalid": true
+    },
+    {
+      "name": "for loop target, nested array",
+      "template": "{% for x in [[1, 2, 3], ['a', 'b', 'c']] %}{{ x | join: '#' }}-{% endfor %}",
+      "result": "1#2#3-a#b#c-"
+    },
+    {
+      "name": "output, no brackets, filtered",
+      "template": "{{ 1, 2, 3 | join: '-' }}",
+      "result": "1-2-3"
+    },
+    {
+      "name": "output",
+      "template": "{{ [1, 2, 3] }}",
+      "result": "123"
+    },
+    {
+      "name": "output, single element, trailing comma",
+      "template": "{{ [1,] }}",
+      "result": "1"
+    },
+    {
+      "name": "output, single element path string, no trailing comma",
+      "template": "{{ ['a'] }}",
+      "data": { "a": "b", "b": "foo" },
+      "result": "b"
+    },
+    {
+      "name": "output, single element nested path, no trailing comma",
+      "template": "{{ [a] }}",
+      "data": { "a": "b", "b": "foo" },
+      "result": "foo"
+    },
+    {
+      "name": "output, empty array",
+      "template": "{{ [] }}",
+      "result": ""
+    },
+    {
+      "name": "output, just a comma",
+      "template": "{{ [,] }}",
+      "invalid": true
+    },
+    {
+      "name": "assign, no brackets",
+      "template": "{% assign x = 1, 2, 3 %}{{ x | join: '-' }}",
+      "result": "1-2-3"
+    },
+    {
+      "name": "output, no brackets, mixed primitives",
+      "template": "{{ 1, 'hello', false | join: '-' }}",
+      "result": "1-hello-false"
+    },
+    {
+      "name": "output, no brackets, variables",
+      "template": "{{ a, b, c | join: '-' }}",
+      "data": { "a": 42, "b": "hello" },
+      "result": "42-hello-"
+    },
+    {
+      "name": "filter argument",
+      "template": "{{ [1, 2] | concat: [3, 4] | join: '-' }}",
+      "result": "1-2-3-4"
+    },
+    {
+      "name": "spread operator, trailing",
+      "template": "{% assign x = [1, 2, 3] %}{% assign y = ['a', ...x] %}{{ y | json }}",
+      "result": "[\"a\",1,2,3]"
+    },
+    {
+      "name": "spread operator, middle",
+      "template": "{% assign x = [1, 2, 3] %}{% assign y = ['a', ...x, 'b'] %}{{ y | json }}",
+      "result": "[\"a\",1,2,3,\"b\"]"
+    },
+    {
+      "name": "spread operator, leading",
+      "template": "{% assign x = [1, 2, 3] %}{% assign y = [...x, 'b'] %}{{ y | json }}",
+      "result": "[1,2,3,\"b\"]"
+    },
+    {
+      "name": "spread operator, nested",
+      "template": "{% assign x = [1, 2, 3] %}{% assign y = ['a', ['b', ...x]] %}{{ y | json }}",
+      "result": "[\"a\",[\"b\",1,2,3]]"
+    },
+    {
+      "name": "spread operator, don't flatten",
+      "template": "{% assign x = [1, 2, [3, 4]] %}{% assign y = ['a', ['b', ...x]] %}{{ y | json }}",
+      "result": "[\"a\",[\"b\",1,2,[3,4]]]"
+    },
+    {
+      "name": "spread operator, only",
+      "template": "{% assign x = [1, 2, 3] %}{% assign y = [...x] %}{{ y | json }}",
+      "result": "[1,2,3]"
+    },
+    {
+      "name": "spread operator, string operand",
+      "template": "{% assign x = 'foo' %}{% assign y = [...x] %}{{ y | json }}",
+      "result": "[\"foo\"]"
+    },
+    {
+      "name": "spread operator, no brackets",
+      "template": "{% assign x = [1, 2, 3] %}{{ 'a', ...x, 'b' | json }}",
+      "invalid": true
+    }
+  ]
+}

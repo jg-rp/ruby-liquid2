@@ -412,7 +412,15 @@ module Liquid2
       @re_markup_end_chars = /[#{Regexp.escape((@markup_out_end + @markup_tag_end).each_char.uniq.join)}]/
 
       @re_up_to_markup_start = /(?=#{Regexp.escape(@markup_out_start)}|#{Regexp.escape(@markup_tag_start)}|#{Regexp.escape(@markup_comment_prefix)})/
-      @re_punctuation = %r{(?!#{@re_markup_end})(\?|\[|\]|\|{1,2}|\.{1,2}|,|:|\(|\)|[<>=!]+|[+\-%*/]+(?!#{@re_markup_end_chars}))}
+
+      # Braces `{` and `}` are handled separately by the scanner, similar to how we handle
+      # `"` and `'`, so we don't confuse ending a nested object/hash literal with ending an
+      # output statement.
+      #
+      # In this example we need two `:token_rbrace` before `:token_output_end`.
+      #  `{{ {"thing": {"foo": 1, "bar": 2}} }}`
+      @re_punctuation = %r{(?!#{@re_markup_end})(\?|\[|\]|\|{1,2}|\.{1,3}|,|:|\(|\)|[<>=!]+|[+\-%*/]+(?!#{@re_markup_end_chars}))}
+
       @re_up_to_inline_comment_end = /(?=([+\-~])?#{Regexp.escape(@markup_tag_end)})/
       @re_up_to_raw_end = /(?=(#{Regexp.escape(@markup_tag_start)}[+\-~]?\s*endraw\s*[+\-~]?#{Regexp.escape(@markup_tag_end)}))/
       @re_block_comment_chunk = /(#{Regexp.escape(@markup_tag_start)}[+\-~]?\s*(comment|raw|endcomment|endraw)\s*[+\-~]?#{Regexp.escape(@markup_tag_end)})/

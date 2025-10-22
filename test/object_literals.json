@@ -1,0 +1,79 @@
+{
+  "tests": [
+    {
+      "name": "for loop target",
+      "template": "{% for x in {'a': 1, 'b': 2} %}{{ x[0] }}:{{ x[1] }}-{% endfor %}",
+      "result": "a:1-b:2-"
+    },
+    {
+      "name": "for loop target, object with one item",
+      "template": "{% for x in {'a': 1} %}{{ x[0] }}:{{ x[1] }}-{% endfor %}",
+      "result": "a:1-"
+    },
+    {
+      "name": "for loop target, empty object",
+      "template": "{% for x in {} %}{{ x[0] }}:{{ x[1] }}-{% endfor %}",
+      "result": ""
+    },
+    {
+      "name": "for loop target, unquoted keys",
+      "template": "{% for x in {a: 1, b: 2} %}{{ x[0] }}:{{ x[1] }}-{% endfor %}",
+      "result": "a:1-b:2-"
+    },
+    {
+      "name": "output",
+      "template": "{{ {'a': 1, 'b': 2} }}",
+      "result": "{\"a\":1,\"b\":2}"
+    },
+    {
+      "name": "output, nested",
+      "template": "{{ {'a': 1, 'b': {'c': 3}} }}",
+      "result": "{\"a\":1,\"b\":{\"c\":3}}"
+    },
+    {
+      "name": "output, nested",
+      "template": "{{ {'${a}': 1} }}",
+      "invalid": true
+    },
+    {
+      "name": "liquid",
+      "template": "{% liquid\nassign x = {'a': 1}\necho x.a %}",
+      "result": "1"
+    },
+    {
+      "name": "assign, nested",
+      "template": "{% assign x = {'a': 1, 'b': {'c': 3}} %}{{ x.b.c }}",
+      "result": "3"
+    },
+    {
+      "name": "spread, trailing",
+      "template": "{% assign x = {'a': 1, 'b': 2} %}{{ {'c': 3, ...x} | json }}",
+      "result": "{\"c\":3,\"a\":1,\"b\":2}"
+    },
+    {
+      "name": "spread, middle",
+      "template": "{% assign x = {'a': 1, 'b': 2} %}{{ {'c': 3, ...x, 'd': 4} | json }}",
+      "result": "{\"c\":3,\"a\":1,\"b\":2,\"d\":4}"
+    },
+    {
+      "name": "spread, leading",
+      "template": "{% assign x = {'a': 1, 'b': 2} %}{{ {...x, 'c': 3} | json }}",
+      "result": "{\"a\":1,\"b\":2,\"c\":3}"
+    },
+    {
+      "name": "spread, just",
+      "template": "{% assign x = {'a': 1, 'b': 2} %}{{ {...x} | json }}",
+      "result": "{\"a\":1,\"b\":2}"
+    },
+    {
+      "name": "spread, doesn't flatten",
+      "template": "{% assign x = {'a': 1, 'b': {'c': 3}} %}{{ {'d': 4, ...x} | json }}",
+      "result": "{\"d\":4,\"a\":1,\"b\":{\"c\":3}}"
+    },
+    {
+      "name": "assign, nested",
+      "template": "{% assign x = {'a': 1, 'b': {'c': 3}} %}{{ {'d': x} | json }}",
+      "result": "{\"d\":{\"a\":1,\"b\":{\"c\":3}}}"
+    }
+  ]
+}

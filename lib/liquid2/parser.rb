@@ -16,6 +16,7 @@ require_relative "expressions/identifier"
 require_relative "expressions/lambda"
 require_relative "expressions/logical"
 require_relative "expressions/loop"
+require_relative "expressions/object"
 require_relative "expressions/path"
 require_relative "expressions/range"
 require_relative "expressions/relational"
@@ -237,7 +238,7 @@ module Liquid2
     def parse_filtered_expression
       token = current
       left = parse_primary
-      left = parse_array_literal(left) if current_kind == :token_comma
+      left = parse_implicit_array(left) if current_kind == :token_comma
       filters = parse_filters if current_kind == :token_pipe
       expr = FilteredExpression.new(token, left, filters)
 
@@ -262,7 +263,7 @@ module Liquid2
 
       if current_kind == :token_comma
         unless LOOP_KEYWORDS.member?(peek[1] || raise)
-          enum = parse_array_literal(enum)
+          enum = parse_implicit_array(enum)
           return LoopExpression.new(identifier.token, identifier, enum,
                                     limit: limit, offset: offset, reversed: reversed, cols: cols)
         end
@@ -372,8 +373,12 @@ module Liquid2
                looks_like_a_path ? parse_path : Empty.new(self.next)
              when :token_single_quote_string, :token_double_quote_string
                parse_string_literal
-             when :token_word, :token_lbracket
+             when :token_word
                parse_path
+             when :token_lbracket
+               parse_array_or_path
+             when :token_lbrace
+               parse_object_literal
              when :token_lparen
                parse_range_lambda_or_grouped_expression
              when :token_not, :token_plus, :token_minus
@@ -429,6 +434,7 @@ module Liquid2
     end
 
     # Parse a string literals or unquoted word.
+    # @return [String]
     def parse_name
       case current_kind
       when :token_word
@@ -787,10 +793,69 @@ module Liquid2
       end
     end
 
+    # Parse an array literal delimited with `[` and `]` or a bracketed variable/path.
+    # @return [Node]
+    def parse_array_or_path
+      start_pos = @pos
+      token = eat(:token_lbracket)
+
+      if current_kind == :token_rbracket
+        # Empty array
+        @pos += 1
+        return ArrayLiteral.new(token, [])
+      end
+
+      if current_kind == :token_spread
+        # An array with a spread operator before the first item.
+        spread_token = self.next
+        return parse_partial_array(token, ArraySpread.new(spread_token, parse_primary))
+      end
+
+      first = parse_primary
+
+      if current_kind == :token_comma
+        # An array
+        parse_partial_array(token, first)
+      else
+        # backtrack
+        @pos = start_pos
+        parse_path
+      end
+    end
+
+    # Parse an array where we've already consumed the opening bracket and first item.
+    def parse_partial_array(token, first)
+      items = [first] # : Array[untyped]
+
+      loop do
+        if current_kind == :token_rbracket
+          @pos += 1
+          break
+        end
+
+        eat(:token_comma)
+
+        # Trailing commas are OK.
+        if current_kind == :token_rbracket
+          @pos += 1
+          break
+        end
+
+        if current_kind == :token_spread
+          spread_token = self.next
+          items << ArraySpread.new(spread_token, parse_primary)
+        else
+          items << parse_primary
+        end
+      end
+
+      ArrayLiteral.new(token, items)
+    end
+
     # Parse a comma separated list of expressions. Assumes the next token is a comma.
     # @param left [Expression] The first item in the array.
     # @return [ArrayLiteral]
-    def parse_array_literal(left)
+    def parse_implicit_array(left)
       token = current
       items = [left] # : Array[untyped]
 
@@ -807,19 +872,62 @@ module Liquid2
       ArrayLiteral.new(left.respond_to?(:token) ? left.token : token, items)
     end
 
+    def parse_object_literal
+      token = eat(:token_lbrace)
+
+      if current_kind == :token_rbrace
+        # Empty object/hash
+        @pos += 1
+        return ObjectLiteral.new(token, [])
+      end
+
+      items = [parse_object_literal_item] # : Array[ObjectLiteralItem]
+
+      # Subsequent items must be preceded by a comma.
+      loop do
+        break if current_kind == :token_rbrace
+
+        eat(:token_comma, "expected a comma")
+
+        # Trailing commas are OK.
+        break if current_kind == :token_rbrace
+
+        items << parse_object_literal_item
+      end
+
+      eat(:token_rbrace, "expected a closing brace")
+      ObjectLiteral.new(token, items)
+    end
+
+    def parse_object_literal_item
+      token = current
+      if token[0] == :token_spread
+        @pos += 1
+        return ObjectLiteralItem.new(token, "", parse_primary, spread: true)
+      end
+
+      key = parse_name # We don't support dynamic keys
+      eat(:token_colon)
+      value = parse_primary
+      ObjectLiteralItem.new(token, key, value)
+    end
+
     # @return [Node]
     def parse_range_lambda_or_grouped_expression
       token = eat(:token_lparen)
       expr = parse_primary
 
-      if current_kind == :token_double_dot
+      kind = current_kind
+
+      if kind == :token_double_dot
         @pos += 1
         stop = parse_primary
-        eat(:token_rparen)
+        eat(:token_rparen, "expected a closing parenthesis")
         return RangeExpression.new(token, expr, stop)
       end
 
-      kind = current_kind
+      # Probably a range expression with too many dots.
+      raise LiquidSyntaxError.new("too many dots", current) if kind == :token_spread
 
       # An arrow function, but we've already consumed lparen and the first parameter.
       return parse_partial_arrow_function(expr) if kind == :token_comma
@@ -978,7 +1086,7 @@ module Liquid2
         # A single parameter without parens
         params << parse_identifier
       when :token_lparen
-        # One or move parameters separated by commas and surrounded by parentheses.
+        # One or more parameters separated by commas and surrounded by parentheses.
         self.next
         while current_kind != :token_rparen
           params << parse_identifier
