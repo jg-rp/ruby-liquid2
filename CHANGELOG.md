@@ -3,6 +3,7 @@
 - Improved array literal syntax. Arrays with square brackets are now allowed anywhere a value (literal or variable) is expected. See [#21](https://github.com/jg-rp/ruby-liquid2/issues/21) and `docs/composite_literals.md`.
 - Added object (aka hash) literal syntax. Like arrays, object literals are allowed anywhere a value (literal or variable) is expected. See `docs/composite_literals.md`.
 - Added the spread operator `...`. Like spread syntax in JavaScript, the spread operator is used to expand array elements inside array literals and merge objects (aka hashes) in object literals. See `docs/composite_literals.md`.
+- Improved `{% cycle %}` tag implementation. We no longer evaluate all items for every call to `CycleTag#render`, just the next item in the cycle. We also cache cycle context keys if the key is known at parse time.
 
 ## [0.4.0] - 25-08-11
 
