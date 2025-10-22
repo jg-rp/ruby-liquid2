@@ -173,21 +173,21 @@ class TestLiquidSyntaxErrors < Minitest::Test
 
   def test_missing_output_closing_bracket
     source = "Hello, {{you}!"
-    message = "missing markup delimiter detected"
+    message = "missing markup delimiter or unbalanced object literal detected"
     error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
     assert_equal(message, error.message)
   end
 
   def test_missing_tag_closing_percent
     source = "{% assign x = 42 }"
-    message = "missing markup delimiter detected"
+    message = "missing markup delimiter or unbalanced object literal detected"
     error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
     assert_equal(message, error.message)
   end
 
   def test_missing_tag_closing_bracket
     source = "{% assign x = 42 %"
-    message = "missing markup delimiter detected"
+    message = "missing markup delimiter or unbalanced object literal detected"
     error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
     assert_equal(message, error.message)
   end
@@ -244,6 +244,34 @@ class TestLiquidSyntaxErrors < Minitest::Test
   def test_unbalanced_parentheses
     source = "{% if true and (false and true %}a{% else %}b{% endif %}"
     message = "unbalanced parentheses"
+    error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
+    assert_equal(message, error.message)
+  end
+
+  def test_array_literal_extra_closing_bracket
+    source = "{{ [1, 2, 3]] }}"
+    message = "unexpected token_rbracket"
+    error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
+    assert_equal(message, error.message)
+  end
+
+  def test_array_literal_extra_opening_bracket
+    source = "{{ [[1, 2, 3] }}"
+    message = "unexpected token_lbracket"
+    error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
+    assert_equal(message, error.message)
+  end
+
+  def test_object_literal_extra_opening_bracket
+    source = "{{ {{a: 2} }}"
+    message = "missing markup delimiter or unbalanced object literal detected"
+    error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
+    assert_equal(message, error.message)
+  end
+
+  def test_object_literal_extra_closing_bracket
+    source = "{{ {a: 1}} }}"
+    message = "missing markup delimiter or unbalanced object literal detected"
     error = assert_raises(Liquid2::LiquidSyntaxError) { Liquid2.render(source) }
     assert_equal(message, error.message)
   end

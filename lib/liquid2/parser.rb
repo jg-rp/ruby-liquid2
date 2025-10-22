@@ -895,7 +895,7 @@ module Liquid2
         items << parse_object_literal_item
       end
 
-      eat(:token_rbrace)
+      eat(:token_rbrace, "expected a closing brace")
       ObjectLiteral.new(token, items)
     end
 
@@ -922,7 +922,7 @@ module Liquid2
       if kind == :token_double_dot
         @pos += 1
         stop = parse_primary
-        eat(:token_rparen)
+        eat(:token_rparen, "expected a closing parenthesis")
         return RangeExpression.new(token, expr, stop)
       end
 

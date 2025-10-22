@@ -254,8 +254,10 @@ module Liquid2
         return nil if @scanner.eos?
 
         if (ch = @scanner.scan(@re_markup_end_chars))
-          raise LiquidSyntaxError.new("missing markup delimiter detected",
-                                      [:token_unknown, ch, @start])
+          raise LiquidSyntaxError.new(
+            "missing markup delimiter or unbalanced object literal detected",
+            [:token_unknown, ch, @start]
+          )
         end
 
         @tokens << [:token_unknown, @scanner.getch, @start]
