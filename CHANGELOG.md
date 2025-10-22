@@ -1,4 +1,4 @@
-## [0.5.0] - unreleased
+## [0.5.0] - 25-22-10
 
 - Improved array literal syntax. Arrays with square brackets are now allowed anywhere a value (literal or variable) is expected. See [#21](https://github.com/jg-rp/ruby-liquid2/issues/21) and `docs/composite_literals.md`.
 - Added object (aka hash) literal syntax. Like arrays, object literals are allowed anywhere a value (literal or variable) is expected. See `docs/composite_literals.md`.
