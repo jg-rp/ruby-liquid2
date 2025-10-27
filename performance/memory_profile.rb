@@ -33,7 +33,7 @@ options = {
 
 OptionParser.new do |parser|
   parser.banner = <<~BANNER
-    Run one of the benchmarks in ./tests/cts/benchmark_fixtures.
+    Run one of the benchmarks in ./tests/golden_liquid/benchmark_fixtures.
     Example: ruby benchmark.rb -f 002
   BANNER
 
