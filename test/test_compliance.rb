@@ -3,10 +3,15 @@
 require "json"
 require "test_helper"
 
+begin
+  TEST_CASES = JSON.load_file("test/golden_liquid/golden_liquid.json")
+rescue Errno::ENOENT
+  puts "Error: uninitialized submodule. Try `git submodule update --init`"
+  exit(1)
+end
+
 class TestCompliance < Minitest::Spec
   make_my_diffs_pretty!
-
-  TEST_CASES = JSON.load_file("test/golden_liquid/golden_liquid.json")
 
   # rubocop:disable Layout/LineLength
   SKIP = Set[
