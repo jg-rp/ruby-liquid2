@@ -186,7 +186,7 @@ Logical expressions now support negation with the `not` operator and grouping te
 
 In this example, `{% if not user %}` is equivalent to `{% unless user %}`, however, `not` can also be used after `and` and `or`, like `{% if user.active and not user.title %}`, potentially saving nested `if` and `unless` tags.
 
-```liquid2
+```liquid
 {% if not user %}
   please log in
 {% else %}
@@ -613,63 +613,9 @@ end
 puts Liquid2.render("{% if x == 'foo' %}true{% else %}false{% endif %}", "x" => MyDrop.new) # true
 ```
 
-## Development
+## Contributing
 
-The [golden liquid](https://github.com/jg-rp/golden-liquid) test suite is included in this repository as a Git [submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules). Clone this project and initialize the submodule with something like:
-
-```shell
-$ git clone git@github.com:jg-rp/ruby-liquid2.git
-$ cd ruby-liquid2
-$ git submodule update --init
-```
-
-We use [Bundler](https://bundler.io/) and [Rake](https://ruby.github.io/rake/). Install development dependencies with:
-
-```
-bundle install
-```
-
-Run tests with:
-
-```
-bundle exec rake test
-```
-
-Lint with:
-
-```
-bundle exec rubocop
-```
-
-And type check with:
-
-```
-bundle exec steep
-```
-
-Run one of the benchmarks with:
-
-```
-bundle exec ruby performance/benchmark.rb
-```
-
-### Profiling
-
-#### CPU profile
-
-Dump profile data with `bundle exec ruby performance/profile.rb`, then generate an HTML flame graph with, changing the file names appropriately:
-
-```
-bundle exec stackprof --d3-flamegraph .stackprof-cpu-parse.dump > flamegraph-cpu-parse.html
-```
-
-#### Memory profile
-
-Print memory usage to the terminal.
-
-```
-bundle exec ruby performance/memory_profile.rb
-```
+Please see [Contributing to Ruby Liquid2](https://github.com/jg-rp/ruby-liquid2/blob/main/CONTRIBUTING.md).
 
 ## License
 
